@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# 커밋 직후 현재 브랜치를 origin으로 자동 push 한다.
+# 일시적으로 끄려면: AGENTFORGE_NO_AUTOPUSH=1 git commit ...
+[ -n "$AGENTFORGE_NO_AUTOPUSH" ] && exit 0
+branch=$(git symbolic-ref --short -q HEAD) || exit 0   # detached HEAD(rebase 중 등)는 건너뜀
+git remote get-url origin >/dev/null 2>&1 || exit 0
+echo "[auto-push] origin/$branch 로 push 합니다..."
+if ! git push -u origin "$branch"; then
+  echo "[auto-push] push 실패 — 네트워크·권한 확인 후 'git push' 를 직접 실행하세요." >&2
+fi
+exit 0
