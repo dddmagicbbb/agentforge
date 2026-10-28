@@ -68,4 +68,13 @@ else
   err "docs/prd.md 또는 docs/tasks.md 가 없습니다(기획·분석 단계 먼저)"
 fi
 
+# 7) 채우지 않은 자리표시(이중 중괄호 토큰)가 에이전트·스킬에 남지 않았는지(forge-agents 지시문은 제외)
+for f in .claude/agents/*.md .claude/skills/*/SKILL.md; do
+  [ -f "$f" ] || continue
+  [ "$f" = ".claude/skills/forge-agents/SKILL.md" ] && continue
+  for tok in $(grep -oE '\{\{[A-Z_]+\}\}' "$f" | sort -u); do
+    err "$f 에 채우지 않은 자리표시 $tok"
+  done
+done
+
 if [ "$fail" -eq 0 ]; then echo "검증 통과"; else echo "검증 실패: 위 항목을 고친 뒤 다시 실행"; exit 1; fi
