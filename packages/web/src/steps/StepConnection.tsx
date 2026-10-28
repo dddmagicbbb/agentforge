@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { Issue, ProjectInput } from "@agentforge/core";
+import { provider, type Issue, type ProjectInput } from "@agentforge/core";
 import { countByProvider } from "../agents";
 import { IssueList } from "../components/IssueList";
 import { TmuxPreview } from "../components/TmuxPreview";
@@ -36,19 +36,19 @@ export function StepConnection({ draft, patch, issues }: Props) {
                 <td><b>{t(`provider.${p.id}`)}</b></td>
                 <td className="mono">{counts.get(p.id)}</td>
                 <td>
-                  {p.id === "vllm" ? (
+                  {provider(p.id).via === "vllm" ? (
                     <>
                       <input aria-label={t("conn.vllmLabel")} value={draft.connections.vllmUrl} onChange={(e) => setConn("vllmUrl", e.target.value)} />
                       <IssueList issues={urlIssues("vllmUrl")} />
                     </>
-                  ) : p.id === "ollama" ? (
+                  ) : provider(p.id).via === "ollama" ? (
                     <>
                       <input aria-label={t("conn.ollamaLabel")} value={draft.connections.ollamaUrl} onChange={(e) => setConn("ollamaUrl", e.target.value)} />
                       <IssueList issues={urlIssues("ollamaUrl")} />
                     </>
-                  ) : p.id === "openrouter" ? (
+                  ) : provider(p.id).via === "openrouter" ? (
                     t("conn.openrouter")
-                  ) : p.id === "openai" || p.id === "gemini" ? (
+                  ) : provider(p.id).via === "litellm" ? (
                     t("conn.litellm")
                   ) : (
                     t("conn.claude")

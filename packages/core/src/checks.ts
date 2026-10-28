@@ -45,7 +45,9 @@ export function checks(input: ProjectInput): Issue[] {
   const p: Record<string, unknown> = isObj(input) ? input : {};
 
   const name = str(p["name"]).trim();
-  if (!/^[a-z0-9][a-z0-9._-]*$/.test(name)) add("error", "NAME_INVALID", ["name"], { name });
+  // slug: PoC slug() 와 같은 변환(화면이 "이렇게 바뀝니다" 로 보여 줄 제안값)
+  const slug = name.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "my-project";
+  if (!/^[a-z0-9][a-z0-9._-]*$/.test(name)) add("error", "NAME_INVALID", ["name"], { name, slug });
 
   const reqLen = str(p["requirement"]).trim().length;
   if (reqLen < REQ_MIN) add("warn", "REQ_SHORT", ["requirement"], { length: reqLen, min: REQ_MIN });

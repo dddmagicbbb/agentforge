@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { Issue } from "@agentforge/core";
-import { stepOfPath } from "../issue-step";
+import { gotoStepOf } from "../issue-step";
 import { STEP_KEYS, type StepIndex } from "./StepNav";
 
 interface Props {
@@ -28,10 +28,10 @@ export function IssueList({ issues, filter, onGoto, testId }: Props) {
         return (
           <li key={k} className={`lv-${i.level}`}>
             {onGoto ? <span className="i" aria-hidden="true">{ICON[i.level]} </span> : null}
-            {t(`issue.${i.code}`, { defaultValue: t("issue.default", { code: i.code, path }), path, ...i.params, reason })}
-            {onGoto && (i.level === "error" || i.level === "warn") && i.path.length > 0 ? (
-              <button type="button" className="goto" onClick={() => onGoto(stepOfPath(i.path))}>
-                {t("export.goto", { step: t(`steps.${STEP_KEYS[stepOfPath(i.path)]}`) })}
+            {t(`issue.${i.code}`, { context: i.params["slug"] ? "withSlug" : undefined, defaultValue: t("issue.default", { code: i.code, path }), path, ...i.params, reason })}
+            {onGoto && gotoStepOf(i) !== undefined ? (
+              <button type="button" className="goto" onClick={() => onGoto(gotoStepOf(i)!)}>
+                {t("export.goto", { step: t(`steps.${STEP_KEYS[gotoStepOf(i)!]}`) })}
               </button>
             ) : null}
           </li>

@@ -157,3 +157,28 @@ dev-N·review-N·paths·전용 스킬 렌더(ready 아닌 dev 생략)는 PH3에�
 
 ### 7. 계약·공통 모듈에 필요한 변경
 없음. forge-init.md는 GEN-01 기준 충족이라 변경하지 않음.
+
+## PH4 5라운드 — T-404 보강(review-1 권고 1·2) + T-405 보강(W3)
+
+### 1. 작업
+- T-404 보강: `guard-paths.sh` 끝 개행 우회(권고 1), 제어 문자 경로 차단(권고 2).
+- T-405 보강: `checks()` NAME_INVALID `params.slug` 추가(dev-3 W3).
+
+### 2. 변경 파일
+`templates/static/guard-paths.sh`, `packages/core/src/checks.ts`, `packages/core/test/{adr0004,checks}.test.ts`, 스냅샷(guard 해시 줄만), `tests/golden/intended-diffs.json`(guard 사유 문구만).
+
+### 3. 설계
+- normalize 분할: `<<< "$1"` 은 끝에 개행을 붙여 마지막 세그먼트가 `..\n`/`.\n`이 되어 정규화되지 않았다. `IFS=/ read -r -d '' -a segs < <(printf '%s' "$1")` 로 개행 없이 분할한다. 그 결과 `src/order/..` → `src`, 디렉터리 접두어 항목(`src/order/`) 자체를 가리키는 경로(`src/order`, `src/order/.`, `src/order/x/../..`)는 접두어 `src/order/` 와 일치하지 않아 범위 밖이다(범위는 그 아래 파일만).
+- 제어 문자: file 값은 `$(...)` 명령 치환을 거치며 끝 개행이 사라져 `foo\n` 이 `foo` 와 같아진다(완전 일치 우회). 그래서 값 변환 전의 원시 JSON 에 대해 별도 `jq -e '(.tool_input.file_path // "") | explode | any(. < 32 or . == 127)'` 로 코드포인트를 검사한다(정규식·`[[:cntrl:]]` 로케일 의존 회피). 참이면 `경로에 제어 문자가 있어 수정을 막았습니다.` 후 exit 2. 검사는 JSON 해석 성공 후, `file` 비어 있음 판정(빈 값 통과) **앞**, 정규화 앞에서 한다. 개행만 있는 값(`"\n"`)은 `$(...)` 뒤 빈 값이 되어 빈 값 통과(exit 0)로 새므로 순서가 중요하다(원시 JSON 검사라 앞당길 수 있다). file_path 가 없는 입력은 `// ""` 로 빈 문자열이 되어 제어 문자 없음 → 기존대로 통과.
+- 유지: `set -f`, 배열 분할, jq 부재·해석 실패 fail-closed, 기존 문구.
+- slug: PoC `slug()` 와 동일(`trim → toLowerCase → [^a-z0-9._-]+ → "-" → 앞뒤 "-" 제거 → 빈 값이면 my-project`). `params: { name, slug }`.
+
+### 6. 테스트
+| 수용 기준 | 테스트 이름 |
+|---|---|
+| here-string 미사용, 제어 문자 분기·문구, 검사가 정규화 앞 | `guard-paths.sh: here-string 미사용…` |
+| normalize 경계값(bash 있을 때만 실행) | `guard-paths.sh normalize(): 끝 .. · . …` |
+| NAME_INVALID params.slug | `NAME_INVALID params.slug: …` |
+
+### 7. 계약·공통 모듈 변경
+Issue.params 는 임의 키 허용이라 계약 변경 없음. bats 사례(제어 문자·끝 `..`)는 dev-2 에 요청.

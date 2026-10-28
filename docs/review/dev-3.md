@@ -193,3 +193,40 @@ R1 시험 추가, R2 보고서 커밋 후 `pnpm --filter @agentforge/web test`�
 | 권고 | packages/web/src/steps/StepConnection.tsx:39-51 | 연결 칸을 제공자 id 리터럴로 분기한다. core `provider(id).via`(litellm 등)를 쓰면 제공자가 추가될 때 화면을 고칠 곳이 줄어든다. | `via === "litellm"` 등 core 속성으로 분기한다. |
 | 참고 | packages/web/src/components/IssueList.tsx:31 | `OPENROUTER_FREE_LIMIT`(warn)처럼 path가 `[]`인 경고에는 이동 버튼이 없다. 원인이 5단계에 있는 경고라 안내가 조금 약하다. | 필요하면 코드별 기본 단계(예: OPENROUTER_FREE_LIMIT → 5단계) 매핑을 추가한다. |
 | 참고 | docs/design/detail/dev-3.md 7장 | W3(NAME_INVALID slug)는 core 변경 요청으로 남아 있다. | 리드가 dev-1 작업으로 배정할지 결정한다. |
+
+---
+
+# 5라운드 검토 — web 마무리 (커밋 e7297fe, develop 050e515 기준)
+
+## 최종 판정: 통과
+
+반려 사유는 없다. 4라운드 권고 6건 중 5건이 해소됐다. 나머지 W3은 화면 쪽 준비가 끝났고 core가 slug 값을 넘기지 않아 아직 동작하지 않는다(R5-1).
+
+## 실행한 시험
+| 명령 | 결과 |
+|---|---|
+| `pnpm install` / `pnpm gen:templates` | 성공 / templates.generated.ts 26개 |
+| `pnpm --filter @agentforge/web test` | 시험 파일 6개, **73개 통과 / 0 실패** (4라운드 68개 → 소스 정규식 시험 1개 삭제, 6개 추가) |
+| `pnpm typecheck` | 통과(exit 0) |
+| `pnpm lint` | 통과(exit 0) |
+| `pnpm build` | 통과(exit 0). web 번들 537.58 kB, 500 kB 초과 경고만 1건 |
+
+범위: 변경 파일 8개가 모두 `packages/web/**`와 `docs/design/detail/dev-3.md`이다. lock 변경은 없다.
+
+## 4라운드 권고 반영 확인
+| 권고 | 결과 | 근거 |
+|---|---|---|
+| 소스 정규식 시험 | 해소 | `round4-core.test.tsx`의 소스 문자열 검사를 삭제했다. core `PROVIDERS`·`CORE_SKILLS`·`SEQ`와 렌더 결과를 비교하는 시험은 남아 있다. |
+| `URL` 전역 변경 | 해소(일부 남음) | `vi.spyOn(URL, …)`과 파일 수준 `afterEach(() => vi.restoreAllMocks())`로 spy가 복원된다. jsdom에 없는 메서드 자리를 `Object.assign`으로 만든 것은 남지만, 동작 없는 함수뿐이라 다른 시험에 영향이 없다. |
+| `provider(id).via` 분기 | 해소 | `StepConnection.tsx:39-51`이 via(vllm/ollama/openrouter/litellm, 그 외 claude)로 분기한다. 제공자 6종의 via 값으로 보면 기존 id 분기와 결과가 같다. `round2-conn.test.tsx` 12건이 그대로 통과한다. |
+| path 없는 경고의 이동 버튼 | 해소 | `issue-step.ts` `gotoStepOf`: path가 있으면 error·warn만 `stepOfPath`로 보내고, path가 없으면 `OPENROUTER_FREE_LIMIT`·`GATEWAY_REQUIRED`·`VLLM_TOOL_PARSER`만 5단계(index 4)로 보낸다. 나머지는 버튼이 없다. 시험 4건이 버튼 유무와 `onGoto(4)` 호출을 확인한다. 단계 바 오류 점(`errorSteps`)은 계속 `stepOfPath`를 쓰고, 이 세 코드는 error가 아니므로 결과가 같다. |
+| W3 NAME_INVALID slug | 화면 준비 완료, core 미반영 | `IssueList.tsx:31`은 `params.slug`가 truthy일 때만 `context: "withSlug"`를 준다. slug가 없거나 빈 문자열이면 `issue.NAME_INVALID` 앞 문장만 보인다. 시험 2건이 있음·없음을 모두 확인한다. 다만 core `checks.ts:48`은 아직 `{ name }`만 넘기므로 실제 화면에서는 늘 앞 문장만 나온다. |
+| 커밋 경계 | 미해소 | 아래 R5-2 |
+
+## 지적(반려 사유 아님)
+| 판정 | 파일:줄 | 문제 | 고칠 방법 |
+|---|---|---|---|
+| 권고 R5-1 | packages/core/src/checks.ts:48 (dev-1 범위) | `NAME_INVALID` params에 `slug`가 없어 `NAME_INVALID_withSlug` 문구가 제품에서 나오지 않는다. | 리드가 dev-1에 core `checks`의 slug 파라미터 추가(PoC `slug()` 규칙)를 배정한다. web은 고칠 것이 없다. |
+| 권고 R5-2 | git 이력 e7297fe | 한 커밋에 T-421·T-422·T-425·T-426이 함께 들어 있어 "한 커밋 한 작업 ID" 규칙 위반이다. 실제로 겹치는 파일은 `IssueList.tsx`(T-421 W3와 T-426 이동 버튼)와 `round4-gen.test.tsx` 정도이다. `StepConnection.tsx`(T-425), `round4-core.test.tsx`(T-422)는 따로 커밋할 수 있었다. 변경량이 작고 모두 권고 반영이라 반려하지 않는다. | 다음부터 겹치지 않는 파일은 작업 ID별로 먼저 커밋하고, 겹치는 파일만 대표 ID로 묶은 뒤 메시지에 다른 ID를 적는다. |
+| 권고 R5-3 | packages/web/src/locales/ko.json `issue.NAME_INVALID` | PoC 문장을 따르느라 "·.·"이 빠져 "영문 소문자·숫자·-·_"만 안내한다. 실제 규칙(`checks.ts:48`, `patterns.ts` ProjectName)은 `.`도 허용하므로 안내가 규칙보다 좁다. 같은 위반을 알리는 `PROJECT_NAME` 문구("·.·_·-")와도 어긋난다. | 두 문구 모두 "영문 소문자·숫자·.·_·-"로 맞춘다(PoC 문장보다 실제 규칙을 따른다). |
+| 참고 | packages/web/test/round4-gen.test.tsx:109,124 | 시험 데이터를 `as never`로 만들어 타입 검사를 건너뛴다(`any`는 아니지만 효과가 같다). | `import type { Issue }` 후 `const mk = (…): Issue => ({ … })`로 쓴다. |
