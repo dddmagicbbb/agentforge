@@ -4,7 +4,7 @@
 load helpers
 
 setup() {
-  need_tools git tmux jq unzip node; skip_on_bsd_sed; need_build
+  need_tools git tmux jq unzip node; need_build
   isolate_git; make_fake_bin; tmux_sandbox
 }
 
@@ -15,7 +15,10 @@ teardown() {
 @test "ZIP → setup → worktree → run-agents → design-1.done 이 review-1 pane 에 도착" {
   unpack_project
   # EXP-01: ZIP 에서 풀자마자 실행 권한이 있어야 한다
-  [ -x scripts/setup.sh ] && [ -x scripts/run-agents.sh ] && [ ! -x README.md ]
+  # (&& 로 이은 검사는 앞쪽이 실패해도 set -e 가 잡지 못하므로 한 줄에 하나씩 쓴다)
+  [ -x scripts/setup.sh ]
+  [ -x scripts/run-agents.sh ]
+  [ ! -x README.md ]
 
   bootstrap_project
 
@@ -28,5 +31,5 @@ teardown() {
   wait_for 30 "review-1 got: 설계 검토: docs/design/detail/dev-1.md" "$FAKE_CLAUDE_LOG"
   # 신호는 소비되어 이력으로 남고, 다른 pane 에는 전달되지 않는다
   [ ! -f .agentforge/signals/design-1.done ]
-  ! grep -q "review-2 got:" "$FAKE_CLAUDE_LOG"
+  not_in_file "review-2 got:" "$FAKE_CLAUDE_LOG"
 }
