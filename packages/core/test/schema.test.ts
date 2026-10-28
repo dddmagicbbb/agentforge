@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AppError, checks, defaultDraft, PathPrefix, TEMPLATES, validate, type ProjectInput } from "../src/index.js";
+import { AppError, defaultDraft, mergeClaudeMd, PathPrefix, TEMPLATES, validate, type ProjectInput } from "../src/index.js";
 
 // 불변식 I1~I6과 입력 패턴(design.md 2.2·2.3) 검증
 
@@ -102,8 +102,8 @@ describe("PH2 골격", () => {
     expect(TEMPLATES["md/dev.tpl.md"]).toContain("{{N}}");
   });
 
-  it("미구현 API는 AppError(NOT_IMPLEMENTED)를 던진다", () => {
-    expect(() => checks(defaultDraft())).toThrow(AppError);
+  it("미구현 API(mergeClaudeMd, P1)는 AppError(NOT_IMPLEMENTED)를 던진다", () => {
+    expect(() => mergeClaudeMd("", "")).toThrow(AppError);
   });
 });
 
