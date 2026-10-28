@@ -94,10 +94,8 @@ export function validate(input: unknown, opts: ValidateOptions = {}): ValidateRe
   return issues.length === 0 && r.success ? { project: r.data, issues } : { issues };
 }
 
-/** 개발자 수 변경(PoC syncDevs). — T-401 */
-export function resizeDevs(_draft: ProjectInput, _n: number): ProjectInput {
-  return notImplemented("resizeDevs", "T-401");
-}
+// T-401: 개발자 수 변경(PoC syncDevs)
+export { resizeDevs } from "./resize.js";
 
 /** 화면 경고(PRV-04 등). — T-405 */
 export function checks(_input: ProjectInput): Issue[] {
