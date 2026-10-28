@@ -24,7 +24,7 @@
 | Ubuntu (GitHub ubuntu-latest) | ✓ | ✓ | ✓ | CI run 40754097160 `build-test (ubuntu-latest)` |
 | macOS (GitHub macos-latest, brew bash 5) | ✓ | ✓ | ✓ | CI run 40754097160 `build-test (macos-latest)` |
 | Dev Container (`devcontainers/javascript-node:22`) | ✓ | ✓ | ✓ | CI run 40754097160 `realdevice-devcontainer` |
-| WSL Ubuntu | ☐ | ☐ | ☐ | 사람: 아래 3장 |
+| WSL Ubuntu | ✓ | ✓ | ✓ | 사람 실행 2026-10-29: `realdevice.bats` 3/3, `pnpm test:scripts` 51/51(bash -n·shellcheck 0 포함) |
 
 ## 3. 사람 점검 (T-502)
 ### 3.1 WSL 칸

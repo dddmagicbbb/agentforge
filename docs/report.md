@@ -38,4 +38,5 @@
 - T-503 보안 점검(`docs/report-security.md`): 수정 2건 — S-1 모델 ID 첫 글자(YAML 예약 문자), S-2 guard 가 NotebookEdit(`notebook_path`)를 검사하지 않음 → ADR-0005. 수용 3건 — S-3 Bash 리다이렉션(실기 확인 R-6), S-4 신호 위조(위협 모델 밖), S-5 심볼릭 링크(ADR-0004).
 - T-505 잔여 권고: 이름 규칙 문구 ".", 테스트 데이터 `as never` 제거, exporter 지연 로딩(첫 화면 번들 538→443kB, 경고 해소).
 - T-504 dogfooding: 이 저장소 설정(`tests/realdevice/self-agentforge.json`)으로 다시 생성 → 51파일 중 42개 바이트 일치. 의도된 개선분 6개(scripts 4·guard·forge-agents, ADR-0004·0005)를 생성 결과로 교체. CLAUDE.md·.gitignore 는 저장소 고유 내용이라 유지. `.claude/settings.json` 은 병합안만 준비(사람 적용).
-- 남은 것(사람): T-502 — WSL 3칸, 실제 Claude Code 주기 R-1~R-8(`docs/report-realdevice.md`), settings.json 병합 적용.
+- T-502 WSL 3칸 통과(사람 실행: realdevice 3/3, test:scripts 51/51) → 자동 점검 12칸 완료.
+- 남은 것(사람): 실제 Claude Code 주기 R-1~R-8(`docs/report-realdevice.md`), settings.json 병합 적용.
