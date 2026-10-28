@@ -3,7 +3,7 @@
 - 대상: 8e60d0d(T-422 + 골격), e3633ad(T-424), 기준 0998785
 - 검토자: review-3
 
-## 최종 판정: 반려
+## 1차 판정: 반려 (재검토 결과는 문서 끝 "재검토" 절 참조)
 
 반려 사유 2건(R1, R2). 코드 품질·계약 준수·시험 통과는 양호하고, 고칠 양은 적다.
 
@@ -55,3 +55,34 @@
 ## 재검토 조건
 
 R1 시험 추가, R2 보고서 커밋 후 `pnpm --filter @agentforge/web test`가 모두 통과하면 통과로 판정한다.
+
+---
+
+## 재검토 (커밋 71c6d8a)
+
+### 최종 판정: 통과
+
+### 실행한 시험
+| 명령 | 결과 |
+|---|---|
+| `pnpm --filter @agentforge/web test` | 시험 파일 1개, 17개 통과 / 0 실패 (1.99s) |
+| `pnpm typecheck` | 통과(exit 0) |
+| `pnpm lint` | 통과(exit 0) |
+| `pnpm build` | 통과(exit 0). web 번들 517.04 kB, 500 kB 초과 경고만 1건 |
+
+범위: `git diff --name-only 0998785...HEAD`에서 `packages/web/**`, `docs/design/detail/dev-3.md`, `docs/review/dev-3.md`, `pnpm-lock.yaml` 밖의 변경은 없다.
+
+### 지적 반영 확인
+| 항목 | 결과 | 근거 |
+|---|---|---|
+| R1 도메인 미정 분기 시험 | 해소 | `test/app.test.tsx:115-124`는 `StepSkills`를 직접 마운트한다. `devs[1]`을 `domain: "", paths: []`로 바꾸면 core `devReady`(`schema/invariants.ts:13-15`, `domain !== "" && paths.length > 0`)가 false가 되어 `StepSkills.tsx` 미정 분기(`skills.devPending`)로 간다. 미정 문구 1건, `dev1-order`·`dev3-admin` 있음, `dev2-payment` 없음까지 확인한다. |
+| R2 보고서 | 면제 | 리드 결정: 서브에이전트 모드에서는 보고를 최종 응답으로 받는다. |
+| 권고: 통합 검증 행 번호 8 | 반영 | `StepRoutine.tsx:34` `id === FINAL_AGENT ? 8 : k + 1`, 시험 `산출물과 관문을 표시한다`에 `"8"` 확인 추가 |
+| 권고: 고정 스킬 전부 ` · 필수` | 반영 | `StepSkills.tsx:28` `k.fixed ? ...`, 시험에서 고정 4종 label에 "필수"가 있는지 확인 |
+| 권고: ZIP 실패 시 e.message 미노출 | 반영 | `StepRequirement.tsx:33-34`는 `AppError`이면 `e.code`, 그 외는 `"UNKNOWN"`만 `export.failed`의 파라미터로 넘긴다. 원문 메시지는 화면에 나오지 않는다. |
+
+### 남은 지적(반려 사유 아님)
+| 판정 | 파일:줄 | 문제 | 고칠 방법 |
+|---|---|---|---|
+| 참고 | git 이력 71c6d8a | 커밋 이름은 T-424인데, T-422 범위인 `StepRoutine.tsx` 행 번호 수정이 함께 들어 있다(한 커밋 한 작업 ID). | 다음 라운드부터 작업 ID별로 커밋을 나눈다. |
+| 참고 | StepRequirement.tsx:34 | 실패 문구가 "ZIP 생성에 실패했습니다: UNKNOWN"처럼 코드 그대로 보인다. | T-426에서 오류 코드별 i18n 키(`export.error.<code>`)로 바꾸는 것을 검토한다. |
