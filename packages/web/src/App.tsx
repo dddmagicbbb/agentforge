@@ -6,6 +6,7 @@ import { StepBar, StepButtons, STEP_KEYS, type StepIndex } from "./components/St
 import { StepPlaceholder } from "./steps/StepPlaceholder";
 import { StepRequirement } from "./steps/StepRequirement";
 import { StepRoutine } from "./steps/StepRoutine";
+import { StepSkills } from "./steps/StepSkills";
 import { usePreview } from "./use-preview";
 import "./app.css";
 
@@ -29,7 +30,8 @@ export function App() {
         <section className="panel">
           {key === "requirement" ? <StepRequirement draft={draft} patch={patch} issues={issues} files={files} /> : null}
           {key === "routine" ? <StepRoutine draft={draft} patch={patch} /> : null}
-          {key === "developers" || key === "skills" || key === "connection" || key === "generate" ? <StepPlaceholder stepKey={key} /> : null}
+          {key === "skills" ? <StepSkills draft={draft} patch={patch} /> : null}
+          {key === "developers" || key === "connection" || key === "generate" ? <StepPlaceholder stepKey={key} /> : null}
           <StepButtons step={step} onStep={setStep} />
         </section>
         <PreviewPane files={files} />
