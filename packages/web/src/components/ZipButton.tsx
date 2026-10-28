@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AppError, type Issue, type RenderedFile } from "@agentforge/core";
-import { toZip } from "@agentforge/exporter";
 import { stepOfPath } from "../issue-step";
 import { STEP_KEYS, type StepIndex } from "./StepNav";
 
@@ -30,6 +29,8 @@ export function ZipButton({ files, name, issues, exportable, onStep, current }: 
     setBusy(true);
     setFailure(null);
     try {
+      // jszip 이 든 exporter 는 내려받을 때만 불러온다(첫 화면 번들 축소, T-505). 폐쇄망: 같은 번들의 별도 청크
+      const { toZip } = await import("@agentforge/exporter");
       const bytes = await toZip([...files], name);
       const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: "application/zip" }));
       const a = document.createElement("a");

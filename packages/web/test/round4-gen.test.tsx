@@ -1,6 +1,6 @@
 import { fireEvent, render as mount, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { defaultDraft, render, validate } from "@agentforge/core";
+import { defaultDraft, render, validate, type Issue } from "@agentforge/core";
 import { App } from "../src/App";
 import { IssueList } from "../src/components/IssueList";
 import { stepOfPath } from "../src/issue-step";
@@ -105,7 +105,7 @@ describe("EXP-01 6단계 생성 화면", () => {
 afterEach(() => vi.restoreAllMocks());
 
 describe("code → 단계 이동(path 없는 경고)", () => {
-  const mk = (code: string, level: "warn" | "info") => ({ code, level, path: [], params: {} }) as never;
+  const mk = (code: string, level: "warn" | "info"): Issue => ({ code, level, path: [], params: {} });
   it.each(["OPENROUTER_FREE_LIMIT", "GATEWAY_REQUIRED", "VLLM_TOOL_PARSER"])("%s -> 5단계 이동 버튼", (code) => {
     const go = vi.fn();
     mount(<IssueList issues={[mk(code, code === "OPENROUTER_FREE_LIMIT" ? "warn" : "info")]} onGoto={go} />);
@@ -119,14 +119,14 @@ describe("code → 단계 이동(path 없는 경고)", () => {
 });
 
 describe("W3 NAME_INVALID slug 문구", () => {
-  const issue = (params: Record<string, unknown>) => ({ code: "NAME_INVALID", level: "warn", path: ["name"], params }) as never;
+  const issue = (params: Issue["params"]): Issue => ({ code: "NAME_INVALID", level: "warn", path: ["name"], params });
   it("slug 가 있으면 지금 값으로 만들 이름을 보여 준다", () => {
     mount(<IssueList issues={[issue({ name: "My App", slug: "my-app" })]} />);
     expect(screen.getByText(/지금 값으로는 "my-app" 로 만듭니다\./)).toBeInTheDocument();
   });
   it("slug 가 없으면 앞 문장만 보인다", () => {
     mount(<IssueList issues={[issue({ name: "My App" })]} />);
-    expect(screen.getByText("프로젝트 이름은 영문 소문자·숫자·-·_ 만 씁니다.")).toBeInTheDocument();
+    expect(screen.getByText("프로젝트 이름은 영문 소문자·숫자·.·_·- 만 씁니다.")).toBeInTheDocument();
   });
 });
 
