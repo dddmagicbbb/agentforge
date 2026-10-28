@@ -51,3 +51,19 @@ button { font: inherit; cursor: pointer; }
 .tree button[aria-current="true"] { background: var(--line); }
 .ai, .x { margin-left: 4px; font-size: 10px; color: var(--acc); }
 pre { white-space: pre-wrap; border: 1px solid var(--line); border-radius: 6px; padding: 10px; max-height: 60vh; overflow: auto; font-size: 12px; }
+
+/* 2라운드 */
+.row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 10px; }
+.strong { font-weight: 600; }
+.stepper { display: inline-flex; align-items: center; gap: 8px; }
+.stepper button { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; }
+.stepper button:disabled { opacity: .4; cursor: not-allowed; }
+.issues .lv-warn { color: #b45309; }
+.issues .lv-info, .issues .lv-ok { color: var(--muted); }
+.tmux { border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin-bottom: 12px; }
+.tmux .wins { display: flex; flex-wrap: wrap; gap: 8px; }
+.tmux .win { border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; min-width: 120px; }
+.tmux .wn { font: 11px ui-monospace, monospace; color: var(--acc); }
+.tmux .panes { display: grid; gap: 4px; margin-top: 4px; }
+.tmux .pane { display: grid; font-size: 12px; padding: 4px 6px; border-radius: 4px; background: var(--line); }
+.tmux .bar { display: block; margin-top: 8px; font: 11px ui-monospace, monospace; color: var(--muted); }

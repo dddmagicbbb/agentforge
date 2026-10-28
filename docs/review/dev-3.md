@@ -86,3 +86,60 @@ R1 시험 추가, R2 보고서 커밋 후 `pnpm --filter @agentforge/web test`�
 |---|---|---|---|
 | 참고 | git 이력 71c6d8a | 커밋 이름은 T-424인데, T-422 범위인 `StepRoutine.tsx` 행 번호 수정이 함께 들어 있다(한 커밋 한 작업 ID). | 다음 라운드부터 작업 ID별로 커밋을 나눈다. |
 | 참고 | StepRequirement.tsx:34 | 실패 문구가 "ZIP 생성에 실패했습니다: UNKNOWN"처럼 코드 그대로 보인다. | T-426에서 오류 코드별 i18n 키(`export.error.<code>`)로 바꾸는 것을 검토한다. |
+
+---
+
+# 2라운드 검토 — T-421, T-423, T-425 (커밋 276ba79, 53d5c43, 1e76ae5 / develop 병합 97639a2)
+
+## 최종 판정: 통과
+
+반려 사유는 없다. 아래 권고는 다음 라운드(T-426, catalog 정리)에 반영하면 된다.
+
+## 실행한 시험
+| 명령 | 결과 |
+|---|---|
+| `pnpm install` / `pnpm gen:templates` | 성공 / templates.generated.ts 26개 |
+| `pnpm --filter @agentforge/web test` | 시험 파일 4개, **44개 통과 / 0 실패** |
+| `pnpm typecheck` | 통과(exit 0) |
+| `pnpm lint` | 통과(exit 0) |
+| `pnpm build` | 통과(exit 0). web 번들 531.44 kB, 500 kB 초과 경고만 1건 |
+
+## 범위
+`git diff --name-only develop...HEAD` 15개 파일은 모두 `packages/web/**`와 `docs/design/detail/dev-3.md`이다. `pnpm-lock.yaml` 변경은 없다. 커밋 3개가 각각 한 작업 ID만 담는다(T-423·T-425가 `app.test.tsx` 자리표시 시험 대상만 바꾼 것은 해당 작업에 따른 변경).
+
+## 설계 검토
+- R2-1 T-421: REQ-01·02(이름·언어·요구사항·명령), DEV-01(개발자 수 1~6 스테퍼), RTN-01(UI 토글), 반려 한도(2~5)를 다룬다. 화면 상태(요구사항 짧음 = 경고·진행 가능, 이름 오류 = ZIP 차단)가 정의돼 있다.
+- R2-2 T-423 DEV-02: 도메인·폴더·개발/검증 모델, 겹침·약한 검증 경고, 위임 안내, 오류 시 입력 원문 보존을 다룬다.
+- R2-3 T-425 PRV-01·04: 사용 중인 제공자, 주소 입력(vLLM·Ollama), 안내만 하는 제공자, 키 입력란 없음, tmux 미리보기, 경고 4종을 다룬다.
+- R2-0의 "core가 PROVIDERS 등을 export하지 않아 사본 유지"라는 전제는 develop 병합(core export 추가)으로 더 이상 맞지 않는다. 아래 권고 W1로 처리한다.
+
+## 점검 결과
+- **core 사용**
+  - 스테퍼는 `resizeDevs(draft, n)`의 반환값 전체를 patch한다(`StepRequirement.tsx:59,61`). 버튼은 `1`·`MAX_DEVELOPERS` 경계에서 비활성이라 `DEV_COUNT_RANGE` 예외 경로에 들어가지 않는다.
+  - `use-preview.ts:32-35`는 `validate`와 `checks`를 합친 뒤 `canExport`로 ZIP 활성 여부를 정한다. 경고·정보는 ZIP을 막지 않는다.
+- **`mergeIssues`(use-preview.ts:15-29)**
+  - `NAME_INVALID`(checks)와 `PROJECT_NAME`(validate)은 같은 위반이고 ko 문구도 같아, `NAME_INVALID`가 있을 때 `PROJECT_NAME`을 빼는 처리가 타당하다.
+  - 64자 초과처럼 checks 정규식은 통과하고 validate만 막는 경우에는 `NAME_INVALID`가 없으므로 `PROJECT_NAME`이 남는다. 오류가 빠지는 경우는 없다.
+  - `PATH_OVERLAP`·`MODEL_MISSING`·`IMPORT_UNACKED`는 validate(invariants)와 checks의 path·params가 같아 `keyOf`로 중복이 제거된다. 경로 끝 `/` 정규화도 양쪽이 같다(`patterns.ts:24`, `checks.ts:34`).
+  - validate 오류가 있을 때 checks의 `ALL_OK`를 제거하는 처리도 맞다.
+- **`issue.<CODE>` 12종(design.md 3장)**: 모두 ko.json에 있다.
+  - PATH_OVERLAP·DEV_DEFERRED·MODEL_MISSING·REVIEW_WEAKER·OPENROUTER_FREE_LIMIT·GATEWAY_REQUIRED·VLLM_TOOL_PARSER·IMPORT_UNACKED·UI_OFF·ALL_OK는 PoC `checks()` 문장과 같고, 보간 변수가 core params(`devA/pathA/devB/pathB`, `dev`, `agent`, `count`, `id`)와 이름이 일치한다.
+  - REQ_SHORT는 `{{length}}`·`{{min}}`을 추가해 PoC보다 정보가 많다.
+  - NAME_INVALID는 PoC의 `지금 값으로는 "<slug>" 로 만듭니다` 부분을 뺐다(W3).
+- **3단계 입력 원문 보존**: `DevRow`가 `pathText` state를 따로 들고, 배열은 `splitPaths`로만 갱신한다(`StepDevelopers.tsx:34-49`). 시험 `잘못된 경로는 오류를 보이지만 입력은 막지 않는다`와 `쉼표로 구분한 폴더…`(공백·쉼표 원문 유지)가 이를 확인한다.
+- **5단계 키 입력란 없음**: 입력은 `vLLM 주소`·`Ollama 주소`뿐이고, password·key·token 입력란은 없다. 시험으로도 확인했다. `localStorage`·`any`·외부 리소스 로드는 없다(`conn.openrouter`·`conn.litellm`의 URL은 안내 문구일 뿐 요청을 보내지 않는다).
+- **시험이 실제 분기를 거치는지**
+  - 이름 오류 1회 표시 시험은 validate·checks 양쪽 오류를 만들어 `mergeIssues`의 제거 분기를 거친다.
+  - 겹침·모델 누락 시험은 행 범위에서 `getByText`를 쓴다. 중복이 남으면 실패하므로 중복 제거를 실제로 검증한다.
+  - 약한 검증·위임 안내·DEV_PARTIAL·HTTP_URL·게이트웨이 시험은 입력을 바꿔 해당 분기를 만들고, 다른 행에 경고가 없음(음성 단언)까지 확인한다.
+  - 공허한 단언은 `요구사항이 충분히 길면 경고가 없다`(기본값만 확인) 1건 정도로, 판정에 영향이 없다.
+  - TDD 순서 일부 미이행(dev-3이 스스로 밝힘)은 시험 품질로 판단했고, 문제 없다.
+
+## 권고(반려 사유 아님)
+| 판정 | 파일:줄 | 문제 | 고칠 방법 |
+|---|---|---|---|
+| 권고 W1 | packages/web/src/catalog.ts 전체, docs/design/detail/dev-3.md R2-0 | core가 이제 `PROVIDERS`·`SEQ`·`FINAL`·`CORE_SKILLS`·`devSkill`·`seqI18nKey`를 export한다. 화면 사본이 남아 있어 값이 어긋날 위험이 있다. `agents.ts:14-20`의 순서 규칙도 core checks와 중복된다. | 다음 라운드에 사본을 core import로 바꾸고, 설계 R2-0 문구도 갱신한다. |
+| 권고 W2 | packages/web/src/components/TmuxPreview.tsx:10 | `Claude ${a.model}` 리터럴과 번역 결과에 `.replace(/·LiteLLM| 로컬/, "")`를 적용하는 방식은 i18n 키 원칙에 어긋난다. en 번역에서는 축약이 깨진다. | `tmux.label.claude`(`Claude {{model}}`), `provider.short.<id>` 같은 키를 ko.json에 두고 `t()`로 만든다. |
+| 권고 W3 | packages/web/src/locales/ko.json `issue.NAME_INVALID` | PoC 문장의 "지금 값으로는 "<slug>" 로 만듭니다"가 빠졌다. core params에는 `name`만 있어 지금은 재현할 수 없다. | 필요하면 core에 slug 파라미터 추가를 요청하거나(dev-1·리드), 생략을 설계에 적는다. |
+| 권고 W4 | packages/web/src/steps/StepRequirement.tsx:72, StepRoutine.tsx | 순차 에이전트의 `MODEL_MISSING`(path `agents.*`)은 1·2단계에 표시되지 않고 5단계에만 나온다. 1단계 ZIP 버튼은 "오류 N건"으로 막히지만 원인 위치가 보이지 않는다. | T-426 생성 화면의 전체 검사 목록으로 해소되는지 확인하고, 아니면 2단계에 `IssueList filter={atPath("agents")}`를 붙인다. |
+| 참고 | packages/web/test/round2-dev.test.tsx:89 | `getByText(/담당 폴더/, { selector: "li" })`는 PATH_PREFIX와 PATH_DOT_SEGMENT 중 어느 코드인지 구분하지 않는다. | 기대 코드의 문구(예: `/\. 또는 \.\. 경로 요소/`)로 좁힌다. |
