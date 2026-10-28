@@ -31,7 +31,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14p
 header.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;justify-content:space-between}
 .brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .brand b{font-size:20px;font-weight:700;letter-spacing:-.01em}
-.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted);letter-spacing:.02em}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted);letter-spacing:.02em;white-space:nowrap}
 .chip.acc{background:var(--accent-soft);color:var(--accent)}
 .chip.ver{background:var(--verify-soft);color:var(--verify)}
 .chip.good{color:var(--good)} .chip.warn{color:var(--warn)} .chip.bad{color:var(--bad)}
@@ -40,6 +40,7 @@ button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line
 button:hover{border-color:var(--accent)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.small{padding:4px 9px;font-size:12.5px}
 button:disabled{opacity:.45;cursor:not-allowed}
 nav.steps{overflow-x:auto}
 nav.steps ol{list-style:none;margin:0;padding:0;display:flex;gap:6px;min-width:max-content}
@@ -47,77 +48,94 @@ nav.steps button{display:flex;align-items:center;gap:8px;padding:8px 12px;backgr
 nav.steps button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--sunk);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
 nav.steps button[aria-current="step"]{background:var(--surface);border-color:var(--line);color:var(--ink);font-weight:600}
 nav.steps button[aria-current="step"] .n{background:var(--accent);color:var(--accent-ink)}
-main.work{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,460px);gap:14px;align-items:start}
-@media (max-width:1020px){main.work{grid-template-columns:minmax(0,1fr)}}
+nav.steps .warnDot{width:7px;height:7px;border-radius:50%;background:var(--warn)}
+main.work{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,470px);gap:14px;align-items:start}
+@media (max-width:1060px){main.work{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:18px;min-width:0}
 .panel h2{margin:0;font-size:18px;text-wrap:balance}
 .panel h3{margin:0;font-size:14px}
-.lead{margin:0;color:var(--muted);max-width:68ch}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
+.lead{margin:0;color:var(--muted);max-width:70ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 16px}
 label.f{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:var(--muted)}
 input[type=text],select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
-textarea{font-family:var(--f-mono);font-size:12.5px;line-height:1.55;resize:vertical}
-textarea.desc{font-family:var(--f-ui);font-size:14px;min-height:150px}
-textarea.doc{min-height:380px}
+td input[type=text],td select{padding:6px 8px;font-size:13px}
+textarea{font-family:var(--f-ui);font-size:14px;line-height:1.6;resize:vertical;min-height:190px}
 .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
 .stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .stepper button{border:0;border-radius:0;padding:6px 12px;font-weight:700}
 .stepper output{min-width:44px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.toggle{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.toggle input{margin-top:4px;accent-color:var(--accent)}
+.toggle b{display:block;font-size:13.5px}
+.toggle span{font-size:12.5px;color:var(--muted)}
 .note{font-size:12.5px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:10px 12px}
 .note b{color:var(--ink)}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
-.tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--muted);padding:8px 12px}
-.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
-.checks{display:flex;flex-wrap:wrap;gap:6px}
 .nav{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding-top:14px}
-/* pipeline */
-.pipe{display:flex;flex-direction:column;gap:10px;overflow-x:auto}
-.seq{display:flex;align-items:center;gap:8px;min-width:max-content}
-.node{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--surface);font-size:13px;min-width:96px}
-.node small{display:block;color:var(--muted);font-size:11.5px}
-.arrow{color:var(--muted)}
-.par{border:2px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:max-content}
-.par .lbl{font-size:12px;font-weight:600;color:var(--accent)}
-.pair{display:flex;align-items:center;gap:8px}
-.node.dev{border-color:var(--accent)}
-.node.rev{border-color:var(--verify);background:var(--verify-soft)}
-table.t{width:100%;border-collapse:collapse;font-size:13px}
-table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:middle}
-table.t th{font-size:12px;color:var(--muted);font-weight:600}
+/* routine */
+.flow{overflow-x:auto;padding-bottom:4px}
+.flow .seq{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px 6px}
+.st{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface);min-width:112px;display:flex;flex-direction:column;gap:2px}
+.st .k{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.st b{font-size:13.5px}
+.st small{font-size:11.5px;color:var(--muted);font-family:var(--f-mono)}
+.st.opt{border-style:dashed}
+.st.off{opacity:.45;text-decoration:line-through}
+.st.fin{border:2px solid var(--accent);background:var(--accent-soft)}
+.ar{align-self:center;color:var(--muted)}
+.par{border:2px solid var(--accent);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;background:var(--accent-soft)}
+.par .lbl{font-size:11.5px;font-weight:700;color:var(--accent)}
+.par .pr{display:flex;gap:6px;align-items:center;font-size:12px;font-family:var(--f-mono)}
+.par .d{border:1px solid var(--accent);border-radius:6px;padding:2px 6px;background:var(--surface)}
+.par .r{border:1px solid var(--verify);border-radius:6px;padding:2px 6px;background:var(--verify-soft);color:var(--verify)}
+table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:680px}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:middle}
+table.t th{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+table.t td.gate{font-size:12px;color:var(--muted);min-width:180px}
 .tw{overflow-x:auto}
-.role{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.role textarea{min-height:110px;margin-top:8px}
-/* market */
-.mk{display:flex;flex-direction:column;gap:8px}
+.layer{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.layer h3 .chip{margin-left:6px}
+.sk{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.sk input{margin-top:4px;accent-color:var(--accent)}
+.sk code,.mono{font-family:var(--f-mono);font-size:12px}
 .mk-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .mk-item .h{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between}
-.mk-item code,.mono{font-family:var(--f-mono);font-size:12px}
+.flag{font-size:12px;color:var(--bad)}
 /* tmux preview */
 .tmux{background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;font-family:var(--f-mono);font-size:11.5px;overflow-x:auto}
-.tmux .wins{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.tmux .wins{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
 .tmux .win{border:1px solid #2b3a4a;border-radius:6px;padding:6px;display:flex;flex-direction:column;gap:4px}
-.tmux .win .wn{color:var(--code-dim)}
-.tmux .panes{display:grid;gap:4px}
-.tmux .pane{border:1px solid #3a4c60;border-radius:4px;padding:6px;min-height:42px}
+.tmux .wn{color:var(--code-dim)}
+.tmux .panes{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.tmux .pane{border:1px solid #3a4c60;border-radius:4px;padding:6px;min-height:46px}
 .tmux .pane.d{border-color:#3FB8AC;color:#9fe3db}
 .tmux .pane.r{border-color:#E0A15A;color:#f1c896}
+.tmux .pane.w{grid-column:1 / -1;color:#c9d6e3}
 .tmux .bar{background:#1f6f68;color:#e9fffb;padding:2px 8px;border-radius:4px}
+/* checks */
+.ck{display:flex;flex-direction:column;gap:6px}
+.ck div{display:flex;gap:8px;align-items:flex-start;font-size:13px}
+.ck .i{font-weight:700;width:16px;flex:none;text-align:center}
+.ck .ok .i{color:var(--good)} .ck .wa .i{color:var(--warn)} .ck .er .i{color:var(--bad)} .ck .in .i{color:var(--muted)}
+ol.next{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+ol.next code{font-family:var(--f-mono);font-size:12px;background:var(--sunk);padding:1px 5px;border-radius:4px}
 /* preview */
 aside.preview{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0;position:sticky;top:max(12px,env(safe-area-inset-top,0px))}
-@media (max-width:1020px){aside.preview{position:static}}
-.tree{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px;font-family:var(--f-mono);font-size:12px}
+@media (max-width:1060px){aside.preview{position:static}}
+.tree{max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px;font-family:var(--f-mono);font-size:12px}
 .tree button{display:flex;width:100%;justify-content:space-between;gap:8px;border:0;background:transparent;padding:3px 6px;text-align:left;border-radius:5px;color:var(--ink)}
 .tree button[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
 .tree .x{color:var(--muted)}
+.tree .ai{color:var(--verify)}
 pre.view{margin:0;background:var(--code-bg);color:var(--code-ink);border-radius:8px;padding:12px;font-family:var(--f-mono);font-size:11.8px;line-height:1.55;max-height:56vh;overflow:auto;white-space:pre}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:var(--muted)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:13px;z-index:20;max-width:calc(100% - 32px)}
-.plan{font-family:var(--f-mono);font-size:12px;background:var(--sunk);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.plan{font-family:var(--f-mono);font-size:12px;background:var(--sunk);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;overflow-x:auto}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 <div class="app">
   <header class="top">
-    <div class="brand"><b>AgentForge</b><span class="chip acc">UI PoC</span><span class="sub">Claude Code 멀티 에이전트 개발환경 생성기</span></div>
+    <div class="brand"><b>AgentForge</b><span class="chip acc">화면 PoC v2</span><span class="sub">Claude Code 멀티 에이전트 개발환경 생성기</span></div>
     <div class="row"><span class="sub" id="hdrSum"></span><button class="primary" id="hdrZip" type="button">ZIP 다운로드</button></div>
   </header>
   <nav class="steps" aria-label="생성 단계"><ol id="steps"></ol></nav>
@@ -125,8 +143,9 @@ pre.view{margin:0;background:var(--code-bg);color:var(--code-ink);border-radius:
     <section class="panel" id="panel" aria-live="polite"></section>
     <aside class="preview" aria-label="생성 파일 미리보기">
       <div class="row" style="justify-content:space-between"><h3 style="margin:0">생성될 파일</h3><span class="chip" id="fileCount"></span></div>
+      <div class="legend"><span><span class="x">755</span> 실행 파일</span><span><span class="ai">AI</span> /forge-* 가 내용을 채움</span></div>
       <div class="tree" id="tree"></div>
-      <div class="row" style="justify-content:space-between"><span class="mono sub" id="selPath"></span><button type="button" id="copyBtn">복사</button></div>
+      <div class="row" style="justify-content:space-between"><span class="mono sub" id="selPath"></span><button type="button" class="small" id="copyBtn">복사</button></div>
       <pre class="view" id="view"></pre>
     </aside>
   </main>
@@ -135,745 +154,503 @@ pre.view{margin:0;background:var(--code-bg);color:var(--code-ink);border-radius:
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
+const STATIC = {"wait-and-review.sh": "#!/usr/bin/env bash\n# scripts/wait-and-review.sh : 신호 파일을 감시해 설계 검토 → 구현 → 코드 검토 → 반려 루프를 중계한다.\nset -uo pipefail\nroot=\"$(git rev-parse --show-toplevel)\"; cd \"$root\" || exit 1\nname=\"$(basename \"$root\")\"\nn=\"$(jq -r '.developers' .agentforge/forge.config.json)\"\nmax=\"$(jq -r '.maxRejects // 3' .agentforge/forge.config.json)\"\nsig=\"$root/.agentforge/signals\"; panes=\"$root/.agentforge/panes\"\n\nsay() {  # say <에이전트> <메시지> : 해당 pane 에 문장을 입력하고 Enter\n  local p; p=\"$(cat \"$panes/$1\")\"\n  tmux send-keys -t \"$p\" -l \"$2\"; sleep 0.5; tmux send-keys -t \"$p\" Enter\n  echo \"$(date +%H:%M:%S) → $1: $2\"\n}\ntake() { [ -f \"$sig/$1\" ] && mv \"$sig/$1\" \"$sig/$1.$(date +%s)\"; }   # 신호 소비(이력 보존)\ncount() { find \"$sig\" -maxdepth 1 -name \"$1.*\" | wc -l; }\n\nout_of_scope() {  # out_of_scope <i> : 담당 범위 밖 변경 파일 출력\n  local i=\"$1\" wt list f p hit\n  wt=\"$(cd \"$root/..\" && pwd)/$name-dev$i\"; list=\"$wt/.claude/devs/dev-$i.paths\"\n  { git -C \"$wt\" diff --name-only develop...HEAD; git -C \"$wt\" status --porcelain --untracked-files=all | cut -c4-; } | sort -u |\n  while IFS= read -r f; do\n    [ -z \"$f\" ] && continue\n    hit=0\n    while IFS= read -r p; do\n      p=\"${p%%#*}\"; p=\"${p//[[:space:]]/}\"; [ -z \"$p\" ] && continue\n      case \"$f\" in \"$p\"*) hit=1; break;; esac\n    done < \"$list\"\n    [ \"$hit\" -eq 0 ] && echo \"$f\"\n  done\n}\n\necho \"감시 시작: 개발자 ${n}명, 반려 한도 ${max}회 (중지: Ctrl-c)\"\nwhile :; do\n  passed=0\n  for i in $(seq 1 \"$n\"); do\n    if take \"design-$i.done\"; then\n      say \"review-$i\" \"설계 검토: docs/design/detail/dev-$i.md 를 검토하고 design-$i.pass 또는 design-$i.reject 신호를 만드세요.\"\n    fi\n    if take \"design-$i.pass\"; then\n      say \"dev-$i\" \"설계 승인. 테스트를 먼저 쓰고 구현하세요. 끝나면 커밋하고 dev-$i.done 신호를 만드세요.\"\n    fi\n    if take \"design-$i.reject\"; then\n      say \"dev-$i\" \"설계 반려. docs/review/dev-$i.md 를 읽고 상세 설계를 고친 뒤 design-$i.done 신호를 다시 만드세요.\"\n    fi\n    if [ -f \"$sig/dev-$i.done\" ]; then\n      bad=\"$(out_of_scope \"$i\")\"\n      take \"dev-$i.done\"\n      if [ -n \"$bad\" ]; then\n        say \"dev-$i\" \"담당 범위 밖 변경이 있습니다: $(echo \"$bad\" | tr '\\n' ' ') 되돌린 뒤 dev-$i.done 을 다시 만드세요.\"\n      else\n        say \"review-$i\" \"코드 검토: 테스트를 실행하고 review-$i.pass 또는 review-$i.reject 신호를 만드세요.\"\n      fi\n    fi\n    if take \"review-$i.reject\"; then\n      if [ \"$(count \"review-$i.reject\")\" -ge \"$max\" ]; then\n        echo \"!! dev-$i 반려 ${max}회. 자동 반복을 멈춥니다. 사람이 판단하세요.\"\n        tmux display-message -t \"$name\" \"dev-$i 반려 ${max}회: 사람 확인 필요\" 2>/dev/null || true\n        touch \"$sig/dev-$i.blocked\"\n      else\n        say \"dev-$i\" \"코드 반려. docs/review/dev-$i.md 의 지적 사항만 고치고 커밋한 뒤 dev-$i.done 을 다시 만드세요.\"\n      fi\n    fi\n    [ -f \"$sig/review-$i.pass\" ] && { touch \"$sig/review-$i.passed\"; take \"review-$i.pass\"; echo \"✓ dev-$i 통과\"; }\n    [ -f \"$sig/review-$i.passed\" ] && passed=$((passed + 1))\n  done\n  if [ \"$passed\" -eq \"$n\" ]; then echo \"전원 통과. 다음: bash scripts/integrate.sh\"; exit 0; fi\n  sleep 10\ndone\n", "setup.sh": "#!/usr/bin/env bash\n# scripts/setup.sh : 압축을 푼 뒤 한 번 실행한다. 도구 확인, 실행 권한, 키 파일, git 첫 커밋.\nset -euo pipefail\ncd \"$(dirname \"$0\")/..\"\nmiss=0\nfor t in git tmux jq claude; do\n  command -v \"$t\" >/dev/null || { echo \"필요 도구 없음: $t\"; miss=1; }\ndone\nif [ \"$miss\" -ne 0 ]; then\n  echo \"설치 후 다시 실행하세요. (WSL Ubuntu) sudo apt install -y git tmux jq && npm install -g @anthropic-ai/claude-code\"\n  exit 1\nfi\nfind scripts .claude/hooks -name '*.sh' -exec sed -i 's/\\r$//' {} + -exec chmod +x {} +\nmkdir -p .agentforge/signals .agentforge/panes\nif [ ! -f .agentforge/env.local ]; then\n  cp .agentforge/env.local.example .agentforge/env.local && chmod 600 .agentforge/env.local\n  echo \"생성: .agentforge/env.local  (사용하는 제공자의 주소·키를 직접 입력하세요)\"\nfi\nif [ ! -d .git ]; then\n  git init -q -b main\n  git add -A\n  git commit -qm \"[lead] AgentForge 환경 생성\" || echo \"첫 커밋 실패: git config user.name / user.email 설정 후 직접 커밋하세요\"\nfi\necho \"준비 완료. 다음 순서:\"\necho \"  1) claude            # 처음 한 번 직접 로그인\"\necho \"  2) bash scripts/run-role.sh planner   → 세션에서 /forge-init\"\n", "guard-paths.sh": "#!/usr/bin/env bash\n# .claude/hooks/guard-paths.sh\n# PreToolUse(Edit|Write): 에이전트별 담당 범위 밖 파일 수정을 막는다.\n# AF_AGENT 가 없으면(리드·순차 단계 세션) 검사하지 않는다.\nset -u\ninput=\"$(cat)\"\n[ -z \"${AF_AGENT:-}\" ] && exit 0\n\nfile=\"$(printf '%s' \"$input\" | jq -r '.tool_input.file_path // empty')\"\ncwd=\"$(printf '%s' \"$input\" | jq -r '.cwd // empty')\"\n[ -z \"$file\" ] && exit 0\n\nroot=\"$(git -C \"${cwd:-.}\" rev-parse --show-toplevel 2>/dev/null)\" || {\n  echo \"저장소를 찾지 못해 수정을 막았습니다: $file\" >&2; exit 2; }\ncase \"$file\" in /*) ;; *) file=\"${cwd:-.}/$file\";; esac\nfile=\"$(realpath -m \"$file\")\"   # ../ 우회 차단\nrel=\"${file#\"$root\"/}\"\n\nlist=\"$root/.claude/devs/$AF_AGENT.paths\"\n[ -f \"$list\" ] || { echo \"담당 범위 파일이 없습니다: $list\" >&2; exit 2; }\n\nwhile IFS= read -r p || [ -n \"$p\" ]; do\n  p=\"${p%%#*}\"; p=\"${p//[[:space:]]/}\"\n  [ -z \"$p\" ] && continue\n  case \"$rel\" in \"$p\"*) exit 0;; esac\ndone < \"$list\"\n\necho \"담당 범위 밖 파일입니다: $rel ($AF_AGENT). 수정하지 말고 report에 필요한 변경을 적은 뒤 멈추세요.\" >&2\nexit 2\n", "create-worktrees.sh": "#!/usr/bin/env bash\n# scripts/create-worktrees.sh : 개발자 수만큼 worktree 를 develop 기준으로 만든다.\nset -euo pipefail\nroot=\"$(git rev-parse --show-toplevel)\"; cd \"$root\"\nname=\"$(basename \"$root\")\"\ncfg=.agentforge/forge.config.json\nn=\"$(jq -r '.developers' \"$cfg\")\"\ninstall=\"$(jq -r '.commands.install // empty' \"$cfg\")\"\n\ngit rev-parse --verify -q develop >/dev/null || { echo \"develop 브랜치가 없습니다. 공통 개발을 먼저 끝내세요.\" >&2; exit 1; }\nmkdir -p .agentforge/signals .agentforge/panes\n\nfor i in $(seq 1 \"$n\"); do\n  wt=\"$(cd \"$root/..\" && pwd)/$name-dev$i\"\n  if [ -d \"$wt\" ]; then echo \"이미 있음: $wt\"; continue; fi\n  if git rev-parse --verify -q \"feature/dev$i\" >/dev/null; then\n    git worktree add \"$wt\" \"feature/dev$i\"\n  else\n    git worktree add -b \"feature/dev$i\" \"$wt\" develop\n  fi\n  if [ -n \"$install\" ]; then (cd \"$wt\" && bash -c \"$install\"); fi\ndone\ngit worktree list\n", "run-agents.sh": "#!/usr/bin/env bash\n# scripts/run-agents.sh : 개발자마다 tmux 창 1개(왼쪽 dev-i, 오른쪽 review-i) + 감시 창을 띄운다.\nset -euo pipefail\nroot=\"$(git rev-parse --show-toplevel)\"; cd \"$root\"\nname=\"$(basename \"$root\")\"\nn=\"$(jq -r '.developers' .agentforge/forge.config.json)\"\nsig=\"$root/.agentforge/signals\"; panes=\"$root/.agentforge/panes\"\nmkdir -p \"$sig\" \"$panes\"\n\nif tmux has-session -t \"$name\" 2>/dev/null; then\n  echo \"tmux 세션 '$name' 이 이미 있습니다. 붙기: tmux attach -t $name\" >&2; exit 1\nfi\n\n# 한 pane 에서 실행할 명령을 만든다: 제공자 설정 → 범위 변수 → claude --agent\nlaunch() {  # launch <에이전트> <작업폴더> [첫 프롬프트]\n  local a=\"$1\" dir=\"$2\" prompt=\"${3:-}\" cmd\n  cmd=\"cd $(printf '%q' \"$dir\") && source $(printf '%q' \"$root/scripts/agent-env.sh\") $a\"\n  cmd+=\" && export AF_AGENT=$a AF_SIGNALS=$(printf '%q' \"$sig\")\"\n  cmd+=\" && claude --agent $a\"\n  [ -n \"$prompt\" ] && cmd+=\" $(printf '%q' \"$prompt\")\"\n  printf '%s' \"$cmd\"\n}\n\ntmux new-session -d -s \"$name\" -n watch -c \"$root\"\nfor i in $(seq 1 \"$n\"); do\n  wt=\"$(cd \"$root/..\" && pwd)/$name-dev$i\"\n  [ -d \"$wt\" ] || { echo \"worktree 없음: $wt (create-worktrees.sh 먼저)\" >&2; exit 1; }\n  left=\"$(tmux new-window -d -P -F '#{pane_id}' -t \"$name\" -n \"dev$i\" -c \"$wt\")\"\n  right=\"$(tmux split-window -d -h -P -F '#{pane_id}' -t \"$left\" -c \"$wt\")\"\n  echo \"$left\"  > \"$panes/dev-$i\"\n  echo \"$right\" > \"$panes/review-$i\"\n  tmux send-keys -t \"$left\"  \"$(launch \"dev-$i\" \"$wt\" \"docs/tasks.md 의 dev-$i 작업을 시작하세요. 먼저 상세 설계만 작성하고 design-$i.done 신호를 만든 뒤 멈추세요.\")\" Enter\n  tmux send-keys -t \"$right\" \"$(launch \"review-$i\" \"$wt\")\" Enter\ndone\ntmux send-keys -t \"$name:watch\" \"bash scripts/wait-and-review.sh\" Enter\necho \"실행됨. 붙기: tmux attach -t $name   (창 이동: Ctrl-b 숫자)\"\n", "start-gateway.sh": "#!/usr/bin/env bash\n# scripts/start-gateway.sh : OpenAI·Gemini 를 Anthropic 형식으로 중계하는 LiteLLM 게이트웨이 (pip install 'litellm[proxy]')\nset -euo pipefail\nroot=\"$(cd \"$(dirname \"$0\")/..\" && pwd)\"\ncommand -v litellm >/dev/null || { echo \"litellm 이 없습니다: pip install 'litellm[proxy]'\" >&2; exit 1; }\nset -a\n# shellcheck disable=SC1091\n. \"$root/.agentforge/env.local\"\nset +a\nexec litellm --config \"$root/.agentforge/litellm.yaml\" --port 4000\n", "integrate.sh": "#!/usr/bin/env bash\n# scripts/integrate.sh : 통과한 feature/devN 을 develop 에 병합하고 테스트한 뒤 통합 검증 에이전트를 띄운다.\nset -euo pipefail\nroot=\"$(git rev-parse --show-toplevel)\"; cd \"$root\"\ncfg=.agentforge/forge.config.json\nn=\"$(jq -r '.developers' \"$cfg\")\"\ntest_cmd=\"$(jq -r '.commands.test // \"npm test\"' \"$cfg\")\"\ne2e_cmd=\"$(jq -r '.commands.e2e // empty' \"$cfg\")\"\nsig=\"$root/.agentforge/signals\"; log=\"$root/docs/report\"; mkdir -p \"$log\"\n\nfor i in $(seq 1 \"$n\"); do\n  [ -f \"$sig/review-$i.passed\" ] || { echo \"dev-$i 가 아직 검증을 통과하지 않았습니다.\" >&2; exit 1; }\ndone\n[ -z \"$(git status --porcelain)\" ] || { echo \"메인 폴더에 커밋하지 않은 변경이 있습니다.\" >&2; exit 1; }\n\ngit checkout develop\ngit tag -f pre-integration\nfor i in $(seq 1 \"$n\"); do\n  if ! git merge --no-ff \"feature/dev$i\" -m \"[integrator] merge feature/dev$i\"; then\n    git merge --abort\n    echo \"feature/dev$i 병합 충돌. develop 은 pre-integration 태그 상태로 유지됩니다.\" >&2\n    exit 1\n  fi\ndone\n\nstatus=0\n{ echo \"## 단위 테스트: $test_cmd\"; bash -c \"$test_cmd\"; } > \"$log/integration-test.log\" 2>&1 || status=1\nif [ -n \"$e2e_cmd\" ]; then\n  { echo \"## E2E: $e2e_cmd\"; bash -c \"$e2e_cmd\"; } >> \"$log/integration-test.log\" 2>&1 || status=1\nfi\necho \"테스트 결과: $([ $status -eq 0 ] && echo 통과 || echo 실패) (docs/report/integration-test.log)\"\n\n# shellcheck disable=SC1091\nsource \"$root/scripts/agent-env.sh\" integrator\nexec claude --agent integrator \"통합 검증을 진행하세요. docs/report/integration-test.log 를 분석해 docs/report/integration.md 를 작성하고, 실패가 있으면 원인 파일과 담당 개발자(dev-N)를 표로 정리하세요.\"\n", "agent-env.head": "#!/usr/bin/env bash\n# scripts/agent-env.sh <에이전트명> : source 해서 사용한다. 에이전트별 제공자·모델을 정한다.\n# AgentForge가 forge.config.json 의 agents 설정으로 생성한다.\n_af_root=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")/..\" && pwd)\"\n# shellcheck disable=SC1091\n[ -f \"$_af_root/.agentforge/env.local\" ] && . \"$_af_root/.agentforge/env.local\"\n\nunset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_MODEL CLAUDE_CODE_SUBAGENT_MODEL \\\n      ANTHROPIC_DEFAULT_OPUS_MODEL ANTHROPIC_DEFAULT_SONNET_MODEL ANTHROPIC_DEFAULT_HAIKU_MODEL\n\n_af_use() {  # _af_use <제공자> <모델>\n  local p=\"$1\" m=\"$2\" url=\"\" tok=\"\"\n  case \"$p\" in\n    claude)     export ANTHROPIC_MODEL=\"$m\"; return 0 ;;   # 사용자가 직접 로그인한 계정 사용\n    openrouter) url=\"https://openrouter.ai/api\";              tok=\"${OPENROUTER_API_KEY:-}\" ;;\n    ollama)     url=\"${OLLAMA_URL:-http://localhost:11434}\";  tok=\"ollama\" ;;\n    vllm)       url=\"${VLLM_URL:-}\";                          tok=\"${VLLM_TOKEN:-none}\" ;;\n    litellm)    url=\"${LITELLM_URL:-http://localhost:4000}\";  tok=\"${LITELLM_MASTER_KEY:-}\" ;;\n    *) echo \"알 수 없는 제공자: $p\" >&2; return 1 ;;\n  esac\n  if [ -z \"$url\" ] || [ -z \"$tok\" ]; then\n    echo \"[$p] 주소 또는 키가 비었습니다. .agentforge/env.local 을 확인하세요.\" >&2; return 1\n  fi\n  export ANTHROPIC_BASE_URL=\"$url\" ANTHROPIC_AUTH_TOKEN=\"$tok\" ANTHROPIC_API_KEY=\"\" \\\n         ANTHROPIC_MODEL=\"$m\" CLAUDE_CODE_SUBAGENT_MODEL=\"$m\" \\\n         ANTHROPIC_DEFAULT_OPUS_MODEL=\"$m\" ANTHROPIC_DEFAULT_SONNET_MODEL=\"$m\" \\\n         ANTHROPIC_DEFAULT_HAIKU_MODEL=\"$m\"\n}\n\n", "check-forge.sh": "#!/usr/bin/env bash\n# scripts/check-forge.sh : AI가 만든 에이전트·스킬·범위 파일을 기계적으로 검사한다.\nset -u\ncd \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\" || exit 1\nfail=0\nok()  { echo \"✓ $*\"; }\nerr() { echo \"✗ $*\"; fail=1; }\n\nn=\"$(jq -r '.developers' .agentforge/forge.config.json)\"\n\n# 1) CLAUDE.md 길이\nlines=\"$(wc -l < CLAUDE.md)\"\nif [ \"$lines\" -le 200 ]; then ok \"CLAUDE.md ${lines}줄\"; else err \"CLAUDE.md ${lines}줄(200줄 이하 권장)\"; fi\n\n# frontmatter의 skills 목록 추출\nskills_of() {\n  awk '/^---[[:space:]]*$/{c++; next}\n       c==1 && /^skills:/{f=1; next}\n       c==1 && f && /^[[:space:]]*-/{sub(/^[[:space:]]*-[[:space:]]*/,\"\"); print; next}\n       c==1 && f{f=0}' \"$1\"\n}\n\n# 2) 개발자별 에이전트·범위 파일·스킬 참조\nfor i in $(seq 1 \"$n\"); do\n  for a in \"dev-$i\" \"review-$i\"; do\n    f=\".claude/agents/$a.md\"\n    if [ ! -f \"$f\" ]; then err \"$f 없음\"; continue; fi\n    name=\"$(awk '/^---/{c++; next} c==1 && /^name:/{sub(/^name:[[:space:]]*/,\"\"); print; exit}' \"$f\")\"\n    [ \"$name\" = \"$a\" ] || err \"$f 의 name($name)이 파일명과 다름\"\n    [ -s \".claude/devs/$a.paths\" ] || err \".claude/devs/$a.paths 없음\"\n    for s in $(skills_of \"$f\"); do\n      [ -f \".claude/skills/$s/SKILL.md\" ] || err \"$a 가 참조한 스킬 $s 없음\"\n    done\n  done\ndone\n\n# 3) 개발자 사이 담당 범위 겹침\ntmp=\"$(mktemp)\"\nfor i in $(seq 1 \"$n\"); do\n  sed 's/#.*//; s/[[:space:]]//g; /^$/d' \".claude/devs/dev-$i.paths\" 2>/dev/null | sed \"s/^/dev-$i /\"\ndone > \"$tmp\"\nwhile read -r a p; do\n  while read -r b q; do\n    [ \"$a\" \\< \"$b\" ] || continue\n    case \"$p\" in \"$q\"*) err \"범위 겹침: $a($p) / $b($q)\"; continue;; esac\n    case \"$q\" in \"$p\"*) err \"범위 겹침: $a($p) / $b($q)\";; esac\n  done < \"$tmp\"\ndone < \"$tmp\"\nrm -f \"$tmp\"\n\n# 4) 스킬 name = 폴더명\nfor d in .claude/skills/*/; do\n  s=\"$(basename \"$d\")\"\n  name=\"$(awk '/^---/{c++; next} c==1 && /^name:/{sub(/^name:[[:space:]]*/,\"\"); print; exit}' \"$d/SKILL.md\")\"\n  [ \"$name\" = \"$s\" ] || err \"스킬 $s 의 name($name) 불일치\"\ndone\n\n# 5) hook 실행 권한\n[ -x .claude/hooks/guard-paths.sh ] || err \"guard-paths.sh 실행 권한 없음(chmod +x)\"\n\n# 6) PRD 기능 ID가 모두 배정되었는지\nif [ -f docs/prd.md ] && [ -f docs/tasks.md ]; then\n  mapfile -t ids < <(grep -oE 'F-[0-9]{3}' docs/prd.md | sort -u)\n  for id in \"${ids[@]}\"; do\n    grep -q \"$id\" docs/tasks.md || err \"$id 가 docs/tasks.md 에 배정되지 않음\"\n  done\nelse\n  err \"docs/prd.md 또는 docs/tasks.md 가 없습니다(기획·분석 단계 먼저)\"\nfi\n\nif [ \"$fail\" -eq 0 ]; then echo \"검증 통과\"; else echo \"검증 실패: 위 항목을 고친 뒤 다시 실행\"; exit 1; fi\n", "run-role.sh": "#!/usr/bin/env bash\n# scripts/run-role.sh <에이전트> [첫 프롬프트] : 순차 단계 에이전트를 현재 터미널에서 실행\nset -euo pipefail\nroot=\"$(git rev-parse --show-toplevel)\"; cd \"$root\"\n# shellcheck disable=SC1091\nsource scripts/agent-env.sh \"$1\"\nexec claude --agent \"$1\" ${2:+\"$2\"}\n", "md/review.tpl.md": "---\nname: review-{{N}}\ndescription: dev-{{N}}의 짝 검증자. dev-{{N}}의 상세 설계와 코드를 검토하고 통과 또는 반려를 판정한다.\ntools: Read, Grep, Glob, Write, Bash\nmodel: {{MODEL}}\nskills:\n  - conventions\n  - code-review\n{{SKILLS}}---\n너는 review-{{N}}이다. 코드를 고치지 않는다. 쓸 수 있는 파일은 docs/review/dev-{{N}}.md 뿐이다.\n\n## 설계 검토 (요청: \"설계 검토\")\n- docs/design/detail/dev-{{N}}.md 가 시스템 설계·API 계약{{UI_READ}}과 맞는지, 담당 기능 ID를 빠짐없이 다루는지 본다.\n- 결과를 docs/review/dev-{{N}}.md 에 쓰고 `touch \"$AF_SIGNALS/design-{{N}}.pass\"` 또는 `design-{{N}}.reject`.\n\n## 코드 검토 (요청: \"코드 검토\")\n- 테스트를 직접 실행한다. 실패가 하나라도 있으면 반려.\n- `git diff --name-only develop...HEAD` 로 담당 범위 밖 변경이 있는지 확인한다. 있으면 반려.\n- code-review 스킬 기준으로 판정하고 `review-{{N}}.pass` 또는 `review-{{N}}.reject`.\n", "md/forge-init.md": "---\nname: forge-init\ndescription: 요구사항 파일로 PRD와 CLAUDE.md 프로젝트 구간을 생성한다. 사용자가 /forge-init 을 입력했을 때만 사용한다.\ndisable-model-invocation: true\nallowed-tools: Read, Write, Edit, Glob\n---\n# 입력\n- .agentforge/requirements.md : 사용자 요구사항 원문\n- .agentforge/forge.config.json : 개발자 수, UI/UX 설계 여부(uiDesign), 언어\n- .agentforge/templates/prd.md : PRD 양식(장 순서 고정)\n\n# 절차\n1. 요구사항을 읽고 모호한 점을 최대 5개 질문한다. 답을 받기 전에는 파일을 쓰지 않는다.\n2. 양식의 장 순서대로 docs/prd.md 를 쓴다.\n   - 기능마다 ID(F-001부터), 우선순위(필수/선택), 수용 기준(Given/When/Then)을 단다.\n   - uiDesign 이 false 이면 화면 장은 \"해당 없음\"으로 둔다.\n3. CLAUDE.md 의 <!-- AGENTFORGE:PROJECT:BEGIN --> ~ END 구간만 교체한다.\n   - 프로젝트 소개 1줄, 기술 스택, 설치·테스트·빌드 명령어, 폴더 구조.\n   - 다른 구간과 고정 규칙은 수정하지 않는다. CLAUDE.md 전체는 200줄을 넘기지 않는다.\n4. 끝에 \"사람이 확인할 항목\"(가정한 내용, 기술 선택 근거)을 목록으로 출력한다.\n\n# 금지\n- 요구사항에 없는 기능 추가. 필요해 보이면 \"제안\" 절에만 적는다.\n- 일정·인원 같은 숫자를 근거 없이 쓰기.\n", "md/architect.md": "---\nname: architect\ndescription: 시스템 설계 단계. 모듈 경계, API 계약, 데이터 모델, 폴더 소유를 정한다.\ntools: Read, Write, Edit, Glob, Grep\nmodel: {{MODEL}}\n---\n입력: docs/prd.md, docs/tasks.md, docs/design/ui/(있으면)\n산출물: docs/design/system.md, API 계약 파일(openapi.yaml 또는 타입 정의), 데이터 모델, docs/adr/0001-*.md\n규칙:\n- docs/design/ui/data-needs.md 의 모든 화면 데이터가 계약의 어느 API로 채워지는지 대응표를 system.md 에 둔다.\n- 개발자 사이에 오가는 모든 호출은 계약 파일에 있어야 한다. 구두 약속 금지.\n- docs/tasks.md 의 담당 폴더와 실제 폴더 구조가 일치해야 한다. 다르면 tasks.md 를 고치고 변경 사유를 ADR에 적는다.\n- 다른 개발자가 아직 만들지 않은 API를 쓸 수 있게 목(mock) 응답 예를 계약에 넣는다.\n- 화면 요구를 바꿔야 하면 직접 고치지 말고 \"UI/UX 변경 요청\"으로 보고한다.\n", "md/forge-agents.md": "---\nname: forge-agents\ndescription: 분석(docs/tasks.md)과 시스템 설계가 끝난 뒤 개발자별 에이전트, 짝 검증 에이전트, 개발자 전용 스킬, 담당 범위 파일을 생성·보완한다. 사용자가 /forge-agents 를 입력했을 때만 사용한다.\ndisable-model-invocation: true\nallowed-tools: Read, Write, Edit, Glob, Bash(bash scripts/check-forge.sh)\n---\n# 입력\n- .agentforge/forge.config.json 의 developers(N), agents(에이전트별 모델)\n- docs/tasks.md : 작업 ID, 기능 ID, 담당 개발자, 담당 폴더\n- docs/design/system.md, API 계약 파일, docs/design/ui/(있으면)\n- .agentforge/templates/dev.md, review.md, dev-skill.md\n\n# 절차 (i = 1..N)\n1. tasks.md 에서 dev-i 의 기능 ID·담당 폴더·도메인명을 뽑는다. 담당 폴더가 다른 개발자와 겹치면 파일을 만들지 말고 겹치는 목록을 보고한 뒤 멈춘다.\n2. 이미 .claude/agents/dev-i.md 가 있으면 담당 기능·폴더만 tasks.md 기준으로 고친다. 없으면 템플릿의 {{N}} {{DOMAIN}} {{FEATURES}} {{PATHS}} 를 채워 만든다. frontmatter 키와 작업 순서는 바꾸지 않는다. review-i.md 도 같다.\n3. .claude/devs/dev-i.paths(담당 폴더 + docs/design/detail/dev-i.md + docs/report-dev-i.md), review-i.paths(docs/review/dev-i.md)를 만든다.\n4. .claude/skills/devi-<도메인>/SKILL.md 의 빈 절을 채운다(없으면 만든다).\n   - description 첫 문장: \"dev-i 담당 작업에서만 사용한다.\"\n   - 본문: 도메인 용어, 업무 규칙, 담당 API·테이블, 테스트 데이터 예. 500줄 이하. PRD·설계에 없는 규칙을 만들지 않는다.\n5. CLAUDE.md 의 AGENTFORGE:DEVS / SKILLS 구간 표를 갱신한다.\n6. bash scripts/check-forge.sh 를 실행한다. 실패하면 고치고 다시 실행한다. 3회 연속 실패하면 멈추고 보고한다.\n", "md/planner.md": "---\nname: planner\ndescription: 기획 단계. 요구사항을 PRD로 만들고 기능 ID를 부여한다.\ntools: Read, Write, Edit, Glob, Grep\nmodel: {{MODEL}}\n---\n너는 기획 담당이다. /forge-init 스킬 절차를 따른다.\n산출물: docs/prd.md, CLAUDE.md 의 PROJECT 구간. 코드는 쓰지 않는다.\n", "md/analyst.md": "---\nname: analyst\ndescription: 분석 단계. PRD 기능을 작업으로 분해하고 공통/개발자별로 배정한다.\ntools: Read, Write, Edit, Glob, Grep\nmodel: {{MODEL}}\n---\n입력: docs/prd.md, .agentforge/forge.config.json(developers=N)\n산출물: docs/analysis.md(기능 간 의존성, 위험), docs/tasks.md\ndocs/tasks.md 형식:\n| 작업 ID | 기능 ID | 담당 | 도메인 | 담당 폴더 | 선행 |\n규칙:\n- 여러 개발자가 쓰는 것(타입, 인증, 공통 UI, DB 스키마)은 담당을 common 으로 둔다.\n- 나머지는 도메인 단위로 dev-1..dev-N 에 나눠 배정한다. 폴더가 겹치면 안 된다.\n- 작업량이 한 개발자에 몰리면(최대/최소 1.5배 초과) 재배정하고 사유를 적는다.\n- PRD의 모든 기능 ID가 한 번 이상 배정되어야 한다.\n", "md/code-review.md": "---\nname: code-review\ndescription: 개발 검증 기준과 판정 규칙. review-* 에이전트가 설계·코드를 검토할 때 사용한다.\n---\n# 반려 사유 (하나라도 있으면 reject)\n- 테스트 실패, 또는 상세 설계 6장의 테스트가 없음\n- 담당 범위 밖 파일 변경\n- 계약과 다른 요청·응답 형식\n- 수용 기준 미충족, 오류 처리 누락, 비밀 값 하드코딩\n# 기록 (docs/review/dev-N.md)\n| 판정 | 파일:줄 | 문제 | 고칠 방법 |\n- 지적은 고칠 수 있게 구체적으로. 취향 문제(이름 스타일 등)는 반려 사유가 아니다.\n", "md/tdd.md": "---\nname: tdd\ndescription: 테스트 먼저 작성 → 실패 확인 → 구현 → 통과 확인 순서. 기능 코드를 작성하는 에이전트가 사용한다.\n---\n# TDD 절차\n1. 상세 설계 6장(테스트 목록)의 테스트를 먼저 작성한다.\n2. 테스트를 실행해 실패를 확인한다. 실패하지 않으면 테스트가 잘못된 것이다.\n3. 테스트를 통과하는 최소 구현을 한다.\n4. 전체 테스트를 다시 실행한다. 다른 테스트가 깨지면 고친 뒤 커밋한다.\n- 외부 API는 계약의 목(mock) 응답으로 대체한다.\n", "md/integrator.md": "---\nname: integrator\ndescription: 통합 검증 단계. 병합 후 테스트 로그를 분석하고 실패 원인을 담당 개발자별로 정리한다.\ntools: Read, Grep, Glob, Write, Bash\nmodel: {{MODEL}}\nskills:\n  - code-review\n---\n산출물: docs/report/integration.md\n절차:\n1. docs/report/integration-test.log 를 읽는다.\n2. 실패한 테스트마다 원인 파일을 찾고, .claude/devs/*.paths 로 담당 개발자를 정한다.\n3. 원인이 API 계약 불일치면 \"시스템 설계\", 화면 요구 누락이면 \"UI/UX 설계\" 문제로 분류한다.\n4. PRD 기능 ID별 수용 기준 충족 여부를 표로 정리한다.\n코드는 고치지 않는다. 고칠 개발자와 내용만 적는다.\n", "md/devskill.tpl.md": "---\nname: {{SKILL}}\ndescription: dev-{{N}} 담당 작업에서만 사용한다. {{DOMAIN}} 도메인의 용어, 업무 규칙, 담당 API·테이블, 테스트 데이터.\n---\n# {{DOMAIN}} 도메인 (dev-{{N}})\n\n> /forge-agents 가 분석·시스템 설계 결과로 아래 항목을 채운다. PRD·설계에 없는 규칙은 쓰지 않는다.\n\n## 용어\n## 업무 규칙\n## 담당 API·테이블\n## 테스트 데이터 예\n", "md/prd.tpl.md": "# PRD — {{NAME}}\n\n> /forge-init 이 .agentforge/requirements.md 를 바탕으로 채운다. 장 순서는 바꾸지 않는다.\n\n## 1. 개요\n- 목적:\n- 사용자:\n- 범위 / 범위 밖:\n\n## 2. 기능 목록\n| 기능 ID | 기능 | 우선순위 | 수용 기준(Given/When/Then) |\n| --- | --- | --- | --- |\n\n## 3. 화면\n{{UI_NOTE}}\n\n## 4. 데이터\n- 주요 엔터티와 관계:\n\n## 5. 비기능 요구\n- 성능 / 보안 / 운영 환경(폐쇄망 여부 포함):\n\n## 6. 기술 조건과 제약\n- 기술 스택 / 연동 시스템:\n\n## 7. 미결 사항\n| 번호 | 내용 | 확인 대상 |\n| --- | --- | --- |\n", "md/common-dev.md": "---\nname: common-dev\ndescription: 공통 개발 단계. docs/tasks.md 의 common 작업(공통 타입, 인증, 공통 UI, 목 API, CI)을 구현한다.\ntools: Read, Grep, Glob, Edit, Write, Bash\nmodel: {{MODEL}}\nskills:\n  - conventions\n  - tdd\n---\n규칙:\n- API 계약에서 타입을 생성하거나 직접 정의해 공통 폴더에 둔다. 개발자들은 이것만 import 한다.\n- 각 개발자 담당 폴더는 빈 폴더(.gitkeep)와 진입점만 만든다. 내용을 미리 구현하지 않는다.\n- 빌드·테스트 명령이 통과해야 끝난다. CI 설정을 포함한다.\n", "md/detail-design.md": "---\nname: detail-design\ndescription: 개발자의 상세 설계 양식. dev-* 에이전트가 구현 전에 docs/design/detail/dev-N.md 를 쓸 때 사용한다.\n---\n# 상세 설계 양식 (docs/design/detail/dev-N.md)\n1. 담당 작업·기능 ID 목록\n2. 파일 목록: 만들 파일 경로와 책임 한 줄 (모두 담당 범위 안)\n3. 주요 함수·클래스: 시그니처, 입력 검증, 오류 처리\n4. 사용하는 계약: 호출하는 API·제공하는 API (계약 파일의 이름 그대로)\n5. 화면 상태(화면이 있을 때): 로딩/빈 값/오류/성공\n6. 테스트 목록: 기능 ID별 수용 기준 → 테스트 이름\n7. 계약·공통 모듈에 필요한 변경(있으면 구현 전에 멈추고 보고)\n", "md/conventions.md": "---\nname: conventions\ndescription: 프로젝트 공통 작업 규칙(언어, 커밋, 보고서 형식). 모든 개발·검증 에이전트가 사용한다.\n---\n# 공통 작업 규칙\n- 답변·문서는 {{LANG}}, 코드 식별자는 영어.\n- 커밋 메시지: `[에이전트] 작업ID 요약` (예: `[dev-1] T-101 주문 목록 조회`)\n- 한 커밋에는 한 작업 ID만 담는다.\n- 완료 보고 docs/report-<에이전트>.md\n  | 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |\n- 비밀 값(키, 비밀번호)을 코드·문서·로그에 쓰지 않는다.\n", "md/ux-designer.md": "---\nname: ux-designer\ndescription: UI/UX 설계 단계(선택). 화면 목록, 와이어프레임, 디자인 토큰, 화면별 필요 데이터를 만든다.\ntools: Read, Write, Edit, Glob, Grep\nmodel: {{MODEL}}\n---\n입력: docs/prd.md, docs/tasks.md\n산출물:\n- docs/design/ui/screens.md : 화면 ID ↔ 기능 ID ↔ 담당 dev, 화면 흐름\n- docs/design/ui/wireframes/*.md : 텍스트 와이어프레임, 상태(로딩/빈 값/오류/성공)\n- docs/design/ui/data-needs.md : 화면별 조회·입력 데이터 항목과 동작(시스템 설계의 입력)\n- docs/design/ui/tokens.json : 색·글꼴·간격\n규칙:\n- API 형식을 정하지 않는다. \"무엇이 필요한가\"만 적고, 어떻게 주고받을지는 architect 가 정한다.\n- 공통 컴포넌트(버튼, 표, 폼, 레이아웃)는 목록만 정하고 구현은 common-dev 가 한다.\n", "md/dev.tpl.md": "---\nname: dev-{{N}}\ndescription: 개발자 {{N}}. {{DOMAIN}} 도메인({{PATHS_INLINE}})의 상세 설계와 구현을 담당한다. docs/tasks.md의 dev-{{N}} 항목만 처리한다.\ntools: Read, Grep, Glob, Edit, Write, Bash\nmodel: {{MODEL}}\nskills:\n  - conventions\n  - tdd\n  - detail-design\n{{SKILLS}}---\n너는 dev-{{N}}이다. 담당 범위는 .claude/devs/dev-{{N}}.paths 에 적힌 경로뿐이다.\n담당 기능: {{FEATURES}}\n\n## 작업 순서\n1. docs/tasks.md 에서 dev-{{N}} 작업 ID를 확인한다. docs/design/system.md 와 API 계약{{UI_READ}}을 읽는다.\n2. detail-design 스킬 양식으로 docs/design/detail/dev-{{N}}.md 를 쓴다.\n3. `touch \"$AF_SIGNALS/design-{{N}}.done\"` 을 실행하고 멈춘다. 구현하지 않는다.\n4. \"설계 승인\" 메시지를 받으면 테스트를 먼저 쓰고 구현한다.\n5. 테스트가 모두 통과하면 커밋하고 docs/report-dev-{{N}}.md 를 쓴 뒤 `touch \"$AF_SIGNALS/dev-{{N}}.done\"`.\n6. \"반려\" 메시지를 받으면 docs/review/dev-{{N}}.md 를 읽고 지적 사항만 고친 뒤 5를 반복한다.\n\n## 금지\n- 담당 범위 밖 파일 수정. 필요하면 report에 적고 멈춘다.\n- API 계약·공통 모듈 변경. 읽기만 한다.\n"};
+</script>
+<script>
 (function(){
 "use strict";
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
+/*GEN-START*/
 /* ---------- 기준 데이터 ---------- */
-const STACKS = {
-  legacy:{label:"Java 8 · Spring 4 · Anyframe · JSP · Oracle", build:"mvn -q -DskipTests package", test:"mvn -q test",
-    done:"컴파일 성공 + 변경 영향 분석서 + SQL 검토", base:"src/main/java/com/company/biz/",
-    modules:["common","order","inventory","report","batch","admin"], skills:["spring-anyframe-rules","oracle-sql-rules"],
-    ext:["vscjava.vscode-java-pack"], feature:'"ghcr.io/devcontainers/features/java:1": {"version": "8", "installMaven": "true"}'},
-  boot:{label:"Java 17 · Spring Boot 3 · React · Oracle", build:"./gradlew build -x test", test:"./gradlew test",
-    done:"빌드·테스트 통과 + 완료 보고", base:"modules/", modules:["common","order","inventory","report","batch","admin"],
-    skills:["oracle-sql-rules","tdd"], ext:["vscjava.vscode-java-pack","dbaeumer.vscode-eslint"], feature:'"ghcr.io/devcontainers/features/java:1": {"version": "17"}'},
-  ts:{label:"TypeScript · Node 22 · React", build:"pnpm build", test:"pnpm test", done:"빌드·테스트 통과 + 완료 보고",
-    base:"packages/", modules:["core","api","web","worker","admin","shared"], skills:["tdd"], ext:["dbaeumer.vscode-eslint"], feature:""},
-  custom:{label:"직접 입력", build:"", test:"", done:"빌드·테스트 통과 + 완료 보고", base:"", modules:[], skills:[], ext:[], feature:""},
-  py:{label:"Python 3.12 · FastAPI · PostgreSQL", build:"uv sync", test:"uv run pytest", done:"테스트 통과 + 완료 보고",
-    base:"app/", modules:["core","api","jobs","reports","admin","shared"], skills:["tdd"], ext:["ms-python.python"], feature:'"ghcr.io/devcontainers/features/python:1": {"version": "3.12"}'}
-};
-const PROV_DEF = () => ([
-  {id:"claude", type:"claude", label:"Claude", on:true, base:"", key:"", note:"각자 claude 로그인(구독 또는 API 키)"},
-  {id:"openrouter", type:"anthropic", label:"OpenRouter", on:true, base:"https://openrouter.ai/api", key:"OPENROUTER_API_KEY", note:"Anthropic 호환 API로 직접 연결"},
-  {id:"ollama", type:"anthropic", label:"Ollama (로컬)", on:true, base:"http://localhost:11434", key:"", note:"로컬 GPU · 컨텍스트 64K 이상 설정 필요"},
-  {id:"inhouse", type:"anthropic", label:"사내 vLLM", on:false, base:"http://llm.internal:8000", key:"INHOUSE_LLM_KEY", note:"/v1/messages 지원 버전 + 도구 파서 설정 필요"},
-  {id:"openai", type:"gateway", label:"OpenAI (GPT)", on:true, base:"", key:"OPENAI_API_KEY", note:"LiteLLM 게이트웨이 경유 · ChatGPT 구독이 아닌 API 키 필요"},
-  {id:"gemini", type:"gateway", label:"Google Gemini", on:true, base:"", key:"GEMINI_API_KEY", note:"LiteLLM 게이트웨이 경유 · Gemini 구독이 아닌 API 키 필요"}
-]);
-const SUGGEST = {claude:["opus","sonnet","haiku"], openrouter:["minimax/minimax-m3.1-flash:free","poolside/laguna-s-2.1:free","nvidia/nemotron-3-ultra-550b-a55b:free"],
-  ollama:["qwen3.5:9b","gemma4:12b"], inhouse:[], openai:["gpt-5.5"], gemini:[]};
-const TYPE_LABEL = {claude:"직접 로그인", anthropic:"Anthropic 호환 · 직접", gateway:"LiteLLM 게이트웨이"};
-const ROLE_META = {
-  lead:{label:"PM (리드)", file:null, tools:"", desc:"전체 조율, 단계 전환, 결과 취합", prompt:"메인 세션. CLAUDE.md의 작업 루틴을 따른다."},
-  planner:{label:"기획", file:"planner", tools:"Read, Grep, Glob, Write, Edit", desc:"PRD를 보완하고 요구사항을 확정한다. 코드는 작성하지 않는다.",
-    prompt:"너는 시니어 기획자다. docs/prd.md 양식의 '작성 필요' 항목을 사용자와 확인해 채우고, 기능마다 완료 기준을 적는다. 추측으로 채우지 말고 미결 사항에 남긴다."},
-  analyst:{label:"분석", file:"analyst", tools:"Read, Grep, Glob, Write", desc:"요구사항과 기존 소스의 영향 범위를 분석한다.",
-    prompt:"너는 분석가다. PRD 기능별로 영향 받는 화면·테이블·모듈을 찾아 docs/analysis.md에 표로 정리한다."},
-  architect:{label:"설계", file:"architect", tools:"Read, Grep, Glob, Write, Edit", desc:"인터페이스·DB·작업 분할을 확정한다.",
-    prompt:"너는 아키텍트다. docs/design.md에 모듈 구조와 인터페이스를 확정하고, docs/tasks.md에 개발자별 작업을 담당 폴더가 겹치지 않게 배정한다."},
-  developer:{label:"개발", file:"developer", tools:"Read, Edit, Write, Bash, Grep, Glob", desc:"배정받은 작업을 담당 폴더 안에서 구현한다.",
-    prompt:"너는 기능 개발자다. 실행 시 전달받은 dev 번호의 작업만 구현한다. 담당 폴더 밖은 수정하지 않는다. 완료 기준을 만족하면 커밋하고 완료 신호 파일을 만든다."},
-  reviewer:{label:"개발별 검증", file:"reviewer", tools:"Read, Grep, Glob, Bash", desc:"짝이 되는 개발자의 결과를 검증한다. 코드를 직접 고치지 않는다.",
-    prompt:"너는 QA 리뷰어다. 빌드·테스트를 직접 실행하고, PRD 완료 기준과 설계 인터페이스 위반 여부를 확인한다. 결과는 [통과/반려]와 근거(파일:라인)로 남긴다."},
-  final:{label:"최종 검증", file:"final-reviewer", tools:"Read, Grep, Glob, Bash", desc:"병합 후 통합 관점에서 최종 검증한다.",
-    prompt:"너는 최종 검증 담당이다. 병합된 main에서 전체 빌드·테스트를 실행하고, 모듈 간 인터페이스와 PRD 전체 기능을 대조해 출시 가능 여부를 판정한다."}
-};
-const LIB = [
-  {id:"commit-rules", role:"공통", desc:"커밋 메시지·브랜치 규칙", src:"내장"},
-  {id:"report-writer", role:"공통", desc:"완료 보고(docs/report-*.md) 작성 형식", src:"내장"},
-  {id:"prd-writer", role:"기획", desc:"기능 ID·완료 기준이 있는 PRD 작성", src:"내장"},
-  {id:"impact-analysis", role:"분석", desc:"화면·테이블·모듈 영향 분석표 작성", src:"내장"},
-  {id:"api-spec", role:"설계", desc:"API·인터페이스 명세 작성", src:"내장"},
-  {id:"adr-writer", role:"설계", desc:"설계 결정 기록(ADR) 작성", src:"내장"},
-  {id:"tdd", role:"개발", desc:"테스트 먼저 작성 → 실패 확인 → 구현", src:"내장"},
-  {id:"spring-anyframe-rules", role:"개발", desc:"Anyframe 계층(controller·service·dao·mapper) 코딩 규칙", src:"내장"},
-  {id:"oracle-sql-rules", role:"개발", desc:"Oracle SQL 작성·바인드 변수·페이징 규칙", src:"내장"},
-  {id:"code-review", role:"검증", desc:"코드 리뷰 점검표", src:"내장"},
-  {id:"security-check", role:"검증", desc:"입력 검증·권한·비밀 값 노출 점검", src:"내장"}
+const PROVIDERS = [
+  {id:"claude", label:"Claude 로그인", via:"claude", models:["opus","sonnet","haiku"]},
+  {id:"openrouter", label:"OpenRouter", via:"openrouter", models:["qwen/qwen3-coder:free","minimax/minimax-m3.1-flash:free","poolside/laguna-s-2.1:free"]},
+  {id:"ollama", label:"Ollama 로컬", via:"ollama", models:["qwen3.5:9b","gemma4:12b"]},
+  {id:"vllm", label:"사내 vLLM", via:"vllm", models:["exaone-32b"]},
+  {id:"openai", label:"OpenAI·LiteLLM", via:"litellm", models:["gpt-5.5"]},
+  {id:"gemini", label:"Gemini·LiteLLM", via:"litellm", models:["gemini-2.5-pro"]}
 ];
-const DEFAULT_ASSIGN = {lead:["commit-rules","report-writer"], planner:["prd-writer","report-writer"], analyst:["impact-analysis","report-writer"],
-  architect:["api-spec","adr-writer"], developer:["commit-rules","report-writer","spring-anyframe-rules","oracle-sql-rules"], reviewer:["code-review","security-check"], final:["code-review","security-check"]};
+const SEQ = [
+  {id:"planner", step:"기획", out:"docs/prd.md", gate:"사람 승인(기능 목록·우선순위)"},
+  {id:"analyst", step:"분석", out:"analysis.md · tasks.md", gate:"기능 ID 전부 배정, 담당 폴더 겹침 0"},
+  {id:"ux-designer", step:"UI/UX 설계", out:"docs/design/ui/", gate:"화면 ↔ 기능 대응, 화면별 필요 데이터 확정", opt:true},
+  {id:"architect", step:"시스템 설계", out:"system.md · API 계약", gate:"계약 고정, 화면 데이터 ↔ API 대응표 완성"},
+  {id:"common-dev", step:"공통 개발", out:"공통 모듈 · develop", gate:"빌드·테스트 통과, develop 태그"}
+];
+const FINAL = {id:"integrator", step:"통합 검증", out:"integration.md", gate:"전체 테스트 통과 + 사람 최종 승인"};
+const CORE_SKILLS = [
+  {id:"conventions", layer:"공통", to:"dev-* · review-* · common-dev", desc:"언어·커밋·보고서 형식", fixed:false},
+  {id:"tdd", layer:"공통", to:"dev-* · common-dev", desc:"테스트 먼저 → 실패 확인 → 구현", fixed:false},
+  {id:"detail-design", layer:"역할", to:"dev-*", desc:"상세 설계 양식(docs/design/detail/dev-N.md)", fixed:true},
+  {id:"code-review", layer:"역할", to:"review-* · integrator", desc:"반려 사유와 기록 형식", fixed:true},
+  {id:"forge-init", layer:"생성", to:"사용자가 /forge-init 으로 실행", desc:"요구사항 → PRD·CLAUDE.md 프로젝트 구간", fixed:true},
+  {id:"forge-agents", layer:"생성", to:"사용자가 /forge-agents 로 실행", desc:"tasks.md → 개발자별 에이전트·스킬·범위", fixed:true}
+];
 const MARKET = [
-  {id:"webapp-testing", kind:"스킬", src:"anthropics/skills", trust:"공식", desc:"Playwright로 로컬 웹 앱을 테스트하는 절차", flags:["scripts/ 폴더에 실행 스크립트 포함"], fit:["검증"]},
-  {id:"skill-creator", kind:"스킬", src:"anthropics/skills", trust:"공식", desc:"새 스킬을 만들고 개선하는 가이드", flags:[], fit:["공통"]},
-  {id:"mcp-builder", kind:"스킬", src:"anthropics/skills", trust:"공식", desc:"MCP 서버 개발 가이드", flags:[], fit:["개발"]},
-  {id:"code-review-plugin", kind:"에이전트", src:"anthropics/claude-plugins-official", trust:"공식", desc:"PR 코드 리뷰 플러그인의 리뷰 에이전트", flags:[], fit:["검증"]},
-  {id:"oracle-tuning", kind:"스킬", src:"사내 GitLab · platform/skills", trust:"조직 승인", desc:"Oracle 실행계획 확인·힌트 작성 규칙", flags:[], fit:["개발"]},
-  {id:"spring-boot-conventions", kind:"스킬", src:"example-org/java-skills", trust:"미검증", desc:"Spring Boot 계층 구조·예외 처리 규칙", flags:["allowed-tools: Bash(*) — 모든 명령 사전 허용"], fit:["개발"]},
-  {id:"db-migration-agent", kind:"에이전트", src:"example-org/agents", trust:"커뮤니티", desc:"Flyway 마이그레이션 작성 에이전트", flags:["permissionMode: bypassPermissions — 권한 확인 생략"], fit:["개발"]}
+  {id:"webapp-testing", src:"anthropics/skills", trust:"공식", desc:"Playwright로 로컬 웹 앱을 테스트하는 절차", flags:["scripts/ 폴더에 실행 스크립트 포함"]},
+  {id:"skill-creator", src:"anthropics/skills", trust:"공식", desc:"새 스킬을 만들고 개선하는 가이드", flags:[]},
+  {id:"mcp-builder", src:"anthropics/skills", trust:"공식", desc:"MCP 서버 개발 가이드", flags:[]},
+  {id:"oracle-tuning", src:"사내 GitLab · platform/skills", trust:"조직 승인", desc:"Oracle 실행계획 확인·힌트 작성 규칙", flags:[]},
+  {id:"spring-boot-conventions", src:"example-org/java-skills", trust:"미검증", desc:"Spring Boot 계층 구조·예외 처리 규칙", flags:["allowed-tools: Bash(*) — 모든 명령 사전 허용"]}
 ];
+const TARGETS = {all:"dev-* · review-* 전원", dev:"dev-* 전원", review:"review-* 전원"};
+const SAMPLE_REQ = `사내 주문 관리 포털을 만든다.
+- 영업 담당자가 주문을 등록·조회·수정한다(주문 상태: 접수 → 출고 → 완료).
+- 결제 수단별 결제 내역을 조회하고 월별 정산 리포트를 엑셀로 내려받는다.
+- 관리자는 사용자·권한·공통 코드를 관리한다.
+- 사내 폐쇄망에서 운영, 기존 Oracle 19c 주문 테이블을 그대로 사용한다.
+- 화면은 React, 서버는 Node(TypeScript). 동시 사용자 200명.`;
 
-/* ---------- 상태 ---------- */
 const DEF = () => ({
-  v:5, step:0, name:"my-project", lang:"ko", stack:"legacy", build:"", test:"", devCount:3, providers:PROV_DEF(),
-  closed:true,
-  roles:{lead:{provider:"claude",model:"opus"}, planner:{provider:"claude",model:"opus"}, analyst:{provider:"claude",model:"sonnet"}, architect:{provider:"claude",model:"opus"},
-    developer:{provider:"claude",model:"sonnet"}, reviewer:{provider:"gemini",model:""}, final:{provider:"claude",model:"opus"}},
-  prompts:{}, devs:[], verifyPerDev:true, runMode:"script",
-  assign:JSON.parse(JSON.stringify(DEFAULT_ASSIGN)), imported:[],
-  tmux:{layout:"pair", session:"", prefix:"C-b", mouse:true, titles:true, logs:true},
-  devcontainer:false, docTab:"claude",
-  gh:{owner:"my-org", repo:"", visibility:"private"}, sel:"CLAUDE.md", mkq:"", ack:{}
+  v:6, step:0, name:"order-portal", lang:"ko", req:SAMPLE_REQ, devCount:3, ui:true,
+  cmd:{install:"npm ci", test:"npm test", e2e:"npm run e2e"}, maxRejects:3,
+  agents:{planner:{p:"claude",m:"opus"}, analyst:{p:"claude",m:"opus"}, "ux-designer":{p:"claude",m:"opus"}, architect:{p:"claude",m:"opus"},
+    "common-dev":{p:"claude",m:"sonnet"}, integrator:{p:"claude",m:"sonnet"}},
+  devs:[
+    {domain:"order", paths:"src/order/, tests/order/", dp:"vllm", dm:"exaone-32b", rp:"claude", rm:"sonnet"},
+    {domain:"payment", paths:"src/payment/, tests/payment/", dp:"vllm", dm:"exaone-32b", rp:"claude", rm:"sonnet"},
+    {domain:"admin", paths:"src/admin/, tests/admin/", dp:"openrouter", dm:"qwen/qwen3-coder:free", rp:"claude", rm:"sonnet"}
+  ],
+  skills:{conventions:true, tdd:true}, imported:[], ack:{},
+  conn:{vllm:"http://10.0.0.5:8000", ollama:"http://localhost:11434"},
+  gh:{owner:"my-org", repo:"", visibility:"private"}, sel:"CLAUDE.md"
 });
 let S = DEF();
-try{ const raw = localStorage.getItem("agentforge-poc"); if(raw){ const o = JSON.parse(raw); if(o && o.v === 5) S = Object.assign(DEF(), o); } }catch(e){}
+
+const slug = () => (S.name || "my-project").trim().toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "my-project";
+const prov = id => PROVIDERS.find(p => p.id === id) || PROVIDERS[0];
+const pathsOf = d => (d.paths || "").split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+const devReady = d => !!(d.domain && d.domain.trim() && pathsOf(d).length);
+const dslug = d => (d.domain || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+const devSkill = (d, i) => `dev${i + 1}-${dslug(d)}`;
+const seqActive = () => SEQ.filter(s => !s.opt || S.ui);
 function syncDevs(){
-  const st = STACKS[S.stack];
-  const preset = [{provider:"",model:""},{provider:"openrouter",model:"poolside/laguna-s-2.1:free"},{provider:"ollama",model:"qwen3.5:9b"},{provider:"openai",model:"gpt-5.5"}];
-  while(S.devs.length < S.devCount){ const i = S.devs.length; S.devs.push(Object.assign({folder:""}, preset[i] || {provider:"",model:""})); }
+  while(S.devs.length < S.devCount) S.devs.push({domain:"", paths:"", dp:"claude", dm:"sonnet", rp:"claude", rm:"sonnet"});
   S.devs.length = S.devCount;
 }
-syncDevs();
-const prov = id => S.providers.find(p => p.id === id) || S.providers[0];
-const alias = (p, m) => (m.startsWith(p + "-") ? m : p + "-" + m).replace(/[^A-Za-z0-9.-]+/g, "-");
-const effDev = i => S.devs[i] && S.devs[i].provider ? {provider:S.devs[i].provider, model:S.devs[i].model} : S.roles.developer;
-const runModel = a => prov(a.provider).type === "gateway" ? alias(a.provider, a.model || "model") : (a.model || "");
-const showModel = a => `${prov(a.provider).label}${a.model ? " · " + a.model : ""}`;
-function assignments(){
-  const out = [["lead", S.roles.lead], ["planner", S.roles.planner], ["analyst", S.roles.analyst], ["architect", S.roles.architect]];
-  S.devs.forEach((d,i) => out.push(["dev" + (i+1), effDev(i)]));
-  if(S.verifyPerDev) out.push(["reviewer", S.roles.reviewer]);
-  out.push(["final", S.roles.final]);
+/* 모든 에이전트 → {provider, model} */
+function allAgents(){
+  const out = [];
+  seqActive().forEach(s => out.push([s.id, S.agents[s.id]]));
+  S.devs.forEach((d, i) => { out.push([`dev-${i + 1}`, {p:d.dp, m:d.dm}]); out.push([`review-${i + 1}`, {p:d.rp, m:d.rm}]); });
+  out.push([FINAL.id, S.agents[FINAL.id]]);
   return out;
 }
-const usedProviders = () => [...new Set(assignments().map(([,a]) => a.provider))];
-const mixed = () => usedProviders().length > 1;
-const usesGateway = () => usedProviders().some(id => prov(id).type === "gateway");
-const sq = v => "'" + String(v).replace(/'/g, "'\\''") + "'";
-let saveT; function save(){ clearTimeout(saveT); saveT = setTimeout(()=>{ try{ localStorage.setItem("agentforge-poc", JSON.stringify(S)); }catch(e){} }, 300); }
-const slug = () => (S.name || "project").toLowerCase().replace(/[^a-z0-9-]+/g,"-").replace(/^-+|-+$/g,"") || "project";
-const session = () => S.tmux.session.trim() || slug() + "-forge";
-const ko = () => S.lang === "ko";
-const cmd = k => (S[k] || "").trim() || STACKS[S.stack][k] || "(명령 미지정)";
-
-/* ---------- 문서 생성 ---------- */
-const RL = {lead:"PM(리드)", planner:"기획", analyst:"분석", architect:"설계", developer:"개발", reviewer:"개발별 검증", final:"최종 검증"};
-const today = () => new Date().toISOString().slice(0,10);
-function rolesInUse(){ return ["lead","planner","analyst","architect","developer", ...(S.verifyPerDev ? ["reviewer"] : []), "final"]; }
-function whereRuns(r){
-  if(r === "lead") return "터미널 1 (lead 창)";
-  if(r === "developer") return `dev1~dev${S.devCount} 창 (각자 worktree)`;
-  if(r === "reviewer") return `review1~review${S.devCount} 창`;
-  return S.roles[r].provider === S.roles.lead.provider ? "리드 세션에서 서브에이전트로 호출" : `별도 창: ./scripts/run-role.sh ${r}`;
-}
-function genClaude(){
-  const st = STACKS[S.stack], n = S.devCount, v = S.verifyPerDev;
-  const lang = ko() ? "- 모든 답변, 작업 계획, 보고서, 리뷰 결과, 커밋 메시지 요약은 한국어로 작성한다.\n- 코드 식별자·로그·오류 코드는 영어로 쓴다."
-                    : "- Write all replies, plans, reports, review results and commit summaries in English.\n- Use English for identifiers, logs and error codes.";
-  let s = `# ${S.name}
-
-> generated by AgentForge · ${today()} · 설정값으로 자동 생성된 파일입니다.
-> \`AGENTFORGE:*\` 표시 구간(에이전트·개발자·스킬)은 설정을 바꿔 다시 생성하면 갱신됩니다. 그 밖의 내용은 프로젝트에 맞게 직접 수정해도 됩니다.
-
-## 언어 규칙
-${lang}
-
-## 개발 환경
-- 환경 프리셋: ${st.label}
-- 빌드: \`${cmd("build")}\` / 테스트: \`${cmd("test")}\`
-- 배포 환경: ${S.closed ? "폐쇄망(사내망) — 외부 API·CDN·패키지 저장소에 직접 접근하지 않고 사내 미러만 사용한다" : "인터넷 연결 환경"}
-- 요구사항 기준 문서: \`docs/prd.md\`
-
-## 병렬 개발 기본 기준
-
-### 1. 작업 루틴
-1. PM(리드): 전체 조율, 단계 전환, 결과 취합
-2. 기획 → \`docs/prd.md\` 보완 → **사람 승인**
-3. 분석 → \`docs/analysis.md\` (영향 범위) → **사람 승인**
-4. 설계 → \`docs/design.md\`(인터페이스), \`docs/tasks.md\`(개발자별 작업) → **사람 승인 후 인터페이스 동결**
-5. 개발 dev1~dev${n} 병렬 실행
-${v ? `6. 개발별 검증 병렬 실행 (검증 i는 dev i 완료 신호 후 시작)\n7. 최종 검증: 리드가 통과 브랜치를 병합한 뒤 실행\n8. PM 결과 취합: \`docs/report.md\`` : `6. 최종 검증: 리드가 브랜치를 병합한 뒤 실행\n7. PM 결과 취합: \`docs/report.md\``}
-
-### 2. 작업 공간
-- 에이전트마다 별도 터미널(tmux pane)에서 실행한다. 시작: VS Code 작업 **Forge: 병렬 개발 시작** 또는 \`./scripts/run-agents.sh\`
-- 개발자 i는 git worktree \`../${slug()}-dev<i>\`, 브랜치 \`feature/dev<i>\`에서만 작업한다.
-- 다른 개발자의 worktree와 main 브랜치는 수정하지 않는다.
-
-### 3. 담당 범위
-- 자기 담당 폴더(아래 "개발자 배정") 밖의 파일은 수정하지 않는다.
-- 공통 파일(공통 코드, 설정, 공통 매퍼·메시지)은 리드 승인 후에만 수정한다.
-- \`docs/design.md\`의 인터페이스는 개발 단계에서 바꾸지 않는다. 변경이 필요하면 작업을 멈추고 리드에게 보고한다.
-
-### 4. 완료 기준
-- ${st.done}
-- 완료 순서: 커밋 → \`docs/report-dev<i>.md\` 작성 → 완료 신호 파일 생성
-
-### 5. 신호 파일 규약
-| 상황 | 파일 |
-| --- | --- |
-| 개발 완료 | \`.agentforge/signals/dev-<i>.done\` |
-| 검증 통과 | \`.agentforge/signals/review-<i>.pass\` |
-| 검증 반려 | \`.agentforge/signals/review-<i>.reject\` (사유 포함) |
-
-### 6. 검증과 반려
-- 검증 에이전트는 코드를 직접 고치지 않는다. 판정은 [통과/반려]와 근거(파일:라인)로 남긴다.
-- 반려되면 개발자는 사유를 반영한 뒤 다시 완료 신호를 만든다.
-- 같은 오류로 두 번 실패하면 더 시도하지 않고 원인을 report에 남긴 뒤 멈춘다.
-
-### 7. 병합
-- 리드는 검증을 통과한 브랜치만 main에 병합한다. 병합 후 최종 검증을 실행한다.
-
-### 8. 커밋 규칙
-- 메시지: \`[역할] 작업ID 요약\` (예: \`[dev2] D2 주문 조회 API 구현\`)
-
-### 9. 금지 사항
-- 테스트 삭제·skip 처리, 비밀 값(API 키, 비밀번호) 커밋, 강제 push, 담당 범위 밖 수정
-`;
-  s += `\n<!-- AGENTFORGE:AGENTS:BEGIN -->\n## 등록된 에이전트\n| 에이전트 | 역할 | 정의 파일 | 제공자 · 모델 | 스킬 | 실행 위치 |\n| --- | --- | --- | --- | --- | --- |\n`;
-  rolesInUse().forEach(r => { const m = ROLE_META[r];
-    s += `| ${m.file || "main"} | ${RL[r]} | ${m.file ? "`.claude/agents/" + m.file + ".md`" : "(메인 세션)"} | ${showModel(S.roles[r])} | ${skillsFor(r).join(", ") || "-"} | ${whereRuns(r)} |\n`; });
-  S.imported.filter(m => m.kind === "에이전트").forEach(m => { s += `| ${m.id} | 가져온 에이전트 | \`.claude/agents/${m.id}.md\` | 상속 | - | 필요 시 호출 (출처: ${m.src}) |\n`; });
-  s += `<!-- AGENTFORGE:AGENTS:END -->\n\n<!-- AGENTFORGE:DEVS:BEGIN -->\n## 개발자 배정\n| 개발자 | 담당 폴더 | 브랜치 | 제공자 · 모델 | 검증 |\n| --- | --- | --- | --- | --- |\n`;
-  S.devs.forEach((d,i) => { s += `| dev${i+1} | ${d.folder.trim() ? "`" + d.folder.trim() + "`" : "설계 단계에서 docs/tasks.md로 지정"} | \`feature/dev${i+1}\` | ${showModel(effDev(i))} | ${v ? "review" + (i+1) : "최종 검증만"} |\n`; });
-  s += `<!-- AGENTFORGE:DEVS:END -->\n\n<!-- AGENTFORGE:SKILLS:BEGIN -->\n## 등록된 스킬\n| 스킬 | 설명 | 출처 | 사용 에이전트 |\n| --- | --- | --- | --- |\n`;
-  usedSkills().forEach(id => { const l = LIB.find(x => x.id === id) || S.imported.find(x => x.id === id);
-    s += `| \`${id}\` | ${l ? l.desc : ""} | ${l ? l.src : ""} | ${rolesInUse().filter(r => skillsFor(r).includes(id)).map(r => RL[r]).join(", ")} |\n`; });
-  s += `<!-- AGENTFORGE:SKILLS:END -->\n`;
-  return s;
-}
-function usedSkills(){ const u = new Set(); rolesInUse().forEach(r => skillsFor(r).forEach(id => u.add(id))); return [...u].sort(); }
-const TODO = "작성 필요";
-function genPrd(){
-  return `# ${S.name} PRD
-
-> generated by AgentForge · ${today()} · 빈 PRD 양식입니다. 내용은 프로젝트 담당자(또는 기획 에이전트)가 작성합니다.
-> 설계·개발 에이전트는 이 문서를 요구사항의 기준으로 사용합니다. "${TODO}" 표시를 모두 채운 뒤 설계 단계로 넘어갑니다.
-
-## 1. 개요
-| 항목 | 내용 |
-| --- | --- |
-| 프로젝트명 | ${S.name} |
-| 목적 | ${TODO} |
-| 작성자 · 작성일 | ${TODO} |
-
-## 2. 목표
-- ${TODO}
-
-## 3. 사용자
-| 사용자 유형 | 주요 업무 |
-| --- | --- |
-| ${TODO} | ${TODO} |
-
-## 4. 기능 목록
-| ID | 기능 | 우선순위 | 완료 기준 |
-| --- | --- | --- | --- |
-| F-01 | ${TODO} | ${TODO} | ${TODO} |
-
-## 5. 비기능 요구사항
-| 항목 | 내용 |
-| --- | --- |
-| 성능 | ${TODO} |
-| 보안 | ${TODO} |
-| 연계 시스템 | ${TODO} |
-
-## 6. 범위 제외
-- ${TODO}
-
-## 7. 미결 사항
-- [ ] ${TODO}
-`;
-}
-const docClaude = () => genClaude();
-const docPrd = () => genPrd();
-function checks(){
-  const out = [];
-  const folders = S.devs.map(d => d.folder.trim()).filter(Boolean);
-  out.push(["담당 폴더 중복 없음", new Set(folders).size === folders.length]);
-  out.push(["모든 역할에 모델 지정", assignments().every(([,a]) => a.provider === "claude" || !!a.model)]);
-  out.push(["에이전트 " + rolesInUse().filter(r => ROLE_META[r].file).length + "개 등록", true]);
-  out.push(["스킬 " + usedSkills().length + "개 등록", usedSkills().length > 0]);
-  return {list: out};
-}
+const usesVia = v => allAgents().some(([, a]) => prov(a.p).via === v);
+const fmModel = a => a.p === "claude" ? (a.m || "sonnet") : "inherit";
+const label = a => a.p === "claude" ? `Claude ${a.m}` : `${prov(a.p).label.replace(/·LiteLLM| 로컬/, "")} · ${a.m || "모델 미입력"}`;
+const importedFor = t => S.imported.filter(m => m.target === "all" || m.target === t).map(m => m.id);
 
 /* ---------- 파일 생성 ---------- */
-const yamlList = arr => arr.length ? "\n" + arr.map(x => "  - " + x).join("\n") : " []";
-function skillsFor(role){ return (S.assign[role] || []).filter(id => LIB.some(l => l.id === id) || S.imported.some(m => m.id === id && m.kind === "스킬")); }
-function modelOf(role){ const a = S.roles[role]; return a.provider === "claude" ? (a.model || "inherit") : "inherit"; }
-function agentFile(role){
-  const m = ROLE_META[role], sk = skillsFor(role), a = S.roles[role];
-  const note = a.provider !== "claude" ? `\n<!-- 제공자: ${showModel(a)} — model: inherit 이며, 실행 시 scripts/agent-env.sh 가 접속 주소와 모델을 고정합니다 -->\n` : "";
-  return `---\nname: ${m.file}\ndescription: ${m.desc}\ntools: ${m.tools}\nmodel: ${modelOf(role)}\nskills:${yamlList(sk)}\n---\n\n${S.prompts[role] || m.prompt}\n` + note;
+function genClaude(){
+  const routine = S.ui
+    ? "기획 → 분석 → (UI/UX 설계: 선택) → 시스템 설계 → 공통 개발 → [상세 설계 + 개발](병렬) → 개발 검증(병렬) → 통합 검증"
+    : "기획 → 분석 → 시스템 설계 → 공통 개발 → [상세 설계 + 개발](병렬) → 개발 검증(병렬) → 통합 검증";
+  const langLine = S.lang === "ko" ? "모든 답변과 문서는 한국어로 쓴다. 코드 식별자는 영어." : "Write all answers and documents in English.";
+  const agentRows = [...seqActive(), FINAL].map(s => `| ${s.id} | ${s.step} | ${label(S.agents[s.id])} |`).join("\n");
+  const devRows = S.devs.map((d, i) => devReady(d)
+    ? `| dev-${i + 1} / review-${i + 1} | ${d.domain} | ${pathsOf(d).join(" ")} | ${label({p:d.dp, m:d.dm})} / ${label({p:d.rp, m:d.rm})} |`
+    : `| dev-${i + 1} / review-${i + 1} | (분석 후 /forge-agents) | - | ${label({p:d.dp, m:d.dm})} / ${label({p:d.rp, m:d.rm})} |`).join("\n");
+  const skillRows = [
+    ...CORE_SKILLS.filter(k => k.fixed || S.skills[k.id]).map(k => `| ${k.id} | ${k.layer} | ${k.to} |`),
+    ...S.devs.map((d, i) => devReady(d) ? `| ${devSkill(d, i)} | 개발자 전용 | dev-${i + 1} · review-${i + 1} |` : null).filter(Boolean),
+    ...S.imported.map(m => `| ${m.id} | 가져옴(${m.src}) | ${TARGETS[m.target]} |`)
+  ].join("\n");
+  return `# 프로젝트 규칙
+
+- ${langLine}
+- 요구사항 기준은 docs/prd.md(기능 ID), 작업 배정은 docs/tasks.md.
+
+## 개발 루틴
+${routine}
+- 단계 전환은 사람이 한다. 관문 조건을 확인해 보고만 하고 다음 단계를 시작하지 않는다.
+
+## 병렬 개발 기본 기준
+- 각 개발자는 자기 worktree(feature/devN)에서만 작업한다. 브랜치를 바꾸거나 병합하지 않는다.
+- 담당 범위는 .claude/devs/<에이전트>.paths. 범위 밖 변경이 필요하면 report에 적고 멈춘다.
+- API 계약·공통 모듈은 읽기 전용. 변경은 리드가 develop에서만 한다.
+- 테스트를 먼저 쓰고 실패를 확인한 뒤 구현한다.
+- 커밋 메시지: [에이전트] 작업ID 요약
+- 완료·요청은 신호 파일로 알린다: touch "$AF_SIGNALS/<신호>"
+
+<!-- AGENTFORGE:PROJECT:BEGIN -->
+(/forge-init 이 채움: 소개, 기술 스택, 명령어, 폴더 구조)
+<!-- AGENTFORGE:PROJECT:END -->
+
+<!-- AGENTFORGE:AGENTS:BEGIN -->
+| 에이전트 | 단계 | 모델 |
+| --- | --- | --- |
+${agentRows}
+<!-- AGENTFORGE:AGENTS:END -->
+
+<!-- AGENTFORGE:DEVS:BEGIN -->
+| 에이전트 | 도메인 | 담당 폴더 | 모델(개발 / 검증) |
+| --- | --- | --- | --- |
+${devRows}
+<!-- AGENTFORGE:DEVS:END -->
+
+<!-- AGENTFORGE:SKILLS:BEGIN -->
+| 스킬 | 계층 | 사용 에이전트 |
+| --- | --- | --- |
+${skillRows}
+<!-- AGENTFORGE:SKILLS:END -->
+`;
+}
+function seqAgent(id){
+  let s = STATIC["md/" + id + ".md"].replace("{{MODEL}}", fmModel(S.agents[id]));
+  if(id === "common-dev" && !S.skills.tdd) s = s.replace("  - tdd\n", "");
+  if(id === "common-dev" && !S.skills.conventions) s = s.replace("  - conventions\n", "");
+  return s;
+}
+function skillList(base, extra){ return [...base, ...extra].map(x => `  - ${x}\n`).join(""); }
+function devAgent(d, i){
+  const n = String(i + 1), ps = pathsOf(d);
+  const extra = [devSkill(d, i), ...importedFor("dev")];
+  let s = STATIC["md/dev.tpl.md"];
+  if(!S.skills.tdd) s = s.replace("  - tdd\n", "");
+  if(!S.skills.conventions) s = s.replace("  - conventions\n", "");
+  return s.replaceAll("{{N}}", n).replaceAll("{{DOMAIN}}", d.domain.trim()).replaceAll("{{PATHS_INLINE}}", ps.join(", "))
+    .replace("{{MODEL}}", fmModel({p:d.dp, m:d.dm})).replace("{{SKILLS}}", skillList([], extra))
+    .replace("{{FEATURES}}", `docs/tasks.md 의 dev-${n} 항목(분석 후 /forge-agents 가 기능 ID로 갱신)`)
+    .replaceAll("{{UI_READ}}", S.ui ? ", docs/design/ui/" : "");
+}
+function reviewAgent(d, i){
+  const n = String(i + 1);
+  let s = STATIC["md/review.tpl.md"];
+  if(!S.skills.conventions) s = s.replace("  - conventions\n", "");
+  return s.replaceAll("{{N}}", n).replace("{{MODEL}}", fmModel({p:d.rp, m:d.rm}))
+    .replace("{{SKILLS}}", skillList([], [devSkill(d, i), ...importedFor("review")])).replaceAll("{{UI_READ}}", S.ui ? "·화면 설계" : "");
 }
 function genAgentEnv(){
-  return `#!/usr/bin/env bash
-# generated by AgentForge — 역할별 제공자·모델 설정. source 로 실행: . scripts/agent-env.sh <제공자> <모델>
-_R="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
-_P="$1"; _M="\${2:-}"
-if [ "$_P" = "claude" ]; then
-  unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_MODEL
-  if [ -n "$_M" ]; then export AF_MODEL_FLAG="--model $_M"; else export AF_MODEL_FLAG=""; fi
-else
-  if [ ! -f "$_R/.agentforge/providers/$_P.env" ]; then echo "제공자 설정 없음: $_P" >&2; return 1 2>/dev/null || exit 1; fi
-  set -a
-  [ -f "$_R/.agentforge/env.local" ] && . "$_R/.agentforge/env.local"
-  . "$_R/.agentforge/providers/$_P.env"
-  set +a
-  export ANTHROPIC_MODEL="$_M" ANTHROPIC_DEFAULT_OPUS_MODEL="$_M" ANTHROPIC_DEFAULT_SONNET_MODEL="$_M" \\
-         ANTHROPIC_DEFAULT_HAIKU_MODEL="$_M" ANTHROPIC_DEFAULT_FABLE_MODEL="$_M" CLAUDE_CODE_SUBAGENT_MODEL="$_M"
-  export AF_MODEL_FLAG=""
-fi
-`;
+  const line = (name, a) => {
+    const p = prov(a.p), m = a.m || (p.id === "claude" ? "sonnet" : "MODEL_ID");
+    return `  ${(name + ")").padEnd(14)} _af_use ${p.via} ${m} ;;`;
+  };
+  return STATIC["agent-env.head"] + `\ncase "\${1:?에이전트명을 넣으세요}" in\n` +
+    allAgents().map(([n, a]) => line(n, a)).join("\n") + `\n  ${"*)".padEnd(14)} _af_use claude sonnet ;;\nesac\n`;
 }
-function providerEnv(p){
-  if(p.type === "gateway") return `# ${p.label} — LiteLLM 게이트웨이(scripts/start-gateway.sh) 경유\nANTHROPIC_BASE_URL=http://localhost:4000\nANTHROPIC_AUTH_TOKEN="$LITELLM_MASTER_KEY"\nANTHROPIC_API_KEY=\n`;
-  const tok = p.key ? `"$${p.key}"` : (p.id === "ollama" ? "ollama" : "");
-  return `# ${p.label} — Anthropic 호환 API 직접 연결 (비밀 값은 .agentforge/env.local)\nANTHROPIC_BASE_URL=${p.base}\nANTHROPIC_AUTH_TOKEN=${tok}\nANTHROPIC_API_KEY=\n`;
+function genConfig(){
+  const agents = {};
+  allAgents().forEach(([n, a]) => agents[n] = {provider:a.p, model:a.m});
+  return JSON.stringify({project:slug(), developers:S.devCount, uiDesign:S.ui, language:S.lang, tmuxLayout:"pair",
+    commands:{install:S.cmd.install, test:S.cmd.test, e2e:S.cmd.e2e}, maxRejects:+S.maxRejects || 3, agents}, null, 2) + "\n";
+}
+function genSettings(){
+  const allow = ["Read","Edit","Write","Glob","Grep","Bash(git status:*)","Bash(git diff:*)","Bash(git add:*)","Bash(git commit:*)","Bash(git log:*)","Bash(touch:*)","Bash(bash scripts/check-forge.sh)"];
+  [S.cmd.test, S.cmd.e2e].filter(Boolean).forEach(c => { const r = `Bash(${c.trim()}:*)`; if(!allow.includes(r)) allow.push(r); });
+  return JSON.stringify({
+    permissions:{allow, deny:["Bash(git push:*)","Bash(git merge:*)","Bash(git checkout:*)","Bash(git switch:*)","Bash(rm -rf:*)","Read(.agentforge/env.local)"]},
+    hooks:{PreToolUse:[{matcher:"Edit|Write", hooks:[{type:"command", command:"\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-paths.sh"}]}]}
+  }, null, 2) + "\n";
+}
+function genEnvExample(){
+  const L = ["# .agentforge/env.local 로 복사해 직접 입력 (git 제외, chmod 600). AgentForge는 값을 받거나 저장하지 않습니다."];
+  if(usesVia("openrouter")) L.push("OPENROUTER_API_KEY=");
+  if(usesVia("ollama")) L.push(`OLLAMA_URL=${S.conn.ollama}`);
+  if(usesVia("vllm")) L.push(`VLLM_URL=${S.conn.vllm}`, "VLLM_TOKEN=");
+  if(usesVia("litellm")){ L.push("LITELLM_URL=http://localhost:4000", "LITELLM_MASTER_KEY=");
+    if(allAgents().some(([, a]) => a.p === "openai")) L.push("OPENAI_API_KEY=");
+    if(allAgents().some(([, a]) => a.p === "gemini")) L.push("GEMINI_API_KEY="); }
+  if(L.length === 1) L.push("# 모든 에이전트가 Claude 로그인을 사용합니다. 넣을 값이 없습니다.");
+  return L.join("\n") + "\n";
 }
 function genLitellm(){
-  const seen = new Set(); let s = `# generated by AgentForge — OpenAI·Gemini 등을 Claude Code가 쓰는 Anthropic 형식으로 중계\nmodel_list:\n`;
-  assignments().forEach(([,a]) => { const p = prov(a.provider); if(p.type !== "gateway") return; const al = alias(a.provider, a.model || "model"); if(seen.has(al)) return; seen.add(al);
-    s += `  - model_name: ${al}\n    litellm_params:\n      model: ${p.id}/${a.model || "<모델 ID 입력>"}\n      api_key: os.environ/${p.key}\n`; });
-  return s + `general_settings:\n  master_key: os.environ/LITELLM_MASTER_KEY\n`;
+  const seen = new Set(); let s = "# LiteLLM 게이트웨이: OpenAI·Gemini 를 Claude Code가 쓰는 Anthropic 형식으로 중계\nmodel_list:\n";
+  allAgents().forEach(([, a]) => { if(prov(a.p).via !== "litellm") return; const m = a.m || "MODEL_ID"; if(seen.has(m)) return; seen.add(m);
+    s += `  - model_name: ${m}\n    litellm_params:\n      model: ${a.p}/${m}\n      api_key: os.environ/${a.p === "openai" ? "OPENAI_API_KEY" : "GEMINI_API_KEY"}\n`; });
+  return s + "general_settings:\n  master_key: os.environ/LITELLM_MASTER_KEY\n";
 }
-function genStartGateway(){
-  return `#!/usr/bin/env bash
-# generated by AgentForge — LiteLLM 게이트웨이 실행 (설치: pip install 'litellm[proxy]')
-set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-command -v litellm >/dev/null || { echo "litellm 이 없습니다: pip install 'litellm[proxy]'"; exit 1; }
-set -a; . "$ROOT/.agentforge/env.local"; set +a
-exec litellm --config "$ROOT/.agentforge/litellm.yaml" --port 4000
-`;
-}
-function genCheckModels(){
-  const seen = new Set(), rows = [];
-  assignments().forEach(([r,a]) => { if(a.provider === "claude") return; const k = a.provider + "|" + runModel(a); if(seen.has(k)) return; seen.add(k); rows.push(`check ${sq(a.provider)} ${sq(runModel(a))}`); });
-  return `#!/usr/bin/env bash
-# generated by AgentForge — 역할에 배정한 모델의 연결·도구 호출 점검 (Claude 로그인 역할은 제외)
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-BODY='{"max_tokens":200,"tools":[{"name":"get_weather","description":"도시 날씨 조회","input_schema":{"type":"object","properties":{"city":{"type":"string"}},"required":["city"]}}],"messages":[{"role":"user","content":"get_weather 도구로 서울 날씨를 조회해"}]}'
-check() {
-  ( . "$ROOT/scripts/agent-env.sh" "$1" "$2" || exit 1
-    out=$(curl -s -m 90 "$ANTHROPIC_BASE_URL/v1/messages" -H "content-type: application/json" -H "anthropic-version: 2023-06-01" \\
-      -H "x-api-key: $ANTHROPIC_AUTH_TOKEN" -H "authorization: Bearer $ANTHROPIC_AUTH_TOKEN" -d "{\\"model\\":\\"$2\\",\${BODY#\\{}")
-    if echo "$out" | grep -q '"tool_use"'; then echo "[통과] $1 / $2 — 응답·도구 호출 정상"
-    elif echo "$out" | grep -q '"content"'; then echo "[경고] $1 / $2 — 응답은 되지만 도구 호출을 하지 않음 (에이전트 작업 부적합)"
-    else echo "[실패] $1 / $2 — $(echo "$out" | head -c 200)"; fi )
-}
-${usesGateway() ? 'echo "OpenAI·Gemini 점검 전에 게이트웨이를 먼저 실행하세요: ./scripts/start-gateway.sh"\n' : ""}${rows.join("\n") || 'echo "외부 제공자를 쓰는 역할이 없습니다"'}
-echo "참고: 컨텍스트 길이는 제공자 설정에서 64K 이상인지 따로 확인하세요."
-`;
-}
-function genRunRole(){
-  const cases = [["planner","planner"],["analyst","analyst"],["architect","architect"],["final","final-reviewer"]].map(([r,f]) => { const a = S.roles[r];
-    return `  ${r}) P=${sq(a.provider)}; M=${sq(runModel(a))}; A=${f};;`; }).join("\n");
-  return `#!/usr/bin/env bash
-# generated by AgentForge — 순차 역할을 자기 제공자로 별도 터미널에서 실행
-# 사용법: ./scripts/run-role.sh planner|analyst|architect|final
-set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-S="${session()}"
-case "\${1:-}" in
-${cases}
-  *) echo "사용법: run-role.sh planner|analyst|architect|final"; exit 1;;
-esac
-CMD="cd '$ROOT' && . '$ROOT/scripts/agent-env.sh' '$P' '$M' && claude --agent $A \\$AF_MODEL_FLAG"
-if tmux has-session -t "$S" 2>/dev/null; then
-  tmux new-window -t "$S" -n "$1" -c "$ROOT"; tmux select-pane -t "$S:$1" -T "$1"; tmux send-keys -t "$S:$1" "$CMD" C-m
-  echo "tmux 창 '$1' 에서 실행했습니다"
-else
-  eval "$CMD"
-fi
-`;
-}
-function skillFile(id){
-  const l = LIB.find(x => x.id === id);
-  return `---\nname: ${id}\ndescription: ${l.desc}\n---\n\n# ${id}\n\n(내장 스킬 본문 · PoC에서는 요약만 생성)\n- 적용 역할: ${l.role}\n- 규칙과 절차는 정식 버전의 스킬 라이브러리에서 채워집니다.\n`;
-}
-function genRun(){
-  const L = S.tmux.layout, n = S.devCount, verify = S.verifyPerDev;
-  const winDev = L === "pair" ? '"pair$i"' : L === "tiled" ? '"agents"' : '"dev"';
-  const winRev = L === "pair" ? '"pair$i"' : L === "tiled" ? '"agents"' : '"review"';
-  const lay = L === "pair" ? "even-horizontal" : "tiled";
-  const lead = S.roles.lead, rv = S.roles.reviewer, dd = S.roles.developer;
-  let s = `#!/usr/bin/env bash
-# generated by AgentForge — 에이전트마다 별도 터미널(tmux pane)에서 병렬 실행
-# 사용법: ./scripts/run-agents.sh [개발자 수]   (기본 ${n}, 설정보다 적게 실행 가능)
-set -euo pipefail
-ROOT="$(git rev-parse --show-toplevel)"
-NAME="$(basename "$ROOT")"
-BASE="$(git -C "$ROOT" symbolic-ref --short HEAD)"
-S="${session()}"
-N="\${1:-${n}}"
-LOG=${S.tmux.logs ? 1 : 0}
-# 개발자별 제공자·모델 (dev1, dev2, …). 비어 있으면 개발 역할 기본값
-DEV_PROV=(${S.devs.map((d,i) => sq(effDev(i).provider)).join(" ")})
-DEV_MODEL=(${S.devs.map((d,i) => sq(runModel(effDev(i)))).join(" ")})
-DEF_PROV=${sq(dd.provider)}; DEF_MODEL=${sq(runModel(dd))}
-SIG="$ROOT/.agentforge/signals"
-mkdir -p "$SIG" "$ROOT/.agentforge/logs"
-
-if tmux has-session -t "$S" 2>/dev/null; then echo "이미 실행 중: tmux attach -t $S"; exit 0; fi
-
-open_pane() { # $1=창 이름  $2=pane 제목  $3=실행 명령
-  if tmux list-windows -t "$S" -F '#W' | grep -qx "$1"; then
-    tmux split-window -t "$S:$1" -c "$ROOT"
-    tmux select-layout -t "$S:$1" ${lay} >/dev/null
-  else
-    tmux new-window -t "$S" -n "$1" -c "$ROOT"
-  fi
-  tmux select-pane -t "$S:$1" -T "$2"
-  tmux send-keys -t "$S:$1" "$3" C-m
-  if [ "$LOG" = 1 ]; then tmux pipe-pane -o -t "$S:$1" "cat >> '$ROOT/.agentforge/logs/$2.log'"; fi
-}
-
-# 터미널 1: PM(리드)
-tmux -f "$ROOT/.agentforge/tmux.conf" new-session -d -s "$S" -n lead -c "$ROOT"
-tmux select-pane -t "$S:lead" -T "PM-lead"
-tmux send-keys -t "$S:lead" ". '$ROOT/scripts/agent-env.sh' ${sq(lead.provider)} ${sq(runModel(lead))} && claude \\$AF_MODEL_FLAG" C-m
-${usesGateway() ? `
-# OpenAI·Gemini 중계용 LiteLLM 게이트웨이 (별도 창)
-open_pane gateway "gateway" "'$ROOT/scripts/start-gateway.sh'"
-sleep 5
-` : ""}
-for i in $(seq 1 "$N"); do
-  WT="$ROOT/../$NAME-dev$i"
-  [ -d "$WT" ] || git -C "$ROOT" worktree add -q -b "feature/dev$i" "$WT" "$BASE"
-  P="\${DEV_PROV[$((i-1))]:-$DEF_PROV}"; M="\${DEV_MODEL[$((i-1))]:-$DEF_MODEL}"
-  DEV_CMD="cd '$WT' && . '$ROOT/scripts/agent-env.sh' '$P' '$M' && claude --agent developer \\$AF_MODEL_FLAG \\"너는 dev$i 이다. docs/tasks.md에서 dev$i 작업을 구현하라. 완료 기준을 만족하면 커밋하고 $SIG/dev-$i.done 파일을 만들어라.\\""
-  open_pane ${winDev} "dev$i" "$DEV_CMD"
-`;
-  if(verify) s += `  open_pane ${winRev} "review$i" "cd '$WT' && '$ROOT/scripts/wait-and-review.sh' $i ${sq(rv.provider)} ${sq(runModel(rv))}"
-`;
-  s += `done
-
-tmux select-window -t "$S:lead"
-tmux attach -t "$S"
-`;
-  return s;
-}
-function genWait(){
-  return `#!/usr/bin/env bash
-# generated by AgentForge — 개발별 검증: dev i 완료 신호를 기다렸다가 검증 시작 (대기 중 토큰 사용 없음)
-set -euo pipefail
-i="$1"; P="\${2:-claude}"; M="\${3:-}"
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SIG="$ROOT/.agentforge/signals"
-. "$ROOT/scripts/agent-env.sh" "$P" "$M"
-while true; do
-  echo "[검증 $i · $P $M] dev$i 완료 대기 중…"
-  while [ ! -f "$SIG/dev-$i.done" ]; do sleep 10; done
-  rm -f "$SIG/dev-$i.done" "$SIG/review-$i.pass" "$SIG/review-$i.reject"
-  claude --agent reviewer $AF_MODEL_FLAG -p "현재 폴더(feature/dev$i)를 검증하라. 통과면 $SIG/review-$i.pass 파일을, 반려면 사유(파일:라인)를 $SIG/review-$i.reject 파일에 작성하라."
-  if [ -f "$SIG/review-$i.pass" ]; then echo "[검증 $i] 통과"; break; fi
-  echo "[검증 $i] 반려 — dev$i 터미널에 사유를 전달하고 재작업 후 다시 완료 신호를 기다립니다"
-done
-`;
-}
-function genTmuxConf(){
-  const t = S.tmux;
-  let s = `# generated by AgentForge — 프로젝트 전용 tmux 설정 (사용자 ~/.tmux.conf는 변경하지 않음)\nset -g history-limit 20000\nset -g base-index 0\nset -g mouse ${t.mouse ? "on" : "off"}\n`;
-  if(t.prefix === "C-a") s += `unbind C-b\nset -g prefix C-a\nbind C-a send-prefix\n`;
-  if(t.titles) s += `set -g pane-border-status top\nset -g pane-border-format " #{pane_index} #{pane_title} "\n`;
-  s += `set -g status-left " #S "\nset -g status-left-length 30\nset -g status-right " %H:%M "\n`;
-  return s;
-}
-function genTasks(){
-  const ss = session();
-  const task = (label, command) => ({label, type:"shell", command, problemMatcher:[], presentation:{panel:"dedicated", focus:true}});
+function genTasksJson(){
   return JSON.stringify({version:"2.0.0", tasks:[
-    task("Forge: 병렬 개발 시작", "./scripts/run-agents.sh"),
-    task("Forge: 세션 다시 붙기", `tmux attach -t ${ss}`),
-    task("Forge: 진행 상황 보기", "ls -1 .agentforge/signals"),
-    task("Forge: 문서 점검", "./scripts/check-docs.sh"),
-    task("Forge: 모델 연결 점검", "./scripts/check-models.sh"),
-    ...(usesGateway() ? [task("Forge: 게이트웨이 시작 (OpenAI·Gemini)", "./scripts/start-gateway.sh")] : []),
-    task("Forge: 역할 실행 — 기획", "./scripts/run-role.sh planner"),
-    task("Forge: 역할 실행 — 분석", "./scripts/run-role.sh analyst"),
-    task("Forge: 역할 실행 — 설계", "./scripts/run-role.sh architect"),
-    task("Forge: 역할 실행 — 최종 검증", "./scripts/run-role.sh final"),
-    task("Forge: 전체 종료", `tmux kill-session -t ${ss}`)
+    {label:"AF: 준비(setup)", type:"shell", command:"bash scripts/setup.sh"},
+    {label:"AF: worktree 생성", type:"shell", command:"bash scripts/create-worktrees.sh"},
+    {label:"AF: 병렬 실행", type:"shell", command:"bash scripts/run-agents.sh && tmux attach -t ${workspaceFolderBasename}", presentation:{panel:"dedicated", focus:true}},
+    {label:"AF: 붙기", type:"shell", command:"tmux attach -t ${workspaceFolderBasename}", presentation:{panel:"dedicated", focus:true}},
+    {label:"AF: 구성 검사", type:"shell", command:"bash scripts/check-forge.sh"},
+    {label:"AF: 통합 검증", type:"shell", command:"bash scripts/integrate.sh"}
   ]}, null, 2) + "\n";
 }
-function genCheckDocs(){
-  return `#!/usr/bin/env bash
-# generated by AgentForge — 문서 구조와 작성 상태 점검 (규칙 기반, AI 미사용)
-cd "$(dirname "$0")/.."
-fail=0
-for h in "## 1. 개요" "## 4. 기능 목록" "## 5. 비기능 요구사항" "## 7. 미결 사항"; do
-  grep -qF "$h" docs/prd.md || { echo "PRD 구조 누락: $h"; fail=1; }
-done
-for h in "## 병렬 개발 기본 기준" "AGENTFORGE:AGENTS:BEGIN" "AGENTFORGE:SKILLS:BEGIN"; do
-  grep -qF "$h" CLAUDE.md || { echo "CLAUDE.md 구조 누락: $h"; fail=1; }
-done
-c=$(grep -c "작성 필요" docs/prd.md || true)
-[ "$c" -gt 0 ] && echo "안내: docs/prd.md에 '작성 필요' 항목 $c개 — 설계 단계 전에 채우세요"
-[ $fail -eq 0 ] && echo "구조 점검 통과"
-exit $fail
-`;
-}
-function genSetup(){
-  return `#!/usr/bin/env bash
-# generated by AgentForge — ZIP 적용 스크립트 (여러 번 실행해도 결과 동일)
-set -euo pipefail
-cd "$(dirname "$0")"
-for t in git tmux claude; do command -v "$t" >/dev/null || echo "설치 필요: $t"; done
-find scripts -name "*.sh" -exec sed -i 's/\\r$//' {} + 2>/dev/null || true
-chmod +x scripts/*.sh
-mkdir -p .agentforge/signals .agentforge/logs
-[ -f .agentforge/env.local ] || cp .agentforge/env.local.example .agentforge/env.local
-if [ ! -d .git ]; then git init -q && git add -A && git commit -qm "chore: AgentForge 환경 생성"; fi
-echo ""
-echo "다음 단계"
-echo " 1) VS Code로 이 폴더 열기:  code ."
-echo " 2) 터미널에서 claude 실행 후 로그인, docs/prd.md 양식 작성"
-echo " 3) 작업 메뉴 > Forge: 병렬 개발 시작"
+function genReadme(){
+  const steps = [
+    "bash scripts/setup.sh                     # 도구 확인, 실행 권한, env.local, 첫 커밋",
+    "claude                                    # 처음 한 번 직접 로그인",
+    "bash scripts/run-role.sh planner          # 세션에서 /forge-init → PRD 검토·승인",
+    "bash scripts/run-role.sh analyst \"docs/prd.md 를 분석해 analysis.md 와 tasks.md 를 작성하세요\"",
+    ...(S.ui ? ["bash scripts/run-role.sh ux-designer \"UI/UX 설계를 작성하세요\""] : []),
+    "bash scripts/run-role.sh architect \"시스템 설계를 작성하세요\"",
+    "git checkout -b develop && bash scripts/run-role.sh common-dev \"docs/tasks.md 의 common 작업을 진행하세요\"",
+    "claude                                    # 리드 세션에서 /forge-agents → bash scripts/check-forge.sh → 커밋",
+    "bash scripts/create-worktrees.sh && bash scripts/run-agents.sh && tmux attach -t " + slug(),
+    "bash scripts/integrate.sh                 # 전원 통과 후"
+  ];
+  return `# ${slug()} — AgentForge 개발 환경
+
+요구사항: .agentforge/requirements.md · 설정: .agentforge/forge.config.json
+
+## 루틴
+${S.ui ? "기획 → 분석 → (UI/UX 설계: 선택) → 시스템 설계" : "기획 → 분석 → 시스템 설계"} → 공통 개발 → [상세 설계 + 개발](병렬) → 개발 검증(병렬) → 통합 검증
+
+## 실행 순서 (WSL Ubuntu 또는 Linux·macOS 터미널)
+${steps.map((s, i) => `${i + 1}. \`${s}\``).join("\n")}
+
+단계가 끝날 때마다 사람이 관문을 확인하고 커밋한다. 단계 전환은 사람이 한다.
 `;
 }
 function buildFiles(){
-  const st = STACKS[S.stack], F = [];
-  const add = (path, content, exec) => F.push({path, content, exec: !!exec});
-  add("CLAUDE.md", docClaude());
-  add("docs/prd.md", docPrd());
-  add("docs/tasks.md", `# 작업 분할\n\n> architect가 설계 단계에서 채웁니다.\n\n| ID | 작업 | 담당 | 폴더 | 완료 기준 |\n| --- | --- | --- | --- | --- |\n` + S.devs.map((d,i) => `| D${i+1} | 작성 필요 | dev${i+1} | ${d.folder.trim() || "작성 필요"} | ${st.done} |`).join("\n") + "\n");
-  add("APPLY.md", `# 적용 방법\n\n1. 압축을 풀고 \`./setup.sh\` 실행 (Windows는 WSL 또는 Dev Container에서)\n2. VS Code로 폴더 열기 → 권장 확장 설치\n3. 터미널에서 \`claude\` 실행 → 로그인(구독 또는 API 키)\n4. \`docs/prd.md\` 양식을 채우고 기획·분석·설계 단계 진행 후 작업 메뉴에서 **Forge: 병렬 개발 시작**\n\n인증 정보는 이 패키지에 포함되지 않습니다. 각자 자기 Claude Code에서 직접 로그인합니다.\n`);
-  add("setup.sh", genSetup(), true);
-  const settings = {permissions:{allow:["Bash(git *)", `Bash(${cmd("build")})`, `Bash(${cmd("test")})`, "Edit(docs/**)"]}};
-  if(S.runMode === "teams" && !mixed()) settings.env = {CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS:"1"};
-  add(".claude/settings.json", JSON.stringify(settings, null, 2) + "\n");
-  ["planner","analyst","architect","developer"].forEach(r => add(`.claude/agents/${ROLE_META[r].file}.md`, agentFile(r)));
-  if(S.verifyPerDev) add(".claude/agents/reviewer.md", agentFile("reviewer"));
-  add(".claude/agents/final-reviewer.md", agentFile("final"));
-  const used = new Set(); Object.keys(S.assign).forEach(r => skillsFor(r).forEach(id => used.add(id)));
-  [...used].sort().forEach(id => {
-    const imp = S.imported.find(m => m.id === id);
-    add(`.claude/skills/${id}/SKILL.md`, imp ? `---\nname: ${id}\ndescription: ${imp.desc}\n---\n\n# ${id}\n\n출처: ${imp.src} (PoC 예시 데이터 — 실제 내용은 가져오기 시 원본에서 복사)\n` : skillFile(id));
+  const F = [], add = (path, content, o = {}) => F.push(Object.assign({path, content}, o));
+  const st = k => STATIC[k];
+  add("CLAUDE.md", genClaude(), {ai:true});
+  add("README.md", genReadme());
+  add(".gitignore", ".agentforge/env.local\n.agentforge/signals/\n.agentforge/panes/\n.agentforge/history/\n.claude/settings.local.json\nnode_modules/\n");
+  add(".claude/settings.json", genSettings());
+  add(".claude/hooks/guard-paths.sh", st("guard-paths.sh"), {exec:true});
+  seqActive().forEach(s => add(`.claude/agents/${s.id}.md`, seqAgent(s.id)));
+  add(".claude/agents/integrator.md", seqAgent("integrator"));
+  S.devs.forEach((d, i) => { if(!devReady(d)) return; const n = i + 1;
+    add(`.claude/agents/dev-${n}.md`, devAgent(d, i), {ai:true});
+    add(`.claude/agents/review-${n}.md`, reviewAgent(d, i), {ai:true});
+    add(`.claude/devs/dev-${n}.paths`, `# 저장소 루트 기준 접두어, 한 줄에 하나\n${pathsOf(d).join("\n")}\ndocs/design/detail/dev-${n}.md\ndocs/report-dev-${n}.md\n`, {ai:true});
+    add(`.claude/devs/review-${n}.paths`, `docs/review/dev-${n}.md\n`);
+    add(`.claude/skills/${devSkill(d, i)}/SKILL.md`, st("md/devskill.tpl.md").replaceAll("{{SKILL}}", devSkill(d, i)).replaceAll("{{N}}", String(n)).replaceAll("{{DOMAIN}}", d.domain.trim()), {ai:true});
   });
-  S.imported.filter(m => m.kind === "에이전트").forEach(m => add(`.claude/agents/${m.id}.md`, `---\nname: ${m.id}\ndescription: ${m.desc}\nmodel: inherit\n---\n\n출처: ${m.src} (PoC 예시 데이터)\n`));
-  add("scripts/run-agents.sh", genRun(), true);
-  if(S.verifyPerDev) add("scripts/wait-and-review.sh", genWait(), true);
-  add("scripts/check-docs.sh", genCheckDocs(), true);
-  add("scripts/agent-env.sh", genAgentEnv(), true);
-  add("scripts/run-role.sh", genRunRole(), true);
-  add("scripts/check-models.sh", genCheckModels(), true);
-  if(usesGateway()){ add("scripts/start-gateway.sh", genStartGateway(), true); add(".agentforge/litellm.yaml", genLitellm()); }
-  usedProviders().map(prov).filter(p => p.type !== "claude").forEach(p => add(`.agentforge/providers/${p.id}.env`, providerEnv(p)));
-  add(".agentforge/tmux.conf", genTmuxConf());
-  const keys = [...new Set(usedProviders().map(prov).map(p => p.key).filter(Boolean))];
-  add(".agentforge/env.local.example", `# 비밀 값만 여기에 입력합니다. setup.sh 가 env.local 로 복사하며 git 에는 올라가지 않습니다\n` + keys.map(k => `${k}=`).join("\n") + (usesGateway() ? `\nLITELLM_MASTER_KEY=sk-local-change-me` : "") + (keys.length || usesGateway() ? "\n" : "# 외부 제공자를 쓰는 역할이 없습니다\n"));
-  add(".agentforge/project.json", JSON.stringify({generator:"AgentForge PoC", name:S.name, stack:S.stack, lang:S.lang, developerCount:S.devCount, providers:S.providers.filter(p => p.on).map(({id,type,base,key}) => ({id,type,base,key})), assignments:Object.fromEntries(assignments()), devs:S.devs, verifyPerDev:S.verifyPerDev, runMode:mixed() ? "script" : S.runMode, tmux:Object.assign({}, S.tmux, {session:session()})}, null, 2) + "\n");
-  if(S.imported.length) add(".agentforge/sources.lock", S.imported.map(m => `${m.kind}\t${m.id}\t${m.src}\t(trust: ${m.trust})`).join("\n") + "\n");
-  add(".gitignore", ".agentforge/env.local\n.agentforge/signals/\n.agentforge/logs/\n");
-  add(".vscode/tasks.json", genTasks());
-  add(".vscode/extensions.json", JSON.stringify({recommendations:["anthropic.claude-code","ms-vscode-remote.remote-wsl","ms-vscode-remote.remote-ssh","ms-vscode-remote.remote-containers", ...st.ext]}, null, 2) + "\n");
-  add(".vscode/settings.json", JSON.stringify({"files.eol":"\n", "terminal.integrated.defaultProfile.windows":"Ubuntu (WSL)", "search.exclude":{".agentforge/logs":true}}, null, 2) + "\n");
-  add(`${slug()}.code-workspace`, JSON.stringify({folders:[{path:"."}, ...S.devs.map((d,i) => ({path:`../${slug()}-dev${i+1}`, name:`dev${i+1}`}))]}, null, 2) + "\n");
-  if(S.devcontainer) add(".devcontainer/devcontainer.json", `{\n  "name": "${slug()}",\n  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",\n  "features": {\n    "ghcr.io/devcontainers/features/node:1": {"version": "22"}${st.feature ? ",\n    " + st.feature : ""}\n  },\n  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y tmux && npm install -g @anthropic-ai/claude-code",\n  "customizations": {"vscode": {"extensions": ["anthropic.claude-code"]}}\n}\n`);
+  CORE_SKILLS.forEach(k => { if(!k.fixed && !S.skills[k.id]) return;
+    let c = st("md/" + k.id + ".md"); if(k.id === "conventions") c = c.replace("{{LANG}}", S.lang === "ko" ? "한국어" : "영어");
+    add(`.claude/skills/${k.id}/SKILL.md`, c); });
+  S.imported.forEach(m => add(`.claude/skills/${m.id}/SKILL.md`, `---\nname: ${m.id}\ndescription: ${m.desc}\n---\n# ${m.id}\n\n출처: ${m.src} (${m.trust})\nPoC 자리표시입니다. 정식 버전은 가져오기 시 출처 저장소의 SKILL.md 원문과 하위 파일을 그대로 넣습니다.\n`));
+  add(".agentforge/forge.config.json", genConfig());
+  add(".agentforge/requirements.md", `# 요구사항 (원문)\n\n${S.req.trim()}\n`);
+  add(".agentforge/env.local.example", genEnvExample());
+  add(".agentforge/templates/prd.md", st("md/prd.tpl.md").replace("{{NAME}}", slug()).replace("{{UI_NOTE}}", S.ui ? "- 화면 목록은 UI/UX 설계 단계(docs/design/ui/screens.md)에서 확정한다. 여기에는 화면이 필요한 기능만 적는다." : "해당 없음 (UI/UX 설계 단계를 쓰지 않는 프로젝트)"));
+  add(".agentforge/templates/dev.md", st("md/dev.tpl.md"));
+  add(".agentforge/templates/review.md", st("md/review.tpl.md"));
+  add(".agentforge/templates/dev-skill.md", st("md/devskill.tpl.md"));
+  if(usesVia("litellm")) add(".agentforge/litellm.yaml", genLitellm());
+  add("scripts/setup.sh", st("setup.sh"), {exec:true});
+  add("scripts/agent-env.sh", genAgentEnv(), {exec:true});
+  add("scripts/run-role.sh", st("run-role.sh"), {exec:true});
+  add("scripts/check-forge.sh", st("check-forge.sh"), {exec:true});
+  add("scripts/create-worktrees.sh", st("create-worktrees.sh"), {exec:true});
+  add("scripts/run-agents.sh", st("run-agents.sh"), {exec:true});
+  add("scripts/wait-and-review.sh", st("wait-and-review.sh"), {exec:true});
+  add("scripts/integrate.sh", st("integrate.sh"), {exec:true});
+  if(usesVia("litellm")) add("scripts/start-gateway.sh", st("start-gateway.sh"), {exec:true});
+  add(".vscode/tasks.json", genTasksJson());
+  ["docs/design/detail/.gitkeep","docs/review/.gitkeep","docs/report/.gitkeep","docs/adr/.gitkeep"].concat(S.ui ? ["docs/design/ui/.gitkeep"] : []).forEach(p => add(p, ""));
   return F;
 }
+function checks(){
+  const C = [];
+  const name = (S.name || "").trim();
+  if(!/^[a-z0-9][a-z0-9._-]*$/.test(name)) C.push(["er", `프로젝트 이름은 영문 소문자·숫자·-·_ 만 씁니다. 지금 값으로는 "${slug()}" 로 만듭니다.`]);
+  if((S.req || "").trim().length < 30) C.push(["wa", "요구사항이 짧습니다. /forge-init 이 질문을 많이 하게 됩니다."]);
+  const all = [];
+  S.devs.forEach((d, i) => pathsOf(d).forEach(p => all.push([i + 1, p])));
+  for(let a = 0; a < all.length; a++) for(let b = a + 1; b < all.length; b++){
+    const [i, p] = all[a], [j, q] = all[b];
+    if(i !== j && (p.startsWith(q) || q.startsWith(p))) C.push(["er", `담당 폴더 겹침: dev-${i}(${p}) / dev-${j}(${q}). 병합 충돌과 hook 우회가 생깁니다.`]);
+  }
+  S.devs.forEach((d, i) => { if(!devReady(d)) C.push(["in", `dev-${i + 1}: 도메인·폴더를 비워 두었습니다. 분석 뒤 /forge-agents 가 만듭니다.`]); });
+  allAgents().forEach(([n, a]) => { if(a.p !== "claude" && !(a.m || "").trim()) C.push(["er", `${n}: 모델 ID를 입력하세요.`]); });
+  S.devs.forEach((d, i) => { if(d.dp === "claude" && d.rp !== "claude") C.push(["wa", `review-${i + 1} 이 dev-${i + 1} 보다 약한 모델일 수 있습니다. 검증자는 개발자와 같거나 더 강한 모델을 권장합니다.`]); });
+  const free = allAgents().filter(([, a]) => a.p === "openrouter" && /:free$/.test(a.m || "")).length;
+  if(free) C.push(["wa", `OpenRouter 무료 모델 ${free}개 에이전트: 계정 전체 분당 20회·하루 50회(10달러 이상 충전 시 하루 1,000회) 한도를 함께 씁니다.`]);
+  if(usesVia("litellm")) C.push(["in", "OpenAI·Gemini 는 LiteLLM 게이트웨이를 거칩니다. 병렬 실행 전에 scripts/start-gateway.sh 를 띄우세요."]);
+  if(usesVia("vllm")) C.push(["in", "사내 vLLM 은 --enable-auto-tool-choice --tool-call-parser 옵션으로 실행되어야 파일 수정이 됩니다."]);
+  S.imported.forEach(m => { if(m.flags.length && !S.ack[m.id]) C.push(["er", `${m.id}: 위험 항목을 확인하지 않았습니다(스킬 단계).`]); });
+  if(!S.ui) C.push(["in", "UI/UX 설계 단계를 쓰지 않습니다. 분석 다음 바로 시스템 설계로 갑니다."]);
+  if(!C.some(c => c[0] === "er" || c[0] === "wa")) C.unshift(["ok", "구성에 문제가 없습니다."]);
+  return C;
+}
+/*GEN-END*/
+
+try{ const raw = localStorage.getItem("agentforge-poc-v6"); if(raw){ const o = JSON.parse(raw); if(o && o.v === 6) S = Object.assign(DEF(), o); } }catch(e){}
+syncDevs();
+let saveT; function save(){ clearTimeout(saveT); saveT = setTimeout(() => { try{ localStorage.setItem("agentforge-poc-v6", JSON.stringify(S)); }catch(e){} }, 300); }
 
 /* ---------- 화면 ---------- */
-const STEPS = ["요구사항 입력","CLAUDE.md · PRD","에이전트 · 루틴","스킬","터미널 · VS Code","내보내기"];
+const STEPS = ["요구사항", "루틴·에이전트", "개발자", "스킬", "연결·실행", "생성"];
 function renderSteps(){
-  $("#steps").innerHTML = STEPS.map((t,i) => `<li><button type="button" data-act="go" data-i="${i}" ${i===S.step ? 'aria-current="step"' : ""}><span class="n">${i+1}</span>${t}</button></li>`).join("");
-  $("#hdrSum").textContent = `${S.name} · 개발자 ${S.devCount}명 · 터미널 ${1 + S.devCount * (S.verifyPerDev ? 2 : 1) + (usesGateway() ? 1 : 0)}개 · 제공자 ${usedProviders().length}종`;
+  const C = checks(), bad = C.some(c => c[0] === "er");
+  $("#steps").innerHTML = STEPS.map((t, i) => `<li><button type="button" data-act="go" data-i="${i}" ${i === S.step ? 'aria-current="step"' : ""}><span class="n">${i + 1}</span>${t}${i === 5 && bad ? '<span class="warnDot" title="확인할 항목 있음"></span>' : ""}</button></li>`).join("");
+  $("#hdrSum").textContent = `${slug()} · 개발자 ${S.devCount}명 · 에이전트 ${allAgents().length}개`;
 }
-const opt = (list, v) => list.map(([k,l]) => `<option value="${k}" ${k===v ? "selected" : ""}>${esc(l)}</option>`).join("");
-const navBtns = () => `<div class="nav"><button type="button" data-act="go" data-i="${S.step-1}" ${S.step===0 ? "disabled" : ""}>이전</button>${S.step < STEPS.length-1 ? `<button type="button" class="primary" data-act="go" data-i="${S.step+1}">다음: ${STEPS[S.step+1]}</button>` : ""}</div>`;
+const navBtns = () => `<div class="nav"><button type="button" data-act="go" data-i="${S.step - 1}" ${S.step === 0 ? "disabled" : ""}>이전</button>${S.step < 5 ? `<button type="button" class="primary" data-act="go" data-i="${S.step + 1}">다음: ${STEPS[S.step + 1]}</button>` : ""}</div>`;
+function provSelect(id, val, attrs){
+  return `<select id="${id}" ${attrs}>${PROVIDERS.map(p => `<option value="${p.id}" ${p.id === val ? "selected" : ""}>${esc(p.label)}</option>`).join("")}</select>`;
+}
+function modelInput(id, a, attrs){
+  const p = prov(a.p);
+  return `<input type="text" id="${id}" list="dl-${p.id}" value="${esc(a.m || "")}" placeholder="${p.id === "claude" ? "opus / sonnet / haiku" : "모델 ID"}" ${attrs}>`;
+}
+const datalists = () => PROVIDERS.map(p => `<datalist id="dl-${p.id}">${p.models.map(m => `<option value="${esc(m)}">`).join("")}</datalist>`).join("");
+
 function p0(){
-  const st = STACKS[S.stack];
-  return `<h2>1. 환경 기본 설정</h2><p class="lead">이 도구는 멀티 에이전트 개발 <b>환경</b>만 만듭니다. 무엇을 개발할지는 생성된 환경의 <code class="mono">docs/prd.md</code> 양식에 직접 작성합니다. 생성 과정에서 AI를 호출하지 않습니다.</p>
+  return `<h2>요구사항</h2>
+  <p class="lead">무엇을 만들지 적으면 생성되는 <b>/forge-init</b> 스킬이 사용자의 Claude Code 안에서 PRD와 CLAUDE.md 프로젝트 구간을 씁니다. 이 화면은 AI를 호출하지 않습니다.</p>
   <div class="grid2">
-    <label class="f">프로젝트(폴더) 이름 · 영문<input type="text" id="f-name" data-bind="name" value="${esc(S.name)}"></label>
-    <label class="f">개발 환경 프리셋<select id="f-stack" data-bind="stack" data-re="1">${opt(Object.entries(STACKS).map(([k,v]) => [k,v.label]), S.stack)}</select></label>
-    <label class="f">빌드 명령<input type="text" id="f-build" data-bind="build" class="mono" placeholder="${esc(st.build || "예: mvn package")}" value="${esc(S.build)}"></label>
-    <label class="f">테스트 명령<input type="text" id="f-test" data-bind="test" class="mono" placeholder="${esc(st.test || "예: mvn test")}" value="${esc(S.test)}"></label>
-    <label class="f">에이전트 답변 언어<select id="f-lang" data-bind="lang">${opt([["ko","한국어"],["en","English"]], S.lang)}</select></label>
-    <div class="f" style="display:flex;flex-direction:column;gap:5px"><span class="sub" style="font-weight:600;font-size:12.5px">개발자 수 (병렬)</span>
-      <div class="row"><span class="stepper"><button type="button" data-act="dev" data-d="-1" aria-label="개발자 줄이기">−</button><output>${S.devCount}</output><button type="button" data-act="dev" data-d="1" aria-label="개발자 늘리기">+</button></span><span class="sub">1~6명 · 권장 3명</span></div></div>
+    <label class="f">프로젝트 이름(폴더·tmux 세션명)<input type="text" id="f-name" data-bind="name" value="${esc(S.name)}"></label>
+    <label class="f">답변·문서 언어<select id="f-lang" data-bind="lang"><option value="ko" ${S.lang === "ko" ? "selected" : ""}>한국어</option><option value="en" ${S.lang === "en" ? "selected" : ""}>English</option></select></label>
   </div>
-  <label class="row" style="font-size:13px"><input type="checkbox" id="f-closed" data-bind="closed" ${S.closed ? "checked" : ""}> 폐쇄망(사내망) 환경 — CLAUDE.md에 외부 접근 금지 규칙 추가</label>
-  <div class="note">빌드·테스트 명령은 비워 두면 프리셋 기본값을 씁니다. 에이전트의 완료 기준과 권한 허용 목록(settings.json)에 들어갑니다.</div>
-  ${navBtns()}`;
+  <label class="f">요구사항 (자유 문장 · .agentforge/requirements.md 로 저장)<textarea id="f-req" data-bind="req">${esc(S.req)}</textarea></label>
+  <div class="row"><span class="sub" style="font-weight:600">병렬 개발자 수</span>
+    <div class="stepper"><button type="button" data-act="dev" data-d="-1" aria-label="개발자 줄이기">−</button><output>${S.devCount}</output><button type="button" data-act="dev" data-d="1" aria-label="개발자 늘리기">+</button></div>
+    <span class="sub">1~6명 · 개발자마다 dev-N, review-N 에이전트와 tmux 창 1개</span></div>
+  <label class="toggle"><input type="checkbox" id="f-ui" data-bind="ui" data-re="1" ${S.ui ? "checked" : ""}><div><b>UI/UX 설계 단계 사용</b><span>화면이 있는 프로젝트. 끄면 분석 다음 바로 시스템 설계로 갑니다(백엔드·배치·CLI).</span></div></label>
+  <div class="grid2">
+    <label class="f">설치 명령(worktree마다 실행)<input type="text" id="f-install" data-bind="cmd.install" value="${esc(S.cmd.install)}"></label>
+    <label class="f">테스트 명령<input type="text" id="f-test" data-bind="cmd.test" value="${esc(S.cmd.test)}"></label>
+    <label class="f">E2E 명령(통합 검증, 선택)<input type="text" id="f-e2e" data-bind="cmd.e2e" value="${esc(S.cmd.e2e)}"></label>
+    <label class="f">반려 한도(초과 시 사람 개입)<select id="f-max" data-bind="maxRejects">${[2,3,4,5].map(n => `<option ${+S.maxRejects === n ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+  </div>${navBtns()}`;
+}
+function flowHtml(){
+  const node = (s, extra = "") => { const a = S.agents[s.id]; return `<div class="st ${extra}"><span class="k">${s.id}</span><b>${s.step}${s.opt ? " (선택)" : ""}</b><small>${esc(label(a))}</small></div>`; };
+  const seq = SEQ.map(s => node(s, s.opt ? (S.ui ? "opt" : "opt off") : "")).join('<span class="ar">→</span>');
+  const pairs = S.devs.map((d, i) => `<div class="pr"><span class="d">dev-${i + 1} 상세 설계 → 개발</span>→<span class="r">review-${i + 1} 검증</span></div>`).join("");
+  return `<div class="flow"><div class="seq">${seq}<span class="ar">→</span><div class="par"><span class="lbl">병렬 · 개발자마다 tmux 창 1개</span>${pairs}</div><span class="ar">→</span>${node(FINAL, "fin")}</div></div>`;
 }
 function p1(){
-  const ck = checks(), nAg = rolesInUse().filter(r => ROLE_META[r].file).length + S.imported.filter(m => m.kind === "에이전트").length;
-  const legend = S.docTab === "claude"
-    ? `<div class="checks"><span class="chip">고정 템플릿: 언어 규칙 · 개발 환경 · 병렬 개발 기본 기준 9항</span><span class="chip acc">자동 등록: 에이전트 ${nAg} · 개발자 ${S.devCount} · 스킬 ${usedSkills().length}</span></div>`
-    : `<div class="checks"><span class="chip">빈 양식 · 7개 장</span><span class="chip warn">내용은 프로젝트 담당자가 작성</span></div>`;
-  return `<h2>2. CLAUDE.md · PRD 미리보기</h2><p class="lead">두 파일 모두 설정값으로 자동 생성되며 AI를 쓰지 않습니다. CLAUDE.md는 병렬 개발 기본 기준과, 3·4단계에서 정한 에이전트·스킬이 자동 등록되는 구간으로 구성됩니다. PRD는 빈 양식입니다.</p>
-  <div class="tabs" role="tablist"><button type="button" role="tab" data-act="doctab" data-t="claude" aria-selected="${S.docTab==="claude"}">CLAUDE.md</button><button type="button" role="tab" data-act="doctab" data-t="prd" aria-selected="${S.docTab==="prd"}">docs/prd.md</button></div>
-  ${legend}
-  <pre class="view" style="max-height:60vh" tabindex="0">${esc(S.docTab === "claude" ? docClaude() : docPrd())}</pre>
-  <div><h3>설정 점검</h3><div class="checks" id="checks" style="margin-top:8px">${checkChips(ck)}</div></div>
-  ${navBtns()}`;
-}
-function checkChips(ck){
-  return ck.list.map(([t,ok]) => `<span class="chip ${ok ? "good" : "bad"}">${ok ? "✓" : "✕"} ${esc(t)}</span>`).join("");
+  const rows = [...SEQ, FINAL].map((s, k) => {
+    const off = s.opt && !S.ui, a = S.agents[s.id];
+    return `<tr ${off ? 'style="opacity:.45"' : ""}><td class="mono">${k + 1 > 5 ? 8 : k + 1}</td><td><b>${s.step}</b>${s.opt ? ' <span class="chip">선택</span>' : ""}<div class="mono sub">${s.id}</div></td>
+      <td>${provSelect("a-" + s.id + "-p", a.p, `data-agent="${s.id}" data-field="p" ${off ? "disabled" : ""}`)}</td>
+      <td>${modelInput("a-" + s.id + "-m", a, `data-agent="${s.id}" data-field="m" ${off ? "disabled" : ""}`)}</td>
+      <td class="gate">${esc(s.out)}<br>관문: ${esc(s.gate)}</td></tr>`;
+  }).join("");
+  return `<h2>루틴과 순차 단계 에이전트</h2>
+  <p class="lead">공통 개발까지는 순차로 경계를 고정하고, 그 뒤에만 개발자별로 갈라집니다. 6·7단계(병렬) 에이전트는 다음 화면에서 개발자마다 정합니다.</p>
+  ${flowHtml()}
+  <div class="tw"><table class="t"><thead><tr><th>#</th><th>단계</th><th>제공자</th><th>모델</th><th>산출물 · 관문</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="note"><b>제공자는 에이전트(세션) 단위로 정해집니다.</b> 생성되는 scripts/agent-env.sh 가 실행 시점에 에이전트 이름으로 주소·모델을 고릅니다. Claude 는 사용자가 직접 로그인한 계정을 씁니다.</div>
+  ${datalists()}${navBtns()}`;
 }
 function p2(){
-  const n = S.devCount;
-  const pairs = S.devs.map((d,i) => `<div class="pair"><div class="node dev">개발 ${i+1}<small>${esc(showModel(effDev(i)))}</small></div>${S.verifyPerDev ? `<span class="arrow">완료 →</span><div class="node rev">검증 ${i+1}<small>${esc(showModel(S.roles.reviewer))}</small></div>` : ""}</div>`).join("");
-  const onProv = S.providers.filter(p => p.on);
-  const provSel = (attrs, v, withDefault) => `<select ${attrs} style="width:auto">${withDefault ? `<option value="" ${!v ? "selected" : ""}>개발 역할 기본값</option>` : ""}${onProv.map(p => `<option value="${p.id}" ${p.id === v ? "selected" : ""}>${esc(p.label)}</option>`).join("")}</select>`;
-  const modelIn = (attrs, a) => `<input type="text" ${attrs} list="dl-${a.provider}" value="${esc(a.model || "")}" placeholder="${a.provider === "gemini" ? "Google AI Studio 모델 ID" : a.provider === "inhouse" ? "served-model-name" : "모델 ID"}" style="min-width:160px;flex:1">`;
-  const warn = (a, r) => {
-    const w = [], p = prov(a.provider);
-    if(!a.model && a.provider !== "claude") w.push(["bad","모델 ID를 입력하세요"]);
-    if(p.type === "gateway") w.push(["warn","LiteLLM 게이트웨이 필요 · API 키 과금"]);
-    if(p.type !== "claude") w.push(["warn","도구 호출·64K 컨텍스트 점검 필요"]);
-    if(r === "lead" && p.type !== "claude") w.push(["bad","리드는 Claude 권장 (조율·도구 호출 안정성)"]);
-    if(["planner","analyst","architect","final"].includes(r) && a.provider !== S.roles.lead.provider) w.push(["acc","리드와 제공자가 달라 run-role.sh로 별도 터미널 실행"]);
-    return w.map(([c,t]) => `<span class="chip ${c}">${esc(t)}</span>`).join("");
-  };
-  const roleRow = r => {
-    const m = ROLE_META[r];
-    return `<div class="role"><div class="row" style="justify-content:space-between"><div class="row"><b>${m.label}</b><span class="chip">${m.file ? ".claude/agents/" + m.file + ".md" : "메인 세션"}</span></div>
-      <div class="row" style="flex:1;justify-content:flex-end;min-width:260px">${provSel(`aria-label="${m.label} 제공자" data-role="${r}" data-field="provider"`, S.roles[r].provider, false)}${modelIn(`aria-label="${m.label} 모델" data-role="${r}" data-field="model"`, S.roles[r])}</div></div>
-      <p class="sub" style="margin:6px 0 0">${m.desc}</p>
-      <div class="checks" style="margin-top:6px">${warn(S.roles[r], r)}</div>
-      ${m.file ? `<details><summary class="sub" style="cursor:pointer;margin-top:6px">프롬프트 편집</summary><textarea aria-label="${m.label} 프롬프트" data-prompt="${r}" spellcheck="false">${esc(S.prompts[r] || m.prompt)}</textarea></details>` : ""}</div>`;
-  };
-  return `<h2>3. 에이전트 · 루틴</h2><p class="lead">순차 단계는 리드 터미널에서 진행하고, 개발과 개발별 검증은 에이전트마다 별도 터미널에서 병렬로 실행합니다.</p>
-  <div class="pipe" aria-label="루틴 흐름">
-    <div class="seq"><div class="node">PM (리드)<small>터미널 1</small></div><span class="arrow">→</span><div class="node">기획<small>승인</small></div><span class="arrow">→</span><div class="node">분석<small>승인</small></div><span class="arrow">→</span><div class="node">설계<small>승인</small></div></div>
-    <div class="seq"><span class="arrow">↳</span><div class="par"><span class="lbl">병렬 · tmux pane + worktree × ${n}</span>${pairs}</div><span class="arrow">→</span><div class="node">최종 검증<small>병합 후</small></div><span class="arrow">→</span><div class="node">PM 취합</div></div>
-  </div>
-  <div class="row"><label class="row" style="font-size:13px"><input type="checkbox" id="f-vpd" data-bind="verifyPerDev" data-re="1" ${S.verifyPerDev ? "checked" : ""}> 개발별 검증 병렬 실행</label>
-    <label class="f" style="flex-direction:row;align-items:center;gap:8px">실행 모드<select id="f-mode" data-bind="runMode" style="width:auto">${opt([["script","스크립트 모드 (권장 · 제공자 혼용 가능)"],["teams","Agent Teams 분할 창 (실험 기능)"]], S.runMode)}</select></label></div>
-  ${mixed() ? `<div class="checks"><span class="chip acc">제공자 ${usedProviders().length}종 혼용</span>${S.runMode === "teams" ? `<span class="chip bad">혼용 시 Agent Teams 불가 → 스크립트 모드로 생성됩니다</span>` : ""}${usesGateway() ? `<span class="chip warn">LiteLLM 게이트웨이 창이 함께 실행됩니다</span>` : ""}</div>` : ""}
-  <div style="display:flex;flex-direction:column;gap:8px"><h3>모델 제공자</h3>
-  <div class="tw"><table class="t"><thead><tr><th>사용</th><th>제공자</th><th>연결 방식</th><th>접속 주소</th><th>키 변수 (env.local)</th></tr></thead><tbody>
-    ${S.providers.map((p,i) => `<tr><td><input type="checkbox" aria-label="${esc(p.label)} 사용" data-prov="${i}" data-field="on" ${p.on ? "checked" : ""} ${p.id === "claude" ? "disabled" : ""}></td>
-      <td><b>${esc(p.label)}</b><div class="sub">${esc(p.note)}</div></td><td><span class="chip">${TYPE_LABEL[p.type]}</span></td>
-      <td>${p.type === "anthropic" ? `<input type="text" aria-label="${esc(p.label)} 주소" data-prov="${i}" data-field="base" value="${esc(p.base)}">` : `<span class="sub">${p.type === "gateway" ? "localhost:4000 (게이트웨이)" : "—"}</span>`}</td>
-      <td>${p.type === "claude" || p.id === "ollama" ? `<span class="sub">불필요</span>` : `<input type="text" aria-label="${esc(p.label)} 키 변수" data-prov="${i}" data-field="key" value="${esc(p.key)}" class="mono">`}</td></tr>`).join("")}
-  </tbody></table></div>
-  <p class="note">API 키 값은 이 화면에 입력하지 않습니다. 생성된 <code class="mono">.agentforge/env.local</code>에 사용자가 직접 넣으며 git에 올라가지 않습니다. ChatGPT·Gemini 앱 구독은 쓸 수 없고 각 사의 API 키가 필요합니다.</p></div>
-  ${Object.entries(SUGGEST).map(([k,v]) => `<datalist id="dl-${k}">${v.map(x => `<option value="${esc(x)}">`).join("")}</datalist>`).join("")}
-  <div class="tw"><table class="t"><thead><tr><th>개발자</th><th>담당 폴더</th><th>제공자 · 모델</th></tr></thead><tbody>
-    ${S.devs.map((d,i) => `<tr><td>dev${i+1}</td><td><input type="text" aria-label="dev${i+1} 담당 폴더" data-dev="${i}" data-field="folder" value="${esc(d.folder)}"></td>
-      <td><div class="row">${provSel(`aria-label="dev${i+1} 제공자" data-dev="${i}" data-field="provider"`, d.provider, true)}${d.provider ? modelIn(`aria-label="dev${i+1} 모델" data-dev="${i}" data-field="model"`, d) : `<span class="sub">${esc(showModel(S.roles.developer))}</span>`}</div>
-      <div class="checks" style="margin-top:4px">${d.provider ? warn(d, "dev") : ""}</div></td></tr>`).join("")}
-  </tbody></table></div>
-  <div style="display:flex;flex-direction:column;gap:8px">${["lead","planner","analyst","architect","developer", ...(S.verifyPerDev ? ["reviewer"] : []), "final"].map(roleRow).join("")}</div>
-  ${navBtns()}`;
+  const rows = S.devs.map((d, i) => `<tr><td class="mono"><b>dev-${i + 1}</b><br><span class="sub">review-${i + 1}</span></td>
+    <td><input type="text" id="d${i}-domain" data-dev="${i}" data-field="domain" value="${esc(d.domain)}" placeholder="예: order"></td>
+    <td><input type="text" id="d${i}-paths" data-dev="${i}" data-field="paths" value="${esc(d.paths)}" placeholder="src/order/, tests/order/"></td>
+    <td>${provSelect(`d${i}-dp`, d.dp, `data-dev="${i}" data-field="dp"`)}${modelInput(`d${i}-dm`, {p:d.dp, m:d.dm}, `data-dev="${i}" data-field="dm" style="margin-top:4px"`)}</td>
+    <td>${provSelect(`d${i}-rp`, d.rp, `data-dev="${i}" data-field="rp"`)}${modelInput(`d${i}-rm`, {p:d.rp, m:d.rm}, `data-dev="${i}" data-field="rm" style="margin-top:4px"`)}</td></tr>`).join("");
+  const ov = checks().filter(c => /겹침|약한/.test(c[1]));
+  return `<h2>개발자별 에이전트</h2>
+  <p class="lead">개발자마다 전용 에이전트(dev-N)와 짝 검증자(review-N), 전용 스킬(devN-도메인), 담당 범위 파일(.claude/devs/dev-N.paths)이 만들어집니다. 도메인과 폴더를 비워 두면 분석이 끝난 뒤 <b>/forge-agents</b> 가 tasks.md 기준으로 만듭니다.</p>
+  <div class="tw"><table class="t"><thead><tr><th>에이전트</th><th>도메인</th><th>담당 폴더(쉼표 구분)</th><th>개발 모델</th><th>검증 모델</th></tr></thead><tbody>${rows}</tbody></table></div>
+  ${ov.length ? `<div class="ck">${ov.map(c => `<div class="${c[0]}"><span class="i">${c[0] === "er" ? "✕" : "!"}</span><span>${esc(c[1])}</span></div>`).join("")}</div>` : ""}
+  <div class="note"><b>담당 범위는 hook이 강제합니다.</b> Edit·Write 가 범위 밖 파일을 건드리면 guard-paths.sh 가 막고(exit 2) 이유를 에이전트에게 돌려줍니다. Bash 로 우회한 변경은 검토 전에 git diff 범위 검사로 다시 걸러냅니다.</div>
+  ${datalists()}${navBtns()}`;
 }
 function p3(){
-  const roles = ["lead","planner","analyst","architect","developer", ...(S.verifyPerDev ? ["reviewer"] : []), "final"];
-  const all = [...LIB, ...S.imported.filter(m => m.kind === "스킬").map(m => ({id:m.id, role:m.fit[0], desc:m.desc, src:m.src}))];
-  const q = S.mkq.trim().toLowerCase();
-  const items = MARKET.filter(m => !q || (m.id + m.desc + m.src + m.fit.join("")).toLowerCase().includes(q));
-  return `<h2>4. 에이전트별 스킬</h2><p class="lead">스킬은 <code class="mono">.claude/skills/&lt;이름&gt;/SKILL.md</code>로 생성되고, 체크한 역할의 에이전트 정의 <code class="mono">skills:</code>에 들어갑니다.</p>
-  <div class="tw"><table class="t"><thead><tr><th>스킬</th>${roles.map(r => `<th>${ROLE_META[r].label}</th>`).join("")}</tr></thead><tbody>
-    ${all.map(l => `<tr><td><b class="mono">${esc(l.id)}</b><div class="sub">${esc(l.desc)}${l.src !== "내장" ? ` · <span class="chip">${esc(l.src)}</span>` : ""}</div></td>${roles.map(r => `<td><input type="checkbox" aria-label="${esc(l.id)} → ${ROLE_META[r].label}" data-assign="${r}" data-skill="${esc(l.id)}" ${(S.assign[r] || []).includes(l.id) ? "checked" : ""}></td>`).join("")}</tr>`).join("")}
-  </tbody></table></div>
-  <div style="display:flex;flex-direction:column;gap:10px"><div class="row" style="justify-content:space-between"><h3>공유 사이트에서 가져오기</h3><span class="chip warn">예시 카탈로그 · 실제 연동 전</span></div>
-    <input type="text" id="f-mkq" data-bind="mkq" data-re="1" placeholder="검색: 테스트, oracle, 리뷰 …" value="${esc(S.mkq)}" aria-label="마켓플레이스 검색">
-    <div class="mk">${items.map(m => {
-      const done = S.imported.some(x => x.id === m.id), risky = m.flags.length > 0, ok = !risky || S.ack[m.id];
-      const tc = m.trust === "공식" || m.trust === "조직 승인" ? "good" : m.trust === "커뮤니티" ? "warn" : "bad";
-      return `<div class="mk-item"><div class="h"><div class="row"><b class="mono">${esc(m.id)}</b><span class="chip">${m.kind}</span><span class="chip ${tc}">${m.trust}</span></div>
-        <button type="button" data-act="import" data-id="${m.id}" ${done || !ok ? "disabled" : ""}>${done ? "가져옴" : "가져오기"}</button></div>
-        <div class="sub">${esc(m.desc)} · <span class="mono">${esc(m.src)}</span></div>
-        ${risky ? `<div class="note" style="color:var(--bad)">주의: ${m.flags.map(esc).join(", ")}</div>${done ? "" : `<label class="row" style="font-size:12.5px"><input type="checkbox" data-act="ack" data-id="${m.id}" ${S.ack[m.id] ? "checked" : ""}> 위험 항목을 확인했고 포함하겠습니다</label>`}` : ""}</div>`;}).join("") || `<p class="sub">검색 결과가 없습니다.</p>`}</div></div>
+  const core = l => CORE_SKILLS.filter(k => k.layer === l).map(k => `<label class="sk"><input type="checkbox" id="sk-${k.id}" data-skill="${k.id}" ${k.fixed ? "checked disabled" : (S.skills[k.id] ? "checked" : "")}><span><code>${k.id}</code> — ${esc(k.desc)}<br><span class="sub">${esc(k.to)}${k.fixed ? " · 필수" : ""}</span></span></label>`).join("");
+  const devs = S.devs.map((d, i) => devReady(d) ? `<div class="sk"><span class="chip acc">dev-${i + 1}</span><span><code>${devSkill(d, i)}</code> — ${esc(d.domain)} 도메인 용어·규칙·API·테스트 데이터 <span class="chip ver">AI</span></span></div>` : `<div class="sk"><span class="chip">dev-${i + 1}</span><span class="sub">도메인 미정 · /forge-agents 가 생성</span></div>`).join("");
+  const mk = MARKET.map(m => { const got = S.imported.find(x => x.id === m.id);
+    return `<div class="mk-item"><div class="h"><span><code>${m.id}</code> <span class="chip ${m.trust === "공식" ? "acc" : m.trust === "미검증" ? "ver" : ""}">${m.trust}</span></span>
+      ${got ? `<span class="row"><select id="mt-${m.id}" data-target="${m.id}" aria-label="적용 대상">${Object.entries(TARGETS).map(([k, v]) => `<option value="${k}" ${got.target === k ? "selected" : ""}>${v}</option>`).join("")}</select><button type="button" class="small" data-act="unimport" data-id="${m.id}">빼기</button></span>` : `<button type="button" class="small" data-act="import" data-id="${m.id}">가져오기</button>`}</div>
+      <span class="sub">${esc(m.desc)} · ${esc(m.src)}</span>
+      ${m.flags.map(f => `<span class="flag">위험: ${esc(f)}</span>`).join("")}
+      ${got && m.flags.length ? `<label class="sk"><input type="checkbox" id="ack-${m.id}" data-ack="${m.id}" ${S.ack[m.id] ? "checked" : ""}><span>위험 항목을 확인했고 포함합니다</span></label>` : ""}</div>`; }).join("");
+  return `<h2>스킬</h2>
+  <p class="lead">스킬은 지식을 주는 수단이고 강제는 hook이 합니다. 스킬 폴더는 접근 제한이 없으므로 각 에이전트 정의의 <code class="mono">skills:</code> 목록으로 필요한 것만 미리 불러옵니다.</p>
+  <div class="layer"><h3>공통 계층</h3>${core("공통")}</div>
+  <div class="layer"><h3>역할 계층</h3>${core("역할")}</div>
+  <div class="layer"><h3>개발자 전용 계층</h3>${devs}</div>
+  <div class="layer"><h3>생성 스킬 <span class="chip ver">사용자 Claude Code 에서 실행</span></h3>${core("생성")}</div>
+  <div class="layer"><h3>공유 사이트에서 가져오기 <span class="chip">PoC 목록</span></h3>${mk}
+    <span class="sub">공식 외 저장소는 Anthropic 이 검토하지 않습니다. 실행 스크립트, 넓은 사전 허용, 권한 확인 생략은 확인 후에만 포함합니다.</span></div>
   ${navBtns()}`;
 }
 function tmuxPreview(){
-  const L = S.tmux.layout, wins = [{n:"lead", p:[["PM-lead","", showModel(S.roles.lead)]]}];
-  if(usesGateway()) wins.push({n:"gateway", p:[["gateway","","LiteLLM :4000"]]});
-  const dv = S.devs.map((d,i) => ["dev" + (i+1), "d", showModel(effDev(i))]), rv = S.verifyPerDev ? S.devs.map((d,i) => ["review" + (i+1), "r", showModel(S.roles.reviewer)]) : [];
-  if(L === "pair") S.devs.forEach((d,i) => wins.push({n:"pair" + (i+1), p:[dv[i], ...(rv[i] ? [rv[i]] : [])]}));
-  else if(L === "tiled") wins.push({n:"agents", p:S.devs.flatMap((d,i) => [dv[i], ...(rv[i] ? [rv[i]] : [])])});
-  else { wins.push({n:"dev", p:dv}); if(rv.length) wins.push({n:"review", p:rv}); }
-  return `<div class="tmux" aria-label="tmux 화면 미리보기"><div class="wins">${wins.map((w,wi) => {
-    const cols = L === "pair" ? w.p.length : Math.ceil(Math.sqrt(w.p.length));
-    return `<div class="win"><span class="wn">${wi}:${w.n}</span><div class="panes" style="grid-template-columns:repeat(${cols},1fr)">${w.p.map(([t,c,mdl]) => `<div class="pane ${c}">${S.tmux.titles ? esc(t) : ""}<br><span style="opacity:.75">${esc(mdl)}</span></div>`).join("")}</div></div>`;}).join("")}</div>
-    <span class="bar">[${esc(session())}] ${wins.map((w,i) => i + ":" + w.n).join("  ")}</span></div>`;
+  const wins = S.devs.map((d, i) => `<div class="win"><span class="wn">${i + 1}:dev${i + 1}</span><div class="panes"><div class="pane d">dev-${i + 1}<br>${esc(label({p:d.dp, m:d.dm}))}</div><div class="pane r">review-${i + 1}<br>${esc(label({p:d.rp, m:d.rm}))}</div></div></div>`).join("");
+  return `<div class="tmux"><div class="wins"><div class="win"><span class="wn">0:watch</span><div class="panes"><div class="pane w">wait-and-review.sh<br>신호 감시 · 범위 검사 · 반려 ${S.maxRejects}회 한도</div></div></div>${wins}</div><span class="bar">[${esc(slug())}] 0:watch ${S.devs.map((_, i) => `${i + 1}:dev${i + 1}`).join(" ")}</span></div>`;
 }
 function p4(){
-  const t = S.tmux;
-  return `<h2>5. 터미널 · VS Code</h2><p class="lead">VS Code에서 폴더를 열고 작업 메뉴의 <b>Forge: 병렬 개발 시작</b>을 실행하면, 아래 배치대로 에이전트마다 별도 터미널이 열립니다.</p>
+  const used = [...new Set(allAgents().map(([, a]) => a.p))];
+  const rows = used.map(id => { const p = prov(id), n = allAgents().filter(([, a]) => a.p === id).length;
+    let conn = "직접 로그인(구독 또는 API 키)";
+    if(id === "vllm") conn = `<input type="text" id="c-vllm" data-bind="conn.vllm" value="${esc(S.conn.vllm)}" aria-label="vLLM 주소">`;
+    if(id === "ollama") conn = `<input type="text" id="c-ollama" data-bind="conn.ollama" value="${esc(S.conn.ollama)}" aria-label="Ollama 주소">`;
+    if(id === "openrouter") conn = "https://openrouter.ai/api · 키는 env.local";
+    if(p.via === "litellm") conn = "http://localhost:4000 (LiteLLM) · 키는 env.local";
+    return `<tr><td><b>${esc(p.label)}</b></td><td class="mono">${n}</td><td>${conn}</td></tr>`; }).join("");
+  return `<h2>연결과 병렬 실행</h2>
+  <p class="lead">AgentForge 는 키를 받지 않습니다. 생성된 <code class="mono">.agentforge/env.local.example</code> 을 복사해 사용자가 직접 넣습니다. 주소 기본값만 여기서 정합니다.</p>
+  <div class="tw"><table class="t"><thead><tr><th>사용 중인 제공자</th><th>에이전트 수</th><th>연결</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <h3>tmux 배치 (개발자 쌍별 창)</h3>
   ${tmuxPreview()}
-  <div class="grid2">
-    <label class="f">창 배치<select id="f-lay" data-bind="tmux.layout" data-re="1">${opt([["pair","쌍별 창 (개발 i │ 검증 i)"],["tiled","한 창 바둑판"],["role","역할별 창 (개발 창, 검증 창)"]], t.layout)}</select></label>
-    <label class="f">세션 이름<input type="text" id="f-sess" data-bind="tmux.session" data-re="1" placeholder="${esc(slug())}-forge" value="${esc(t.session)}"></label>
-    <label class="f">접두 키<select id="f-prefix" data-bind="tmux.prefix">${opt([["C-b","Ctrl+b (기본)"],["C-a","Ctrl+a"]], t.prefix)}</select></label>
-  </div>
-  <div class="row">
-    <label class="row" style="font-size:13px"><input type="checkbox" id="f-mouse" data-bind="tmux.mouse" ${t.mouse ? "checked" : ""}> 마우스 사용</label>
-    <label class="row" style="font-size:13px"><input type="checkbox" id="f-titles" data-bind="tmux.titles" data-re="1" ${t.titles ? "checked" : ""}> pane 제목(역할) 표시</label>
-    <label class="row" style="font-size:13px"><input type="checkbox" id="f-logs" data-bind="tmux.logs" ${t.logs ? "checked" : ""}> 터미널 출력 기록</label>
-    <label class="row" style="font-size:13px"><input type="checkbox" id="f-dc" data-bind="devcontainer" ${S.devcontainer ? "checked" : ""}> Dev Container 포함 (Windows 권장)</label>
-  </div>
-  <div class="note"><b>생성되는 VS Code 작업</b> — Forge: 병렬 개발 시작 · 세션 다시 붙기 · 진행 상황 보기 · 문서 점검 · 전체 종료. VS Code 창을 닫아도 tmux 세션은 계속 실행됩니다.</div>
+  <div class="note"><b>VS Code</b>: 통합 터미널(WSL)에서 <code class="mono">Tasks: Run Task → AF: 병렬 실행</code>. 신호 파일은 메인 저장소의 <code class="mono">.agentforge/signals/</code> 에 모이고, 감시 창이 tmux pane id 로 메시지를 전달합니다.</div>
   ${navBtns()}`;
 }
 function p5(){
-  const F = buildFiles(), ex = F.filter(f => f.exec).length;
-  return `<h2>6. 내보내기</h2><p class="lead">생성한 환경을 ZIP으로 받거나 GitHub 저장소로 만듭니다. Claude 인증 정보는 포함되지 않으며, 사용자가 받은 뒤 직접 로그인합니다.</p>
-  <div class="note"><b>ZIP 다운로드</b> — 파일 ${F.length}개, 실행 권한 스크립트 ${ex}개 포함. 압축을 푼 뒤 <code class="mono">./setup.sh</code>를 실행하세요.</div>
+  const C = checks(), F = buildFiles(), ex = F.filter(f => f.exec).length, ai = F.filter(f => f.ai).length;
+  const icon = {ok:"✓", wa:"!", er:"✕", in:"i"};
+  return `<h2>생성</h2>
+  <div class="row"><span class="chip acc">파일 ${F.length}개</span><span class="chip">실행 스크립트 ${ex}개</span><span class="chip ver">AI가 채울 파일 ${ai}개</span></div>
+  <div class="ck">${C.map(c => `<div class="${c[0] === "ok" ? "ok" : c[0]}"><span class="i">${icon[c[0]]}</span><span>${esc(c[1])}</span></div>`).join("")}</div>
   <div class="row"><button type="button" class="primary" data-act="zip">ZIP 다운로드</button><span class="sub" id="zipMsg"></span></div>
-  <h3>GitHub 저장소로 만들기 <span class="chip warn">PoC: 실제 전송 없음</span></h3>
+  <h3>받은 뒤 할 일</h3>
+  <ol class="next">
+    <li>압축 해제 → <code>bash scripts/setup.sh</code></li>
+    <li><code>claude</code> 실행 후 직접 로그인 · <code>.agentforge/env.local</code> 에 키 입력</li>
+    <li><code>bash scripts/run-role.sh planner</code> → <code>/forge-init</code> → PRD 승인</li>
+    <li>분석${S.ui ? " → UI/UX 설계" : ""} → 시스템 설계 → 공통 개발 (README 순서)</li>
+    <li>리드 세션에서 <code>/forge-agents</code> → <code>bash scripts/check-forge.sh</code></li>
+    <li><code>bash scripts/create-worktrees.sh && bash scripts/run-agents.sh</code></li>
+    <li>전원 통과 후 <code>bash scripts/integrate.sh</code></li>
+  </ol>
+  <h3>GitHub 저장소로 만들기</h3>
   <div class="grid2">
-    <label class="f">소유자 (계정·조직)<input type="text" id="f-gho" data-bind="gh.owner" value="${esc(S.gh.owner)}"></label>
-    <label class="f">저장소 이름<input type="text" id="f-ghr" data-bind="gh.repo" placeholder="${esc(slug())}" value="${esc(S.gh.repo)}"></label>
-    <label class="f">공개 범위<select id="f-ghv" data-bind="gh.visibility">${opt([["private","비공개"],["public","공개"]], S.gh.visibility)}</select></label>
+    <label class="f">소유자(조직 또는 계정)<input type="text" id="g-owner" data-bind="gh.owner" value="${esc(S.gh.owner)}"></label>
+    <label class="f">저장소 이름<input type="text" id="g-repo" data-bind="gh.repo" value="${esc(S.gh.repo)}" placeholder="${esc(slug())}"></label>
+    <label class="f">공개 범위<select id="g-vis" data-bind="gh.visibility"><option value="private" ${S.gh.visibility === "private" ? "selected" : ""}>비공개</option><option value="public" ${S.gh.visibility === "public" ? "selected" : ""}>공개</option></select></label>
   </div>
-  <button type="button" data-act="ghplan" style="align-self:flex-start">푸시 계획 보기</button>
-  <div id="ghplan"></div>
-  ${navBtns()}`;
+  <div class="row"><button type="button" data-act="ghplan">호출 계획 보기</button><span class="sub">PoC는 토큰을 받지 않고 전송하지 않습니다.</span></div>
+  <div id="ghplan"></div>${navBtns()}`;
 }
-function renderPanel(){ $("#panel").innerHTML = [p0,p1,p2,p3,p4,p5][S.step](); }
+function renderPanel(){ $("#panel").innerHTML = [p0, p1, p2, p3, p4, p5][S.step](); }
 function renderPreview(){
   const F = buildFiles();
   if(!F.some(f => f.path === S.sel)) S.sel = "CLAUDE.md";
   $("#fileCount").textContent = `${F.length}개`;
-  $("#tree").innerHTML = F.map(f => `<button type="button" data-act="sel" data-p="${esc(f.path)}" ${f.path===S.sel ? 'aria-current="true"' : ""}><span>${esc(f.path)}</span>${f.exec ? '<span class="x">755</span>' : ""}</button>`).join("");
+  $("#tree").innerHTML = F.map(f => `<button type="button" data-act="sel" data-p="${esc(f.path)}" ${f.path === S.sel ? 'aria-current="true"' : ""}><span>${esc(f.path)}</span><span>${f.ai ? '<span class="ai">AI</span> ' : ""}${f.exec ? '<span class="x">755</span>' : ""}</span></button>`).join("");
   const cur = F.find(f => f.path === S.sel);
-  $("#selPath").textContent = cur.path; $("#view").textContent = cur.content;
+  $("#selPath").textContent = cur.path; $("#view").textContent = cur.content || "(빈 파일)";
 }
 function renderAll(){ renderSteps(); renderPanel(); renderPreview(); save(); }
 
 /* ---------- 이벤트 ---------- */
 function setPath(path, val){ const k = path.split("."); let o = S; while(k.length > 1) o = o[k.shift()]; o[k[0]] = val; }
+function refocus(id){ const f = document.getElementById(id); if(f){ f.focus(); if(f.type === "text") f.setSelectionRange(f.value.length, f.value.length); } }
 document.addEventListener("input", e => {
   const el = e.target;
   if(el.dataset.bind){
     setPath(el.dataset.bind, el.type === "checkbox" ? el.checked : el.value);
-    if(el.dataset.bind === "stack"){ S.devs = []; syncDevs();
-      const stackSk = Object.values(STACKS).flatMap(x => x.skills);
-      S.assign.developer = [...new Set([...(S.assign.developer || []).filter(id => !stackSk.includes(id)), ...STACKS[S.stack].skills])]; }
-    if(el.dataset.re){ renderPanel(); const f = document.getElementById(el.id); if(f && f.type === "text"){ f.focus(); f.setSelectionRange(f.value.length, f.value.length); } }
+    if(el.dataset.re){ renderPanel(); refocus(el.id); }
     renderSteps(); renderPreview(); save(); return;
   }
-  if(el.dataset.role || el.dataset.dev){
-    const tgt = el.dataset.role ? S.roles[el.dataset.role] : S.devs[+el.dataset.dev];
-    tgt[el.dataset.field] = el.value;
-    if(el.dataset.field === "provider"){ tgt.model = el.value ? ((SUGGEST[el.value] || [])[0] || "") : ""; renderPanel(); renderSteps(); }
-    renderPreview(); save(); return;
+  if(el.dataset.agent || el.dataset.dev){
+    const f = el.dataset.field, tgt = el.dataset.agent ? S.agents[el.dataset.agent] : S.devs[+el.dataset.dev];
+    tgt[f] = el.value;
+    const pf = {p:"m", dp:"dm", rp:"rm"}[f];
+    if(pf){ tgt[pf] = prov(el.value).models[el.value === "claude" ? 1 : 0] || ""; renderPanel(); refocus(el.id); }
+    renderSteps(); renderPreview(); save(); return;
   }
-  if(el.dataset.prov){
-    const p = S.providers[+el.dataset.prov], f = el.dataset.field;
-    if(f === "on"){ p.on = el.checked;
-      if(!p.on){ Object.values(S.roles).forEach(a => { if(a.provider === p.id){ a.provider = "claude"; a.model = "sonnet"; } }); S.devs.forEach(d => { if(d.provider === p.id){ d.provider = ""; d.model = ""; } }); }
-      renderPanel(); renderSteps(); }
-    else p[f] = el.value;
-    renderPreview(); save(); return;
-  }
-  if(el.dataset.prompt){ S.prompts[el.dataset.prompt] = el.value; renderPreview(); save(); return; }
-  if(el.dataset.assign){ const r = el.dataset.assign, id = el.dataset.skill, a = S.assign[r] = S.assign[r] || [];
-    if(el.checked && !a.includes(id)) a.push(id); if(!el.checked) S.assign[r] = a.filter(x => x !== id); renderPreview(); save(); return; }
-  if(el.dataset.act === "ack"){ S.ack[el.dataset.id] = el.checked; renderPanel(); save(); }
+  if(el.dataset.skill){ S.skills[el.dataset.skill] = el.checked; renderPreview(); save(); return; }
+  if(el.dataset.target){ const m = S.imported.find(x => x.id === el.dataset.target); if(m) m.target = el.value; renderPreview(); save(); return; }
+  if(el.dataset.ack){ S.ack[el.dataset.ack] = el.checked; renderSteps(); save(); }
 });
 document.addEventListener("change", e => {
   const el = e.target;
-  if((el.dataset.role || el.dataset.dev) && el.dataset.field === "model"){ renderPanel(); renderSteps(); }
+  if(el.dataset.dev && (el.dataset.field === "domain" || el.dataset.field === "paths")){ renderPanel(); }
 });
-document.addEventListener("click", async e => {
+document.addEventListener("click", e => {
   const b = e.target.closest("button[data-act]"); if(!b) return;
   const a = b.dataset.act;
-  if(a === "go"){ S.step = Math.max(0, Math.min(STEPS.length-1, +b.dataset.i)); renderAll(); window.scrollTo({top:0}); }
+  if(a === "go"){ S.step = Math.max(0, Math.min(STEPS.length - 1, +b.dataset.i)); renderAll(); window.scrollTo({top:0}); }
   else if(a === "dev"){ S.devCount = Math.max(1, Math.min(6, S.devCount + +b.dataset.d)); syncDevs(); renderAll(); }
-  else if(a === "doctab"){ S.docTab = b.dataset.t; renderPanel(); save(); }
   else if(a === "sel"){ S.sel = b.dataset.p; renderPreview(); save(); }
   else if(a === "import"){ const m = MARKET.find(x => x.id === b.dataset.id); if(!m) return;
-    S.imported.push(Object.assign({}, m));
-    if(m.kind === "스킬"){ const role = {"검증":"reviewer","개발":"developer","공통":"lead"}[m.fit[0]] || "developer"; (S.assign[role] = S.assign[role] || []).push(m.id); }
-    renderPanel(); renderPreview(); save(); toast(`${m.id} 를 가져왔습니다`); }
+    S.imported.push(Object.assign({target:"all"}, m)); renderAll(); toast(`${m.id} 를 가져왔습니다`); }
+  else if(a === "unimport"){ S.imported = S.imported.filter(x => x.id !== b.dataset.id); delete S.ack[b.dataset.id]; renderAll(); }
   else if(a === "zip"){ exportZip(); }
   else if(a === "ghplan"){ ghPlan(); }
 });
@@ -888,6 +665,7 @@ let tT; function toast(m){ const t = $("#toast"); t.textContent = m; t.hidden = 
 const dlP = (window.claude && typeof window.claude.use === "function") ? window.claude.use("downloads").catch(() => null) : Promise.resolve(null);
 async function exportZip(){
   const msg = t => { const z = $("#zipMsg"); if(z) z.textContent = t; };
+  if(checks().some(c => c[0] === "er")){ S.step = 5; renderAll(); toast("✕ 항목을 먼저 해결하세요"); return; }
   if(typeof JSZip === "undefined"){ toast("ZIP 라이브러리를 불러오지 못했습니다"); return; }
   const dl = await dlP;
   if(!dl){ toast("이 화면에서는 다운로드를 쓸 수 없습니다. 오른쪽에서 파일별로 복사하세요."); msg("다운로드 사용 불가"); return; }
@@ -895,18 +673,18 @@ async function exportZip(){
   buildFiles().forEach(f => zip.file(root + "/" + f.path, f.content, {unixPermissions: f.exec ? 0o755 : 0o644}));
   msg("압축 중…");
   const blob = await zip.generateAsync({type:"blob", platform:"UNIX"});
-  try{ await dl.save({filename: root + "-forge.zip", data: blob}); msg("저장했습니다"); toast("ZIP을 저장했습니다"); }
+  try{ await dl.save({filename: root + "-agentforge.zip", data: blob}); msg("저장했습니다"); toast("ZIP을 저장했습니다"); }
   catch(err){ const c = err && err.code; msg(c === "declined" ? "저장을 취소했습니다" : c === "rate_limited" ? "잠시 후 다시 시도하세요" : "다운로드할 수 없습니다"); }
 }
 function ghPlan(){
   const F = buildFiles(), ex = F.filter(f => f.exec).length, o = S.gh.owner || "my-org", r = S.gh.repo || slug();
   $("#ghplan").innerHTML = `<div class="plan"><b>실행될 GitHub API 호출 (시연)</b>
-    <span>1. POST /orgs/${esc(o)}/repos  {name:"${esc(r)}", private:${S.gh.visibility==="private"}, auto_init:true}</span>
+    <span>1. POST /orgs/${esc(o)}/repos  {name:"${esc(r)}", private:${S.gh.visibility === "private"}, auto_init:true}</span>
     <span>2. POST /repos/${esc(o)}/${esc(r)}/git/blobs × ${F.length}</span>
     <span>3. POST /repos/${esc(o)}/${esc(r)}/git/trees  (mode 100755 × ${ex}, 100644 × ${F.length - ex})</span>
-    <span>4. POST /repos/${esc(o)}/${esc(r)}/git/commits  "chore: AgentForge 환경 생성"</span>
+    <span>4. POST /repos/${esc(o)}/${esc(r)}/git/commits  "[lead] AgentForge 환경 생성"</span>
     <span>5. PATCH /repos/${esc(o)}/${esc(r)}/git/refs/heads/main</span>
-    <span style="color:var(--muted)">PoC는 토큰을 받지 않으며 실제로 전송하지 않습니다.</span></div>`;
+    <span style="color:var(--muted)">env.local 은 포함하지 않습니다. 키는 저장소에 올라가지 않습니다.</span></div>`;
 }
 
 renderAll();

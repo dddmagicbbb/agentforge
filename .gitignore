@@ -1,7 +1,13 @@
+# AgentForge 생성 환경 (PoC 원본)
+.agentforge/env.local
+.agentforge/signals/
+.agentforge/panes/
+.agentforge/history/
+.claude/settings.local.json
 node_modules/
+
+# 빌드·테스트 산출물
 dist/
 coverage/
 .env
 .env.*
-.claude/settings.local.json
-.agentforge/env.local
