@@ -47,3 +47,57 @@ bats 는 jq·git 필요(없으면 skip), `realpath -m` 없으면 skip(D7, macOS)
 
 ## 7. 계약·공통 모듈에 필요한 변경
 없음. `templates/static/guard-paths.sh` 의 `realpath -m` GNU 전용 문제(D7)는 수정하지 않고 skip + report 기록.
+
+---
+
+# 2라운드 (PH4: T-413, T-414)
+
+## R2-1. 담당 작업·기능 ID
+| 작업 | 기능 ID | 내용 |
+|---|---|---|
+| T-413 | GEN-03 | bats `check-forge` 6사례 |
+| T-414 | RUN-02, RUN-03 | 가짜 claude 모의 병렬: 범위 밖 변경 감지, 반려 한도 → `dev-N.blocked`, integrate 통과·충돌 |
+
+## R2-2. 파일 목록
+| 경로 | 책임 |
+|---|---|
+| `tests/scripts/helpers.bash` | 공용 함수 추가: `need_bash4`, `need_build`, `tmux_sandbox`, `tmux_cleanup`, `unpack_project`, `bootstrap_project`, `wait_file`, `wait_gone`, `wait_count`, `wait_pane`, `not_in_file`, `commit_in` |
+| `tests/scripts/g3-vertical-slice.bats` | 준비 절차를 공용 함수로 교체(시험 내용은 동일) |
+| `tests/scripts/check-forge.bats` | check-forge.sh 6사례 |
+| `tests/scripts/parallel-mock.bats` | 모의 병렬 6사례 |
+
+`templates/static/*` 은 수정하지 않는다. 결함은 report 와 skip 사유에 적는다.
+
+## R2-3. 주요 함수 (helpers.bash)
+- `unpack_project`: golden g3 입력으로 ZIP 생성 → 해제 → `g3-demo` 로 이동.
+- `bootstrap_project`: `setup.sh` → `git branch develop` → `create-worktrees.sh`(`../g3-demo-dev1·2`).
+- `tmux_sandbox`: 시험 전용 `TMUX_TMPDIR` 에 서버를 띄우고 `default-command "bash --noprofile --norc"`. `make_fake_bin` 뒤에 호출(서버가 PATH 를 물려받음).
+- `wait_pane <초> <ASCII 패턴> <대상>`: tmux 가 UTF-8 로케일이 아닐 때 한글이 깨질 수 있어 ASCII 패턴만 쓴다. wait-and-review 종료 감지는 `scripts/integrate.sh`(안내 문구 속 ASCII)로 한다.
+- `not_in_file`: bats(set -e)에서 `! grep` 은 실패로 처리되지 않으므로 명시 검사. `&&` 로 이은 `[ ]` 검사도 앞쪽 실패를 잡지 못하므로 새 코드는 한 줄에 하나씩 쓴다.
+- 대기 시간: wait-and-review 폴링 10초 → 사례당 최대 40초(반려 한도 사례는 3회 순차 소비로 최대 약 35초).
+
+## R2-4. 사용하는 계약
+계약 변경 없음. 읽기만: `templates/static/check-forge.sh`, `wait-and-review.sh`, `integrate.sh`, `run-agents.sh`, `create-worktrees.sh`, golden `g3-claude-only`. 신호 파일 규약(`design-N.*`, `dev-N.done`, `review-N.pass|reject`, `dev-N.blocked`, `review-N.passed`).
+
+## R2-5. 화면 상태
+해당 없음.
+
+## R2-6. 테스트 목록
+| 기능 ID | 수용 기준 | 테스트 |
+|---|---|---|
+| GEN-03 | 통과 exit 0, `✗` 없음 | `① 통과` |
+| GEN-03 | 범위 겹침 exit 1 | `② 개발자 사이 담당 범위 겹침` |
+| GEN-03 | 없는 스킬 참조 exit 1 | `③ 에이전트가 참조한 스킬 없음` |
+| GEN-03 | paths 없음 exit 1 | `④ .claude/devs/dev-N.paths 없음` |
+| GEN-03 | PRD 기능 ID 미배정 exit 1 (D1: `F-[0-9]{3}` 만 인식) | `⑤ PRD 기능 ID 가 tasks 에 배정되지 않음` |
+| GEN-03 | prd/tasks 없음 exit 1 | `⑥ docs/prd.md·tasks.md 없음` |
+| RUN-02 | 범위 밖 변경 → dev pane 경고, review 로 안 감 | `범위 밖 변경: ...` |
+| RUN-02 | 범위 안 변경 → review 에 코드 검토 요청(대조군) | `범위 안 변경만 있으면 ...` |
+| RUN-03 | 반려 maxRejects(3) → `dev-1.blocked` | `반려 한도: ...` |
+| RUN-02 | 전원 통과 → integrate 병합 + integrator 실행 | `전원 통과 → ... integrate.sh ...` |
+| RUN-02 | 두 dev 충돌 → abort, exit 1, 태그 존재 | `충돌(두 dev 가 같은 파일을 다르게 수정) ...` |
+| RUN-02 | 첫 병합 충돌 → develop = 태그 | `첫 병합부터 충돌 ...` |
+| EXP-01 | g3 세로 한 줄 유지 | `g3-vertical-slice.bats` (준비만 공용 함수로 교체) |
+
+## R2-7. 계약·공통 모듈에 필요한 변경
+없음. 발견 결함(수정은 범위 밖, report 기록): `integrate.sh` 는 dev2 이후 병합이 충돌하면 `git merge --abort` 로 해당 병합만 되돌리므로 먼저 병합된 feature 가 develop 에 남는다. 안내문 "develop 은 pre-integration 태그 상태로 유지됩니다" 와 불일치. 시험은 "첫 병합 충돌" 사례에서만 develop = 태그를 단언하고, 두 번째 병합 충돌 사례는 "태그 존재 + 태그의 후손"까지만 단언한다.
