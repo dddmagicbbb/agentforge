@@ -15,3 +15,9 @@
 - G2: build·typecheck·lint·test·test:scripts 모두 CI 통과(run 40641712379). 이후 스키마 변경은 ADR + 리드 승인.
 - 결정: TypeScript 6.0(typescript-eslint 지원 범위), `@agentforge/source` export 조건(typecheck·vite·vitest는 소스, build는 dist).
 - 미해결(사람): `.claude/settings.json` PoC 권한·guard hook 병합, WSL `jq·shellcheck·bats` 설치.
+
+## PH3 세로 한 줄 — 2026-10-28 · `g3-vertical-slice`
+- 산출물: `tools/poc-golden.mjs` + golden 3구성, core 렌더러(PoC buildFiles 이식), exporter `toZip`, web 최소 화면(1단계·미리보기·ZIP), bats 13건.
+- G3: golden 146파일 바이트 일치(의도적 차이 0), core 199·exporter 4 테스트 통과, shellcheck 0, bats 13/13(ubuntu) — **ZIP → setup → create-worktrees → run-agents → design-1.done 이 review-1 pane 에 도착**(가짜 claude, CI run 40642862952).
+- 결정: D5·D6은 `shWord`(안전 단어 외 인용)로 처리해 PoC 출력 유지(ADR-0003 갱신). 패턴 오류는 패턴 코드로 보고.
+- 이월: macOS 에서 setup.sh 의존 bats 4건 skip(D7, T-404). 화면 2~6단계는 PH4.
