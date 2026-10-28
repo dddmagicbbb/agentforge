@@ -1,0 +1,51 @@
+{
+  "project": "g3-demo",
+  "developers": 2,
+  "uiDesign": false,
+  "language": "ko",
+  "tmuxLayout": "pair",
+  "commands": {
+    "install": "true",
+    "test": "true",
+    "e2e": ""
+  },
+  "maxRejects": 3,
+  "agents": {
+    "planner": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "analyst": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "architect": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "common-dev": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "dev-1": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "review-1": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "dev-2": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "review-2": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "integrator": {
+      "provider": "claude",
+      "model": "sonnet"
+    }
+  }
+}

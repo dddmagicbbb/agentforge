@@ -1,0 +1,23 @@
+/* PH3 최소 스타일. 정식 디자인(Tailwind)은 T-421~T-426 */
+:root { --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --line: #e7e5e4; --acc: #0f766e; --err: #b91c1c; }
+@media (prefers-color-scheme: dark) { :root { --bg: #1c1917; --fg: #f5f5f4; --muted: #a8a29e; --line: #44403c; --acc: #2dd4bf; --err: #f87171; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 system-ui, sans-serif; }
+header { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; }
+header h1 { margin: 0; font-size: 18px; }
+.steps { display: flex; gap: 12px; list-style: none; margin: 0; padding: 0; color: var(--muted); }
+.steps [aria-current] { color: var(--acc); font-weight: 600; }
+main { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(320px, 1.4fr); gap: 16px; padding: 16px; }
+@media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+label { display: grid; gap: 4px; margin-bottom: 10px; font-weight: 500; }
+label.toggle { display: flex; gap: 8px; align-items: center; }
+input, select, textarea { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; }
+button { font: inherit; cursor: pointer; }
+.primary { padding: 8px 14px; border: 0; border-radius: 6px; background: var(--acc); color: #fff; }
+.primary:disabled { opacity: .5; cursor: not-allowed; }
+.issues { color: var(--err); padding-left: 18px; }
+.tree { max-height: 260px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+.tree button { display: flex; justify-content: space-between; width: 100%; padding: 3px 8px; border: 0; background: none; color: inherit; text-align: left; font-family: ui-monospace, monospace; font-size: 12px; }
+.tree button[aria-current="true"] { background: var(--line); }
+.ai, .x { margin-left: 4px; font-size: 10px; color: var(--acc); }
+pre { white-space: pre-wrap; border: 1px solid var(--line); border-radius: 6px; padding: 10px; max-height: 60vh; overflow: auto; font-size: 12px; }

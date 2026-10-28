@@ -1,0 +1,63 @@
+{
+  "project": "order-portal",
+  "developers": 3,
+  "uiDesign": true,
+  "language": "ko",
+  "tmuxLayout": "pair",
+  "commands": {
+    "install": "npm ci",
+    "test": "npm test",
+    "e2e": "npm run e2e"
+  },
+  "maxRejects": 3,
+  "agents": {
+    "planner": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "analyst": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "ux-designer": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "architect": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "common-dev": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "dev-1": {
+      "provider": "vllm",
+      "model": "exaone-32b"
+    },
+    "review-1": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "dev-2": {
+      "provider": "vllm",
+      "model": "exaone-32b"
+    },
+    "review-2": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "dev-3": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free"
+    },
+    "review-3": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "integrator": {
+      "provider": "claude",
+      "model": "sonnet"
+    }
+  }
+}

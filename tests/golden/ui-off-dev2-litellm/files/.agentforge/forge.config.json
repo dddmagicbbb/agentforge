@@ -1,0 +1,51 @@
+{
+  "project": "batch-hub",
+  "developers": 2,
+  "uiDesign": false,
+  "language": "ko",
+  "tmuxLayout": "pair",
+  "commands": {
+    "install": "pnpm install",
+    "test": "pnpm test",
+    "e2e": ""
+  },
+  "maxRejects": 2,
+  "agents": {
+    "planner": {
+      "provider": "openai",
+      "model": "gpt-5.5"
+    },
+    "analyst": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "architect": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "common-dev": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "dev-1": {
+      "provider": "gemini",
+      "model": "gemini-2.5-pro"
+    },
+    "review-1": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "dev-2": {
+      "provider": "ollama",
+      "model": "qwen3.5:9b"
+    },
+    "review-2": {
+      "provider": "openai",
+      "model": "gpt-5.5"
+    },
+    "integrator": {
+      "provider": "claude",
+      "model": "opus"
+    }
+  }
+}

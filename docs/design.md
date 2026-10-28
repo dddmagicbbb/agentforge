@@ -178,8 +178,8 @@ export async function pushToGitHub(files: RenderedFile[], target: GithubTarget, 
 동적 값이 셸·YAML·JSON·Markdown에 들어가는 지점과 처리:
 | 지점 | 값 | 처리 |
 | --- | --- | --- |
-| agent-env.sh `case` | 모델 ID | `shQuote` (PoC는 미인용 — D5) |
-| env.local.example | vLLM·Ollama URL | `HttpUrl` 패턴 + `shQuote` (bash가 source — D6) |
+| agent-env.sh `case` | 모델 ID | `ModelId` 패턴 + `shWord`(안전 단어 외 `shQuote`) — D5 |
+| env.local.example | vLLM·Ollama URL | `HttpUrl` 패턴 + `shWord` (bash가 source — D6) |
 | litellm.yaml | 모델 ID | YAML 큰따옴표 스칼라 |
 | settings.json / forge.config.json | 명령 | `JSON.stringify` (+ `Command` 패턴) |
 | CLAUDE.md 표 | 도메인·경로·모델 | 패턴으로 `|` 원천 차단, `md.cell()`로 한 번 더 이스케이프 |
@@ -212,7 +212,7 @@ export async function pushToGitHub(files: RenderedFile[], target: GithubTarget, 
 | D7 | `setup.sh`의 `sed -i`(GNU 전용), `guard-paths.sh`의 `realpath -m`(GNU 전용) | **macOS에서 실패**(PRD 목표 위반) | PH3 bats에 macOS 사례 추가, 수정은 ADR + 리드 승인 |
 | D8 | PoC는 이름 규칙 위반 시 경고 후 slug 변환 | REQ-02와 불일치 | 스키마 오류로 처리 |
 
-D3~D6·D8은 **입력 검증 강화로 PoC 기본 구성의 출력은 바뀌지 않는다**(golden 일치 유지). D5·D6은 인용 추가로 출력이 바뀌므로 golden 차이 목록에 올린다(ADR-0003).
+D3~D6·D8은 입력 검증 강화와 `shWord`로 처리하므로 **PoC 기본 구성의 출력은 바뀌지 않는다**(golden 일치, 의도적 차이 0건 — ADR-0003).
 
 ## 7. 테스트 설계 연결
 | 대상 | 방법 | 단계 |

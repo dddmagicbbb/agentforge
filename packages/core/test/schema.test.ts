@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AppError, defaultDraft, PathPrefix, render, TEMPLATES, validate, type ProjectInput } from "../src/index.js";
+import { AppError, checks, defaultDraft, PathPrefix, TEMPLATES, validate, type ProjectInput } from "../src/index.js";
 
 // 불변식 I1~I6과 입력 패턴(design.md 2.2·2.3) 검증
 
@@ -103,7 +103,13 @@ describe("PH2 골격", () => {
   });
 
   it("미구현 API는 AppError(NOT_IMPLEMENTED)를 던진다", () => {
-    const p = validate(defaultDraft()).project!;
-    expect(() => render(p)).toThrow(AppError);
+    expect(() => checks(defaultDraft())).toThrow(AppError);
+  });
+});
+
+describe("오류 코드", () => {
+  it("패턴 위반은 패턴 코드(PROJECT_NAME 등)로 보고한다", () => {
+    expect(codes(draft((d) => (d.name = "Order Portal")))).toEqual(["PROJECT_NAME"]);
+    expect(codes(draft((d) => (d.devs[0]!.domain = "주문")))).toEqual(["DOMAIN"]);
   });
 });

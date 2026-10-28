@@ -1,0 +1,12 @@
+# LiteLLM 게이트웨이: OpenAI·Gemini 를 Claude Code가 쓰는 Anthropic 형식으로 중계
+model_list:
+  - model_name: gpt-5.5
+    litellm_params:
+      model: openai/gpt-5.5
+      api_key: os.environ/OPENAI_API_KEY
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro
+      api_key: os.environ/GEMINI_API_KEY
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

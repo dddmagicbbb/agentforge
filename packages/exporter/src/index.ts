@@ -1,11 +1,6 @@
 import { AppError, type GithubTargetT, type RenderedFile } from "@agentforge/core";
 
-// RenderedFile[] 를 그대로 내보낸다. content·mode 를 바꾸지 않는다(ADR-0001).
-
-/** ZIP 생성: root/<path>, unixPermissions = mode, platform UNIX. — T-307(기본), T-411(완성) */
-export async function toZip(_files: readonly RenderedFile[], _root: string): Promise<Uint8Array> {
-  throw new AppError("NOT_IMPLEMENTED", { api: "toZip", task: "T-307" });
-}
+export { toZip } from "./zip.js";
 
 export interface PushResult {
   readonly url: string;

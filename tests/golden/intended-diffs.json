@@ -1,0 +1,4 @@
+{
+  "$comment": "PoC golden 과 core 출력의 의도적 차이(ADR-0003). 항목: { config, path, defect, reason }. 추가·삭제는 리드 승인.",
+  "diffs": []
+}

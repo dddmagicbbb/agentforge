@@ -1,0 +1,253 @@
+{
+  "files": [
+    {
+      "path": "CLAUDE.md",
+      "mode": "644",
+      "author": "ai-fill"
+    },
+    {
+      "path": "README.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/settings.json",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/hooks/guard-paths.sh",
+      "mode": "755",
+      "author": "template"
+    },
+    {
+      "path": ".claude/agents/planner.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/agents/analyst.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/agents/architect.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/agents/common-dev.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/agents/integrator.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/agents/dev-1.md",
+      "mode": "644",
+      "author": "ai-fill"
+    },
+    {
+      "path": ".claude/agents/review-1.md",
+      "mode": "644",
+      "author": "ai-fill"
+    },
+    {
+      "path": ".claude/devs/dev-1.paths",
+      "mode": "644",
+      "author": "ai-fill"
+    },
+    {
+      "path": ".claude/devs/review-1.paths",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/skills/dev1-ingest/SKILL.md",
+      "mode": "644",
+      "author": "ai-fill"
+    },
+    {
+      "path": ".claude/agents/dev-2.md",
+      "mode": "644",
+      "author": "ai-fill"
+    },
+    {
+      "path": ".claude/agents/review-2.md",
+      "mode": "644",
+      "author": "ai-fill"
+    },
+    {
+      "path": ".claude/devs/dev-2.paths",
+      "mode": "644",
+      "author": "ai-fill"
+    },
+    {
+      "path": ".claude/devs/review-2.paths",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/skills/dev2-report/SKILL.md",
+      "mode": "644",
+      "author": "ai-fill"
+    },
+    {
+      "path": ".claude/skills/conventions/SKILL.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/skills/detail-design/SKILL.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/skills/code-review/SKILL.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/skills/forge-init/SKILL.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".claude/skills/forge-agents/SKILL.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".agentforge/forge.config.json",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".agentforge/requirements.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".agentforge/env.local.example",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".agentforge/templates/prd.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".agentforge/templates/dev.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".agentforge/templates/review.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".agentforge/templates/dev-skill.md",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": ".agentforge/litellm.yaml",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": "scripts/setup.sh",
+      "mode": "755",
+      "author": "template"
+    },
+    {
+      "path": "scripts/agent-env.sh",
+      "mode": "755",
+      "author": "template"
+    },
+    {
+      "path": "scripts/run-role.sh",
+      "mode": "755",
+      "author": "template"
+    },
+    {
+      "path": "scripts/check-forge.sh",
+      "mode": "755",
+      "author": "template"
+    },
+    {
+      "path": "scripts/create-worktrees.sh",
+      "mode": "755",
+      "author": "template"
+    },
+    {
+      "path": "scripts/run-agents.sh",
+      "mode": "755",
+      "author": "template"
+    },
+    {
+      "path": "scripts/wait-and-review.sh",
+      "mode": "755",
+      "author": "template"
+    },
+    {
+      "path": "scripts/integrate.sh",
+      "mode": "755",
+      "author": "template"
+    },
+    {
+      "path": "scripts/start-gateway.sh",
+      "mode": "755",
+      "author": "template"
+    },
+    {
+      "path": ".vscode/tasks.json",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": "docs/design/detail/.gitkeep",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": "docs/review/.gitkeep",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": "docs/report/.gitkeep",
+      "mode": "644",
+      "author": "template"
+    },
+    {
+      "path": "docs/adr/.gitkeep",
+      "mode": "644",
+      "author": "template"
+    }
+  ],
+  "checks": [
+    [
+      "ok",
+      "구성에 문제가 없습니다."
+    ],
+    [
+      "in",
+      "OpenAI·Gemini 는 LiteLLM 게이트웨이를 거칩니다. 병렬 실행 전에 scripts/start-gateway.sh 를 띄우세요."
+    ],
+    [
+      "in",
+      "UI/UX 설계 단계를 쓰지 않습니다. 분석 다음 바로 시스템 설계로 갑니다."
+    ]
+  ]
+}

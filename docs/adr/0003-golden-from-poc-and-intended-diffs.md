@@ -9,15 +9,13 @@ PoC는 "동작 기준 구현"이지만 보안·호환 결함(D5 미인용, D6 UR
 
 ## 결정
 1. golden은 `tools/poc-golden.mjs`가 `docs/reference/poc.html`의 `const STATIC`과 `/*GEN-START*/ … /*GEN-END*/` 구간을 Node `vm`에서 실행해 만든다. 입력은 `tests/golden/<구성>/input.json`(PoC `S` 형식).
-2. core 출력과 golden 비교는 `tests/golden/intended-diffs.ts`에 등록한 차이만 허용한다. 항목마다 결함 ID(D5 등), 파일, 변환 함수(예: 모델 ID에 `shQuote` 적용)를 적는다.
+2. core 출력과 golden 비교는 `tests/golden/intended-diffs.json`에 등록한 차이만 허용한다. 항목마다 결함 ID(D5 등), 파일, 변환 함수(예: 모델 ID에 `shQuote` 적용)를 적는다.
 3. 차이 목록 추가·삭제는 리드 승인 + 이 ADR의 "차이 목록" 갱신으로만 한다.
 4. 정적 스크립트(templates/static) 수정(D2·D7)은 별도 ADR을 쓰고 bash -n·shellcheck·bats·모의 실행을 다시 통과해야 한다.
 
-## 차이 목록 (초기)
-| 결함 | 파일 | 변환 |
-| --- | --- | --- |
-| D5 | scripts/agent-env.sh | case 줄의 모델 인자를 `shQuote` |
-| D6 | .agentforge/env.local.example | `OLLAMA_URL`·`VLLM_URL` 값을 `shQuote` |
+## 차이 목록
+현재 **없음**(`tests/golden/intended-diffs.json`). PH3 구현 결과:
+- D5·D6은 `shWord`(안전한 단어는 그대로, 아니면 `shQuote`)로 처리했다. 모델 ID·URL은 스키마 패턴상 안전한 단어만 허용되므로 PoC 기본 구성의 출력이 바뀌지 않는다(이중 방어). — 2026-10-28 리드
 
 ## 결과
 - PoC를 고쳐야 할 결함이 생기면 PoC 자체는 수정하지 않는다(참조 문서 고정). 차이 목록이 PoC와 제품의 경계를 기록한다.

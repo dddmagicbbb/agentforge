@@ -1,0 +1,6 @@
+.agentforge/env.local
+.agentforge/signals/
+.agentforge/panes/
+.agentforge/history/
+.claude/settings.local.json
+node_modules/

@@ -1,8 +1,10 @@
 import type { z } from "zod";
 import { notImplemented } from "./errors.js";
+import { renderProject } from "./render/index.js";
 import { MAX_DEVELOPERS, ProjectSchema, type Project, type ProjectInput } from "./schema/index.js";
+import { shQuote as quote } from "./util/sh.js";
 
-// core 공개 API(design.md 3장). PH2: validate·defaultDraft 구현, 나머지는 시그니처만.
+// core 공개 API(design.md 3장). 미구현 API는 담당 작업 ID와 함께 NOT_IMPLEMENTED 를 던진다.
 
 export type IssueLevel = "error" | "warn" | "info" | "ok";
 export interface Issue {
@@ -68,17 +70,15 @@ export function defaultDraft(): ProjectInput {
 }
 
 function toIssue(i: z.core.$ZodIssue): Issue {
+  const path = i.path.map((p) => (typeof p === "symbol" ? String(p) : p));
   const custom = i.code === "custom" ? (i as z.core.$ZodIssueCustom).params : undefined;
   if (custom && typeof custom["code"] === "string") {
     const { code, ...params } = custom as Record<string, string | number | boolean>;
-    return { level: "error", code: String(code), path: i.path.map((p) => (typeof p === "symbol" ? String(p) : p)), params };
+    return { level: "error", code: String(code), path, params };
   }
-  return {
-    level: "error",
-    code: "SCHEMA_INVALID",
-    path: i.path.map((p) => (typeof p === "symbol" ? String(p) : p)),
-    params: { reason: i.message, zodCode: i.code },
-  };
+  // 패턴 오류는 schema/patterns.ts 의 { error: "PROJECT_NAME" } 코드를 그대로 쓴다
+  if (/^[A-Z][A-Z0-9_]+$/.test(i.message)) return { level: "error", code: i.message, path, params: {} };
+  return { level: "error", code: "SCHEMA_INVALID", path, params: { reason: i.message, zodCode: i.code } };
 }
 
 /** 입력 → 검증된 Project + 오류 목록. 오류가 하나라도 있으면 project는 없다. */
@@ -109,14 +109,14 @@ export function canExport(_issues: readonly Issue[]): boolean {
   return notImplemented("canExport", "T-405");
 }
 
-/** 생성 파일 전체. 같은 입력이면 같은 출력. — T-302~T-306, T-401~T-406 */
-export function render(_project: Project): RenderedFile[] {
-  return notImplemented("render", "T-302");
+/** 생성 파일 전체. 같은 입력이면 같은 출력(design.md 4장). */
+export function render(project: Project): RenderedFile[] {
+  return renderProject(project);
 }
 
-/** 셸 작은따옴표 인용: a'b → 'a'\''b'. — T-305 */
-export function shQuote(_value: string): string {
-  return notImplemented("shQuote", "T-305");
+/** 셸 작은따옴표 인용: a'b → 'a'''b' */
+export function shQuote(value: string): string {
+  return quote(value);
 }
 
 /** CLAUDE.md 재생성 병합: 마커 구간만 교체, PROJECT 구간은 old 보존. — DOC-03(P1) */

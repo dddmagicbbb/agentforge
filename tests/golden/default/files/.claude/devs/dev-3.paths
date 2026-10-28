@@ -1,0 +1,5 @@
+# 저장소 루트 기준 접두어, 한 줄에 하나
+src/admin/
+tests/admin/
+docs/design/detail/dev-3.md
+docs/report-dev-3.md

@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "name": "batch-hub",
+  "language": "ko",
+  "requirement": "야간 배치로 외부 파일을 적재(ingest)하고 월간 리포트를 생성한다. 화면 없음. 사내 Ollama 와 OpenAI·Gemini 게이트웨이를 섞어 쓴다.",
+  "uiDesign": false,
+  "commands": {
+    "install": "pnpm install",
+    "test": "pnpm test",
+    "e2e": ""
+  },
+  "maxRejects": 2,
+  "agents": {
+    "planner": {
+      "provider": "openai",
+      "model": "gpt-5.5"
+    },
+    "analyst": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "ux-designer": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "architect": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "common-dev": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "integrator": {
+      "provider": "claude",
+      "model": "opus"
+    }
+  },
+  "developerCount": 2,
+  "devs": [
+    {
+      "domain": "ingest",
+      "paths": [
+        "src/ingest/"
+      ],
+      "dev": {
+        "provider": "gemini",
+        "model": "gemini-2.5-pro"
+      },
+      "review": {
+        "provider": "claude",
+        "model": "opus"
+      }
+    },
+    {
+      "domain": "report",
+      "paths": [
+        "src/report/",
+        "tests/report/"
+      ],
+      "dev": {
+        "provider": "ollama",
+        "model": "qwen3.5:9b"
+      },
+      "review": {
+        "provider": "openai",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "skills": {
+    "conventions": true,
+    "tdd": false
+  },
+  "imported": [],
+  "connections": {
+    "vllmUrl": "",
+    "ollamaUrl": "http://localhost:11434"
+  }
+}

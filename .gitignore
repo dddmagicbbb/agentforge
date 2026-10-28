@@ -14,3 +14,6 @@ coverage/
 
 # codegen (tools/gen-templates.mjs)
 packages/core/src/templates.generated.ts
+
+# 브라우저 점검 임시 파일
+.playwright-mcp/
