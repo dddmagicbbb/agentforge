@@ -1,6 +1,6 @@
 ---
 name: dev-2
-description: 개발자 2. exporter 도메인(packages/exporter/, packages/server/, tests/scripts/)의 상세 설계와 구현을 담당한다. docs/tasks.md의 dev-2 항목만 처리한다.
+description: 개발자 2. exporter 도메인(packages/exporter/, packages/server/, tests/scripts/, tests/e2e/)의 상세 설계와 구현을 담당한다. docs/tasks.md의 dev-2 항목만 처리한다.
 tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 skills:

@@ -1,0 +1,62 @@
+# 작업 분할 (PH1 산출물)
+
+> 기준: `docs/prd.md` v2 10장, `docs/design.md`. 단계 전환 전에는 해당 단계 작업만 진행한다.
+> 담당 `lead` = 리드 단일 세션, `common` = 공통(리드 승인), `dev-N` = 병렬 개발자(PH4).
+> 담당 폴더는 `.claude/devs/dev-N.paths`와 같다. 개발자 사이 폴더 겹침 0.
+
+## 담당 폴더
+| 담당 | 도메인 | 폴더 |
+| --- | --- | --- |
+| common / lead | 공통 | 루트 설정(`package.json`, `pnpm-workspace.yaml`, `tsconfig*`, CI), `catalog/`, `tools/`, `tests/golden/`, `packages/core/src/schema/`(G2 이후 읽기 전용) |
+| dev-1 | core | `packages/core/`(schema 제외), `templates/` |
+| dev-2 | exporter | `packages/exporter/`, `packages/server/`, `tests/scripts/`, `tests/e2e/` |
+| dev-3 | web | `packages/web/` |
+
+## PH2 골격·공통 (lead, 선행 작업)
+| 작업 ID | 기능 ID | 담당 | 도메인 | 담당 폴더 | 선행 | 완료 기준 |
+| --- | --- | --- | --- | --- | --- | --- |
+| C-01 | — | common | 공통 | 루트, `packages/*/package.json` | G1 | pnpm workspaces 4패키지, TS strict, ESM, eslint(core I/O 금지 규칙 포함), `pnpm build·typecheck·lint·test` 통과 |
+| C-02 | — | common | 공통 | `templates/`, `tools/` | C-01 | PoC `STATIC` 26종을 바이트 그대로 이관(`tools/extract-poc-static.mjs`로 추출·대조), codegen → `templates.generated.ts` |
+| C-03 | 전체 | common | 공통 | `packages/core/src/schema/` | C-01 | design.md 2장 스키마·패턴·불변식 I1~I6 + 불변식 테스트, `AppError`, core API 시그니처(본문 `throw not implemented`) |
+| C-04 | — | common | 공통 | `tests/scripts/`, CI | C-02 | `pnpm test:scripts` 틀(bash -n + shellcheck + bats), CI(GitHub Actions: ubuntu + macos) |
+| C-05 | — | common | 공통 | git | C-01 | `develop` 브랜치 생성, G2 태그 `g2-schema-freeze` |
+
+## PH3 세로 한 줄 (lead)
+| 작업 ID | 기능 ID | 담당 | 도메인 | 담당 폴더 | 선행 | 완료 기준 |
+| --- | --- | --- | --- | --- | --- | --- |
+| T-301 | — | lead | 공통 | `tools/`, `tests/golden/` | C-02 | `tools/poc-golden.mjs`(ADR-0003), golden 2구성(기본 / UI 끔·개발자 2·LiteLLM), `intended-diffs.ts`(D5·D6) |
+| T-302 | REQ-01, REQ-02 | lead | core | `packages/core/src/render/` | C-03 | requirements.md 원문 저장, forge.config.json golden 일치, 이름 규칙 위반 시 `validate` 오류 |
+| T-303 | RTN-01, RTN-02 | lead | core | `packages/core/src/render/` | C-03 | 순차 에이전트 6종 렌더, uiDesign 끔 → ux-designer·docs/design/ui·README·CLAUDE.md 루틴에서 제외(I7) |
+| T-304 | DOC-01, DOC-02 | lead | core | `packages/core/src/render/` | T-303 | CLAUDE.md 고정 규칙 + 마커 4구간, 200줄 이하, PRD 양식 7장 순서 고정, golden 일치 |
+| T-305 | PRV-01 | lead | core | `packages/core/src/providers/`, `render/` | C-03 | agent-env.sh case(모델 `shQuote`), 비 Claude 별칭 3종 매핑, env.local.example, bats: 에이전트별 BASE_URL·MODEL, 키 누락 오류 |
+| T-306 | RUN-01, RUN-02 | lead | core | `packages/core/src/render/scaffold.ts` | C-02 | 정적 스크립트·guard·hook·settings.json 렌더, 모든 golden 구성에서 bash -n·shellcheck 0 |
+| T-307 | EXP-01(기본) | lead | exporter·web | `packages/exporter/`, `packages/web/` | T-302~T-306 | `toZip`(755 유지), 최소 화면: 1단계 + 미리보기 + ZIP 버튼 |
+| T-308 | RUN-02 | lead | 공통 | `tests/scripts/` | T-307 | **G3**: 받은 ZIP → setup.sh → create-worktrees.sh → run-agents.sh → 신호 1건이 review pane에 도달(가짜 claude), bats setup.sh 4사례 |
+
+## PH4 MVP 병렬 개발
+| 작업 ID | 기능 ID | 담당 | 도메인 | 담당 폴더 | 선행 | 완료 기준 |
+| --- | --- | --- | --- | --- | --- | --- |
+| T-401 | DEV-01, DEV-02 | dev-1 | core | `packages/core/` | G3 | dev-N·review-N·paths·전용 스킬 렌더(ready 아닌 dev는 전부 생략), `resizeDevs`, fast-check 3→5→2 일관성, 경로 정규화(D4) |
+| T-402 | SKL-01, SKL-02 | dev-1 | core | `packages/core/`, `templates/md/` | T-401 | conventions·tdd 토글, 고정 스킬 4종, `devN-<domain>`은 dev-N·review-N에만, SKILL.md frontmatter 형식 검증 |
+| T-403 | GEN-01, GEN-02 | dev-1 | core | `templates/md/` | T-401 | forge-init(`disable-model-invocation`, 질문 후 작성), forge-agents(재시도 3회), D2 자리표시 이름 정합 |
+| T-404 | GEN-03, DEV-03 | dev-1 | core | `templates/static/` | T-403 | check-forge 미치환 `{{` 검사 추가(D2), guard·setup macOS 호환(D7) — **ADR + 리드 승인 후** 변경 |
+| T-405 | PRV-02, PRV-04 | dev-1 | core | `packages/core/` | T-401 | litellm.yaml·start-gateway.sh 조건부, `checks()` 코드 12종(design.md 3장), `canExport` |
+| T-406 | RUN-03, VSC-01 | dev-1 | core | `packages/core/` | T-401 | integrate.sh·tasks.json(6작업) 렌더, 대표 구성 6종 스냅샷 |
+| T-411 | EXP-01(완성) | dev-2 | exporter | `packages/exporter/` | G3 | 루트 폴더명, 755/644, LF, ZIP ↔ `RenderedFile[]` 동등 테스트, 2초 이내 |
+| T-412 | DEV-03 | dev-2 | exporter | `tests/scripts/` | G3 | bats guard-paths 6사례(허용, 차단 exit 2, 상대 경로, `../`, AF_AGENT 없음, paths 없음) |
+| T-413 | GEN-03 | dev-2 | exporter | `tests/scripts/` | G3 | bats check-forge 6사례(통과, 겹침, 스킬 누락, paths 누락, 기능 ID 미배정, prd/tasks 없음) |
+| T-414 | RUN-02, RUN-03 | dev-2 | exporter | `tests/scripts/` | G3 | 모의 병렬: 범위 밖 변경 감지, 반려 한도 → `dev-N.blocked`, integrate 충돌 시 abort·`pre-integration` 태그 |
+| T-415 | EXP-01 | dev-2 | exporter | `tests/e2e/` | T-411, T-426 | Playwright: 6단계 → ZIP → 풀기 → setup.sh → check-forge.sh(문서 더미) → 파일 목록·권한 |
+| T-421 | REQ-01, REQ-02, DEV-01, RTN-01 | dev-3 | web | `packages/web/` | G3 | 화면 1 요구사항: 이름·언어·요구사항·개발자 수(1~6)·UI 토글·명령·반려 한도 |
+| T-422 | RTN-02 | dev-3 | web | `packages/web/` | T-421 | 화면 2 루틴·에이전트: 흐름도, 제공자·모델 선택, 산출물·관문 표시 |
+| T-423 | DEV-02 | dev-3 | web | `packages/web/` | T-421 | 화면 3 개발자: 도메인·폴더·개발/검증 모델, 겹침·약한 검증 경고 |
+| T-424 | SKL-01, SKL-02 | dev-3 | web | `packages/web/` | T-421 | 화면 4 스킬: 계층별 표시, 토글(마켓 영역은 P1 — 비활성 안내만) |
+| T-425 | PRV-01, PRV-04 | dev-3 | web | `packages/web/` | T-421 | 화면 5 연결·실행: 사용 제공자·주소, tmux 미리보기, 경고 |
+| T-426 | EXP-01 | dev-3 | web | `packages/web/` | T-421~T-425 | 화면 6 생성: 검사 목록, 오류 시 내보내기 차단, ZIP, 미리보기 트리(AI·755 표시), 100ms 갱신 |
+
+## 기능 ID 배정 확인 (P0 22개)
+REQ-01 T-302·T-421 / REQ-02 T-302·T-421 / RTN-01 T-303·T-421 / RTN-02 T-303·T-422 / DEV-01 T-401·T-421 / DEV-02 T-401·T-423 / DEV-03 T-404·T-412 / GEN-01 T-403 / GEN-02 T-403 / GEN-03 T-404·T-413 / DOC-01 T-304 / DOC-02 T-304 / SKL-01 T-402·T-424 / SKL-02 T-402·T-424 / PRV-01 T-305·T-425 / PRV-02 T-405 / PRV-04 T-405·T-425 / RUN-01 T-306 / RUN-02 T-306·T-308·T-414 / RUN-03 T-406·T-414 / VSC-01 T-406 / EXP-01 T-307·T-411·T-415·T-426
+
+## 메모
+- i18n: PH4 화면은 문자열을 i18n 키 + ko 리소스로만 작성한다. en 번역과 누락 키 CI 검사는 I18N-01(PH6).
+- 작업량: dev-1 6건(렌더러 중심), dev-2 5건(테스트 중심), dev-3 6건(화면). 최대/최소 1.2배 이내.

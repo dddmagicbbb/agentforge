@@ -2,5 +2,6 @@
 packages/exporter/
 packages/server/
 tests/scripts/
+tests/e2e/
 docs/design/detail/dev-2.md
 docs/report-dev-2.md

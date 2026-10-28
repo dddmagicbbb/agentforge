@@ -55,7 +55,7 @@ AgentForge — Claude Code 멀티 에이전트 병렬 개발 환경 생성기. �
 | 에이전트 | 도메인 | 담당 폴더 | 모델(개발 / 검증) |
 | --- | --- | --- | --- |
 | dev-1 / review-1 | core | packages/core/ templates/ | Claude sonnet / Claude opus |
-| dev-2 / review-2 | exporter | packages/exporter/ packages/server/ tests/scripts/ | Claude sonnet / Claude opus |
+| dev-2 / review-2 | exporter | packages/exporter/ packages/server/ tests/scripts/ tests/e2e/ | Claude sonnet / Claude opus |
 | dev-3 / review-3 | web | packages/web/ | Claude sonnet / Claude opus |
 <!-- AGENTFORGE:DEVS:END -->
 
