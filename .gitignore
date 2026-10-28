@@ -11,3 +11,6 @@ dist/
 coverage/
 .env
 .env.*
+
+# codegen (tools/gen-templates.mjs)
+packages/core/src/templates.generated.ts

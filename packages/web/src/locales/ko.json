@@ -1,0 +1,12 @@
+{
+  "app": { "title": "AgentForge", "subtitle": "멀티 에이전트 병렬 개발 환경 생성기" },
+  "steps": {
+    "requirement": "요구사항",
+    "routine": "루틴·에이전트",
+    "developers": "개발자",
+    "skills": "스킬",
+    "connection": "연결·실행",
+    "generate": "생성"
+  },
+  "skeleton": { "draft": "기본 프로젝트: {{name}} · 개발자 {{count}}명" }
+}

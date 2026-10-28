@@ -1,0 +1,15 @@
+{
+  "name": "@agentforge/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "선택 배포 서버(P1: 마켓플레이스 색인, 라이선스). MVP에는 기능 없음.",
+  "exports": { ".": { "@agentforge/source": "./src/index.ts", "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": { "@agentforge/core": "workspace:*" }
+}

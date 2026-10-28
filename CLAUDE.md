@@ -32,10 +32,15 @@ AgentForge — Claude Code 멀티 에이전트 병렬 개발 환경 생성기. �
 
 **AgentForge 자체 개발 단계 ↔ 위 루틴**: PH1 설계 = 분석+시스템 설계(리드 단일 세션) → PH2 골격 = 공통 개발 → PH3 세로 한 줄(리드) → PH4 = dev-1..3 병렬 + review-1..3 → PH5 = 통합 검증. 순차 단계 에이전트(planner 등)는 이 저장소에서는 선택적으로만 쓴다.
 
-**명령어**: PH2(pnpm 모노레포) 이전에는 빌드·테스트가 없다. 이후 `project-rules.md`의 명령어를 쓴다. 생성 스크립트(`scripts/`, `.claude/hooks/`)는 bash·jq·tmux가 필요하므로 WSL Ubuntu에서 실행한다(예: `bash scripts/check-forge.sh`).
+**명령어**: `project-rules.md`의 pnpm 명령어 외에
+- 단일 테스트: `pnpm --filter @agentforge/core exec vitest run test/schema.test.ts -t "I4"`
+- `pnpm gen:templates`: `templates/**` → `packages/core/src/templates.generated.ts`(커밋 안 함, build·typecheck가 자동 실행)
+- `pnpm check:poc-static`: `templates/`가 PoC `STATIC`과 바이트 단위로 같은지 대조. 의도한 변경이면 ADR 필요
+- 패키지 간 import는 `@agentforge/source` export 조건으로 typecheck·vite·vitest가 **소스**를 읽고, build만 `dist`를 쓴다.
+- 생성 스크립트(`scripts/`, `.claude/hooks/`)는 bash·jq·tmux가 필요하므로 WSL Ubuntu에서 실행한다. shellcheck·bats는 CI(ubuntu·macOS)가 필수로 돌린다.
 
 **PoC(`poc.html`) 이식 지도**
-- `const STATIC = {...}`: 정적 원본 26종(스크립트 9 + `agent-env.head` + `md/*` 템플릿 16) → `templates/static/`, `templates/md/`로 **그대로** 이관.
+- `const STATIC = {...}`: 정적 원본 26종(스크립트 9 + `agent-env.head` + `md/*` 템플릿 16) → `templates/static/`, `templates/md/`에 이관 완료(`tools/extract-poc-static.mjs`).
 - `/*GEN-START*/ … /*GEN-END*/`: DOM 없이 실행 가능한 생성 로직. `PROVIDERS`(via: claude/openrouter/ollama/vllm/litellm), `SEQ`·`FINAL`(순차 에이전트), `CORE_SKILLS`, `MARKET`, `DEF()`(입력 스키마 원본), `gen*` 렌더러, `buildFiles()`(생성 파일 목록·`exec`·`ai` 플래그의 단일 출처), `checks()`(화면 경고 PRV-04).
 - 그 아래는 화면(`p0`~`p5`)과 `exportZip`. jszip CDN·Google Fonts·localStorage 상태 저장은 제품 규칙(폐쇄망) 위반이므로 이식하지 않는다.
 - golden 출력 생성: PoC GEN 구간을 Node `vm`으로 실행하면 된다(이 저장소의 `.claude/`·`scripts/`가 그렇게 만든 PH0 산출물).

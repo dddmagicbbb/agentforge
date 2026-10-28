@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  build-test:
+    # 생성 스크립트 호환(macOS·Linux) 확인을 위해 두 OS 에서 실행한다
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check:poc-static
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - name: 스크립트 검사 도구 설치 (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y shellcheck bats jq tmux
+      - name: 스크립트 검사 도구 설치 (macOS)
+        if: runner.os == 'macOS'
+        run: brew install shellcheck bats-core jq tmux bash
+      - run: pnpm test:scripts
