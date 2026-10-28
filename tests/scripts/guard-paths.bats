@@ -214,3 +214,38 @@ make_glob_fixture() {
   run bash -c 'printf "%s" "{\"cwd\":" | bash "$1"' _ "$GUARD"
   [ "$status" -eq 2 ]
 }
+
+# ---- T-412: 디렉터리 자체·끝 개행·제어 문자 (dev-1 의 guard 보강 d30bf0e 대응) ----
+# 담당 범위: src/order/ (디렉터리) + docs/a.md (파일). cwd = 저장소 루트.
+setup_t412() {
+  export AF_AGENT=dev-1
+  printf '%s\n' 'src/order/' 'docs/a.md' >"$R/.claude/devs/dev-1.paths"
+  make_glob_fixture
+}
+
+@test "⑬ 디렉터리 항목 자체·상위로 빠지는 경로는 차단(exit 2, 정규화된 경로 표시)" {
+  setup_t412
+  local pair f expected
+  for pair in 'src/order/..|src' 'src/order/x/../..|src' 'src/order/.|src/order' 'src/order/|src/order'; do
+    f="${pair%%|*}"; expected="${pair##*|}"
+    run_guard_at_root "$R" "$f"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"담당 범위 밖 파일입니다: $expected ("* ]]
+  done
+}
+
+@test "⑭ 범위 안 파일 src/order/a.ts 는 허용(exit 0)" {
+  setup_t412
+  run_guard_at_root "$R" "src/order/a.ts"
+  [ "$status" -eq 0 ]
+}
+
+@test "⑮ 개행만·경로 끝 개행·탭·중간 개행(제어 문자)은 차단(exit 2)" {
+  setup_t412
+  local f
+  for f in $'\n' $'docs/a.md\n' $'src/order/a\tb.ts' $'src/order/a\nb.ts'; do
+    run_guard_at_root "$R" "$f"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"경로에 제어 문자가 있어 수정을 막았습니다."* ]]
+  done
+}
