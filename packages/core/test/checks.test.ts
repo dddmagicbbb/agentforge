@@ -36,6 +36,16 @@ describe("checks 코드 12종", () => {
     expect(r.find((i) => i.code === "NAME_INVALID")?.level).toBe("error");
   });
 
+  it("NAME_INVALID params.slug: PoC slug() 와 같은 변환(trim·소문자·치환·앞뒤 - 제거·빈 값은 my-project)", () => {
+    const slugOf = (n: string) => run((d) => (d.name = n)).find((i) => i.code === "NAME_INVALID")?.params["slug"];
+    expect(slugOf("Bad Name")).toBe("bad-name");
+    expect(slugOf("  My  App!! ")).toBe("my-app");
+    expect(slugOf("--Foo__Bar--")).toBe("foo__bar");
+    expect(slugOf("한글")).toBe("my-project");
+    expect(slugOf("")).toBe("my-project");
+    expect(run((d) => (d.name = "Bad Name")).find((i) => i.code === "NAME_INVALID")?.params["name"]).toBe("Bad Name");
+  });
+
   it("REQ_SHORT(warn): 30자 미만만", () => {
     expect(codes(run((d) => (d.requirement = "x".repeat(29))))).toContain("REQ_SHORT");
     expect(codes(run((d) => (d.requirement = "x".repeat(30))))).not.toContain("REQ_SHORT");
