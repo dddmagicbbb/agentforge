@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # .claude/hooks/guard-paths.sh
-# PreToolUse(Edit|Write): 에이전트별 담당 범위 밖 파일 수정을 막는다.
+# PreToolUse(Edit|Write|MultiEdit|NotebookEdit): 에이전트별 담당 범위 밖 파일 수정을 막는다.
 # AF_AGENT 가 없으면(리드·순차 단계 세션) 검사하지 않는다.
 set -u
 set -f   # 글롭 확장 끔(경로 조각이 패턴으로 펼쳐지는 우회 방지)
@@ -11,13 +11,14 @@ input="$(cat)"
 command -v jq >/dev/null 2>&1 || {
   echo "jq 가 없어 담당 범위를 검사할 수 없습니다. 설치 후 다시 실행하세요." >&2; exit 2; }
 
-# JSON 해석 실패는 통과시키지 않고 차단한다(fail-closed). file_path 가 비는 경우(Edit·Write 아님)는 아래에서 통과.
-file="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')" &&
+# JSON 해석 실패는 통과시키지 않고 차단한다(fail-closed). 경로는 file_path(Edit·Write·MultiEdit) 또는 notebook_path(NotebookEdit),
+# 둘 다 비는 경우(파일 변경 도구 아님)는 아래에서 통과.
+file="$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.notebook_path // empty')" &&
 cwd="$(printf '%s' "$input" | jq -r '.cwd // empty')" || {
   echo "hook 입력을 해석하지 못해 수정을 막았습니다." >&2; exit 2; }
 # 제어 문자(개행·탭 등)가 든 경로는 차단한다. 명령 치환이 끝 개행을 지워 완전 일치로 우회되거나
 # 개행만 있는 값이 빈 값으로 통과되는 것을 막으려고, 값 변환·빈 값 통과보다 앞에서 원시 JSON 을 jq 로 직접 검사한다(-e: 참이면 exit 0).
-printf '%s' "$input" | jq -e '(.tool_input.file_path // "") | explode | any(. < 32 or . == 127)' >/dev/null 2>&1 && {
+printf '%s' "$input" | jq -e '(.tool_input.file_path // .tool_input.notebook_path // "") | explode | any(. < 32 or . == 127)' >/dev/null 2>&1 && {
   echo "경로에 제어 문자가 있어 수정을 막았습니다." >&2; exit 2; }
 [ -z "$file" ] && exit 0
 

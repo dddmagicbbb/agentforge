@@ -70,4 +70,9 @@ describe("파일 속성", () => {
     const s = JSON.parse(content(files, ".claude/settings.json"));
     expect(s.permissions.deny).toEqual(expect.arrayContaining(["Read(.agentforge/env.local)", "Bash(git push:*)", "Bash(git merge:*)", "Bash(git checkout:*)"]));
   });
+  // T-503 S-2: 파일을 바꾸는 도구 전부에 guard hook 이 걸려야 한다(NotebookEdit 우회 방지)
+  it("guard hook 은 Edit·Write·MultiEdit·NotebookEdit 에 걸린다", () => {
+    const s = JSON.parse(content(files, ".claude/settings.json"));
+    expect(s.hooks.PreToolUse[0].matcher).toBe("Edit|Write|MultiEdit|NotebookEdit");
+  });
 });

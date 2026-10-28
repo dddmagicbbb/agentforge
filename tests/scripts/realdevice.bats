@@ -72,6 +72,8 @@ rd_full_cycle() {  # rd_full_cycle <구성>
   [ "$status" -eq 0 ]
   [ -d .git ]
   [ "$(stat -c %a .agentforge/env.local 2>/dev/null || stat -f %Lp .agentforge/env.local)" = "600" ]
+  # 비밀 값 파일은 첫 커밋에 들어가지 않는다(T-503)
+  [ -z "$(git ls-files .agentforge/env.local)" ]
 
   rd_docs
   run bash scripts/check-forge.sh

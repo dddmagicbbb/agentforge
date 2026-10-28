@@ -249,3 +249,21 @@ setup_t412() {
     [[ "$output" == *"경로에 제어 문자가 있어 수정을 막았습니다."* ]]
   done
 }
+
+# T-503 S-2: NotebookEdit 는 file_path 대신 notebook_path 를 준다 → 빈 경로로 통과되면 안 된다
+run_guard_nb() {  # run_guard_nb <cwd> <notebook_path>
+  local json
+  json="$(jq -cn --arg cwd "$1" --arg f "$2" '{cwd: $cwd, tool_name: "NotebookEdit", tool_input: {notebook_path: $f}}')"
+  run bash -c 'printf "%s" "$1" | bash "$2"' _ "$json" "$GUARD"
+}
+
+@test "⑯ NotebookEdit: 범위 밖 notebook_path 는 차단, 범위 안은 허용, 제어 문자는 차단" {
+  export AF_AGENT=dev-1
+  run_guard_nb "$R" "$R/other/x.ipynb"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"담당 범위 밖 파일입니다: other/x.ipynb (dev-1)"* ]]
+  run_guard_nb "$R" "$R/src/a.ipynb"
+  [ "$status" -eq 0 ]
+  run_guard_nb "$R" $'src/a\n.ipynb'
+  [ "$status" -eq 2 ]
+}

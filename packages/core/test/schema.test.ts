@@ -112,4 +112,14 @@ describe("오류 코드", () => {
     expect(codes(draft((d) => (d.name = "Order Portal")))).toEqual(["PROJECT_NAME"]);
     expect(codes(draft((d) => (d.devs[0]!.domain = "주문")))).toEqual(["DOMAIN"]);
   });
+
+  // T-503 보안 점검: litellm.yaml·frontmatter 에 그대로 들어가므로 YAML 예약 문자(@ :)·옵션 모양(-)으로 시작하면 안 된다
+  it("모델 ID 는 영문·숫자로 시작해야 한다(MODEL_ID)", () => {
+    for (const m of ["@x", ":x", "-x", ".x", "/x"]) {
+      expect(codes(draft((d) => (d.devs[0]!.dev = { provider: "openai", model: m })))).toEqual(["MODEL_ID"]);
+    }
+    for (const m of ["gpt-5.5", "qwen/qwen3-coder:free", "org/model@v2"]) {
+      expect(codes(draft((d) => (d.devs[0]!.dev = { provider: "openai", model: m })))).toEqual([]);
+    }
+  });
 });
