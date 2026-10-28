@@ -97,15 +97,8 @@ export function validate(input: unknown, opts: ValidateOptions = {}): ValidateRe
 // T-401: 개발자 수 변경(PoC syncDevs)
 export { resizeDevs } from "./resize.js";
 
-/** 화면 경고(PRV-04 등). — T-405 */
-export function checks(_input: ProjectInput): Issue[] {
-  return notImplemented("checks", "T-405");
-}
-
-/** 오류(error) 항목이 없을 때만 내보내기 가능. — T-405 */
-export function canExport(_issues: readonly Issue[]): boolean {
-  return notImplemented("canExport", "T-405");
-}
+// T-405: 화면 경고(PRV-04)와 내보내기 가능 여부
+export { canExport, checks } from "./checks.js";
 
 /** 생성 파일 전체. 같은 입력이면 같은 출력(design.md 4장). */
 export function render(project: Project): RenderedFile[] {
