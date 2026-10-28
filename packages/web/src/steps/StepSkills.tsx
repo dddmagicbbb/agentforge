@@ -25,7 +25,7 @@ export function StepSkills({ draft, patch }: Props) {
         <span>
           <code>{k.id}</code> — {t(`skills.core.${k.id}.desc`)}
           <br />
-          <span className="sub">{t(`skills.core.${k.id}.to`)}{k.fixed && k.layer !== "gen" ? ` · ${t("skills.required")}` : ""}</span>
+          <span className="sub">{t(`skills.core.${k.id}.to`)}{k.fixed ? ` · ${t("skills.required")}` : ""}</span>
         </span>
       </label>
     );

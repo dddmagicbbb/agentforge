@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { Issue, ProjectInput, RenderedFile } from "@agentforge/core";
+import { AppError, type Issue, type ProjectInput, type RenderedFile } from "@agentforge/core";
 import { toZip } from "@agentforge/exporter";
 import { IssueList } from "../components/IssueList";
 
@@ -30,7 +30,8 @@ export function StepRequirement({ draft, patch, issues, files }: Props) {
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
-      setFailure(e instanceof Error ? e.message : String(e));
+      // 원문 메시지는 화면에 노출하지 않고 오류 코드만 i18n 파라미터로 쓴다
+      setFailure(e instanceof AppError ? e.code : "UNKNOWN");
     } finally {
       setBusy(false);
     }

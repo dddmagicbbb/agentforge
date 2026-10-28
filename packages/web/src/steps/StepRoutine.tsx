@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { AgentModelT, ProjectInput, SeqAgentIdT } from "@agentforge/core";
 import { FlowChart } from "../components/FlowChart";
 import { ModelPicker } from "../components/ModelPicker";
-import { OPTIONAL_AGENT, ROUTINE_IDS } from "../catalog";
+import { FINAL_AGENT, OPTIONAL_AGENT, ROUTINE_IDS } from "../catalog";
 
 interface Props {
   readonly draft: ProjectInput;
@@ -31,7 +31,7 @@ export function StepRoutine({ draft, patch }: Props) {
               const off = id === OPTIONAL_AGENT && !draft.uiDesign;
               return (
                 <tr key={id} className={off ? "off" : undefined}>
-                  <td className="mono">{k + 1}</td>
+                  <td className="mono">{id === FINAL_AGENT ? 8 : k + 1}</td>
                   <td>
                     <b>{t(`routine.seq.${id}.step`)}</b>
                     {id === OPTIONAL_AGENT ? <span className="chip">{t("routine.optional")}</span> : null}

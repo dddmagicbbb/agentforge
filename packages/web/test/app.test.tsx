@@ -2,6 +2,7 @@ import { fireEvent, render as mount, screen, within } from "@testing-library/rea
 import { describe, expect, it } from "vitest";
 import { defaultDraft, render, validate } from "@agentforge/core";
 import { App } from "../src/App";
+import { StepSkills } from "../src/steps/StepSkills";
 import { defaultModel } from "../src/catalog";
 
 const next = () => fireEvent.click(screen.getByRole("button", { name: "다음" }));
@@ -105,18 +106,30 @@ describe("RTN-02 2단계", () => {
     next();
     const table = within(screen.getByRole("table"));
     expect(table.getByText("docs/prd.md")).toBeInTheDocument();
+    expect(table.getByText("8")).toBeInTheDocument();
     expect(table.getByText(/사람 승인\(기능 목록·우선순위\)/)).toBeInTheDocument();
   });
 });
 
 describe("SKL-01·02 4단계", () => {
-  it("고정 스킬은 비활성이고 도메인 미정은 안내 문구", () => {
+  it("도메인 미정 개발자는 안내 문구를 보이고 준비된 개발자는 devN-도메인을 보인다", () => {
+    const draft = defaultDraft();
+    draft.devs = draft.devs.map((d, i) => (i === 1 ? { ...d, domain: "", paths: [] } : d));
+    mount(<StepSkills draft={draft} patch={() => undefined} />);
+    expect(screen.getAllByText("도메인 미정 · /forge-agents가 생성")).toHaveLength(1);
+    expect(screen.getByText("dev1-order")).toBeInTheDocument();
+    expect(screen.queryByText("dev2-payment")).not.toBeInTheDocument();
+    expect(screen.getByText("dev3-admin")).toBeInTheDocument();
+  });
+
+  it("고정 스킬은 비활성이고 필수 표시가 있으며 도메인이 있으면 미정 문구가 없다", () => {
     mount(<App />);
     fireEvent.click(stepBtn(4));
     for (const id of ["detail-design", "code-review", "forge-init", "forge-agents"]) {
       const cb = screen.getByRole("checkbox", { name: new RegExp(`^${id}`) });
       expect(cb).toBeChecked();
       expect(cb).toBeDisabled();
+      expect(cb.closest("label")).toHaveTextContent("필수");
     }
     expect(screen.getByText("dev1-order")).toBeInTheDocument();
     expect(screen.queryByText("도메인 미정 · /forge-agents가 생성")).not.toBeInTheDocument();
