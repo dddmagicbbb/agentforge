@@ -27,7 +27,7 @@ describe.each(configs)("golden: %s", (name) => {
   });
 
   it.each(manifest.files.map((f) => f.path))("%s 내용이 PoC 와 같다", (p) => {
-    if (intended.some((d) => d.config === name && d.path === p)) return;
+    if (intended.some((d) => (d.config === name || d.config === "*") && d.path === p)) return;
     const expected = fs.readFileSync(path.join(dir, "files", p), "utf8");
     expect(files.find((f) => f.path === p)?.content).toBe(expected);
   });

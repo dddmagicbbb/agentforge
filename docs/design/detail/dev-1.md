@@ -110,3 +110,50 @@ dev-N·review-N·paths·전용 스킬 렌더(ready 아닌 dev 생략)는 PH3에�
 
 ### 7. 계약·공통 모듈에 필요한 변경
 없음. `schema/`·`templates/**` 변경 없음.
+
+## 3라운드: T-403, T-404 (ADR-0004 구현)
+
+### 1. 작업·기능 ID
+- T-404: DEV-03, GEN-03 스크립트 부분 (setup·guard-paths·integrate·wait-and-review)
+- T-403: GEN-01·02 (forge-agents 자리표시 정합, check-forge 7번째 항목)
+
+### 2. 파일 목록
+| 경로 | 책임 |
+|---|---|
+| templates/static/setup.sh | sed -i 제거, tr + mv 후 chmod |
+| templates/static/guard-paths.sh | jq 부재 fail-closed(exit 2), bash 어휘 정규화, 파일 항목 완전 일치 |
+| templates/static/integrate.sh | 충돌 시 merge --abort 후 reset --hard pre-integration |
+| templates/static/wait-and-review.sh | take() 이력명 `.<초>[.<n>]` |
+| templates/static/check-forge.sh | 7번째 항목: 미치환 자리표시 검사(forge-agents 스킬 제외) |
+| templates/md/forge-agents.md | 자리표시 7종과 값의 출처 명시 |
+| tests/golden/intended-diffs.json | templates 6건, diffs 6건(config "*") |
+| packages/core/test/golden.test.ts | config "*" 지원 |
+| packages/core/test/adr0004.test.ts | ADR 결정 반영 시험(신규) |
+
+### 3. 주요 함수
+- guard `normalize <경로>`: `/` 분할, 빈·`.` 무시, `..`는 직전 세그먼트 제거, 루트 위로는 `/`. 저장소 밖 경로는 차단.
+- wait `take <신호>`: 없으면 return 1, 대상 `.<초>`가 있으면 `.<초>.<n>`. `count`는 `$1.*` 그대로.
+- 고정 문구: `jq 가 없어 담당 범위를 검사할 수 없습니다. 설치 후 다시 실행하세요.`(exit 2), `담당 범위 밖 파일입니다: <rel> (<agent>). …`(exit 2), `develop 을 pre-integration 태그 상태로 되돌렸습니다.`, `✗ <파일> 에 채우지 않은 자리표시 <토큰>`
+
+### 4. 사용하는 계약
+없음(정적 템플릿·core 렌더 결과).
+
+### 5. 화면 상태
+해당 없음.
+
+### 6. 테스트 목록
+| 기능 ID | 수용 기준 | 테스트 이름 |
+|---|---|---|
+| DEV-03 | setup.sh에 sed -i 없음, tr+mv 후 chmod | `setup.sh: sed -i 없이 tr + mv…` |
+| DEV-03 | guard에 realpath 없음, normalize 존재 | `guard-paths.sh: realpath 제거…` |
+| DEV-03 | AF_AGENT 검사가 jq 검사보다 앞, jq 부재 exit 2 | `guard-paths.sh: AF_AGENT 검사가…` |
+| DEV-03 | `/` 항목 접두어, 그 외 완전 일치, 차단 문구 유지 | `guard-paths.sh: 끝이 / 인 항목…` |
+| RUN-03 | 충돌 시 reset --hard, 안내문 일치 | `integrate.sh: 충돌 시…` |
+| RUN-02 | 이력명 순번, count 패턴 유지 | `wait-and-review.sh: 이력 이름…` |
+| GEN-03 | 7번째 항목이 6번 뒤, forge-agents 제외 | `check-forge.sh: 7번째 항목…` |
+| GEN-02 | forge-agents 자리표시 목록 = dev·review 템플릿 실제 집합 | `forge-agents 의 자리표시 목록…` |
+| GEN-01 | disable-model-invocation 유지 | `forge-agents 스킬은…` |
+| ADR-0004 | intended-diffs 밖 파일은 golden과 바이트 일치 | 기존 `golden: *` |
+
+### 7. 계약·공통 모듈에 필요한 변경
+없음. forge-init.md는 GEN-01 기준 충족이라 변경하지 않음.

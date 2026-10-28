@@ -12,7 +12,12 @@ say() {  # say <에이전트> <메시지> : 해당 pane 에 문장을 입력하�
   tmux send-keys -t "$p" -l "$2"; sleep 0.5; tmux send-keys -t "$p" Enter
   echo "$(date +%H:%M:%S) → $1: $2"
 }
-take() { [ -f "$sig/$1" ] && mv "$sig/$1" "$sig/$1.$(date +%s)"; }   # 신호 소비(이력 보존)
+take() {  # 신호 소비(이력 보존): 같은 초에 또 소비되면 .<초>.<n> 으로 덮어쓰기를 피한다
+  [ -f "$sig/$1" ] || return 1
+  local base n=0 dest; base="$sig/$1.$(date +%s)"; dest="$base"
+  while [ -e "$dest" ]; do n=$((n + 1)); dest="$base.$n"; done
+  mv "$sig/$1" "$dest"
+}
 count() { find "$sig" -maxdepth 1 -name "$1.*" | wc -l; }
 
 out_of_scope() {  # out_of_scope <i> : 담당 범위 밖 변경 파일 출력
