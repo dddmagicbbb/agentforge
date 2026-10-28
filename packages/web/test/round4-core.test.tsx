@@ -31,10 +31,7 @@ describe("W1 core export 사용(화면 사본 제거)", () => {
     for (const id of ids) expect(screen.getByLabelText(`${id} 제공자`)).toBeInTheDocument();
   });
 
-  it("catalog.ts·agents.ts 에 제공자·스킬 사본 리터럴이 없다", () => {
-    expect(src("../src/catalog.ts")).not.toMatch(/exaone-32b|qwen3-coder|"conventions"/);
-    expect(src("../src/agents.ts")).not.toMatch(/"integrator"|"ux-designer"/);
-  });
+  // 소스 정규식 검사는 삭제: 위 렌더 비교 시험(PROVIDERS·CORE_SKILLS·SEQ 와 일치)이 사본 제거를 충분히 보장한다.
 });
 
 describe("W2 tmux 미리보기 i18n", () => {

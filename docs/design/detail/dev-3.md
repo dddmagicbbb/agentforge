@@ -128,3 +128,10 @@ core: `PROVIDERS`·`provider`·`SEQ`·`FINAL`·`CORE_SKILLS`·`devSkill`·`valid
 
 ## 7. core 변경 요청
 W3: `NAME_INVALID` params 에 slug 값 추가(PoC 문구 복원). 구현하지 않음.
+
+## 5라운드 (T-421 W3 · T-422 · T-425 · T-426)
+- W3: `issue.NAME_INVALID`(앞 문장) + `NAME_INVALID_withSlug`(i18next context). IssueList 가 `params.slug` 가 있을 때만 context 를 준다. slug 없으면 앞 문장만.
+- T-426: `issue-step.ts` 에 `gotoStepOf(issue)` 추가. path 있는 error·warn 은 `stepOfPath`, path 없는 `OPENROUTER_FREE_LIMIT`·`GATEWAY_REQUIRED`·`VLLM_TOOL_PARSER` 는 5단계(index 4)로 이동 버튼. ZIP 시험은 `vi.spyOn(URL, ...)` + `afterEach(vi.restoreAllMocks)`.
+- T-422: 소스 정규식 시험 삭제(렌더 비교 시험으로 충분).
+- T-425: StepConnection 은 `provider(id).via` 로 분기.
+- 시험: `round4-gen.test.tsx`(code 이동, W3 slug 유무).

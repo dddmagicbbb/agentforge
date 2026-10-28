@@ -48,7 +48,7 @@ describe("골격: 단계 이동", () => {
   it("잘못된 이름이면 오류를 보이고 ZIP이 막힌다", () => {
     mount(<App />);
     fireEvent.change(screen.getByLabelText(/프로젝트 이름/), { target: { value: "Bad Name" } });
-    expect(screen.getByText("프로젝트 이름은 영문 소문자·숫자·.·_·- 만 씁니다.")).toBeInTheDocument();
+    expect(screen.getByText("프로젝트 이름은 영문 소문자·숫자·-·_ 만 씁니다.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /먼저 해결/ })).toBeDisabled();
   });
 });

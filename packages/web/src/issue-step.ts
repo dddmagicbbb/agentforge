@@ -26,3 +26,16 @@ export function stepOfPath(path: readonly (string | number)[]): StepIndex {
 export function errorSteps(issues: readonly Issue[]): ReadonlySet<StepIndex> {
   return new Set(issues.filter((i) => i.level === "error").map((i) => stepOfPath(i.path)));
 }
+
+/** path 가 비어 있어도 원인을 고칠 단계가 정해진 코드 → 5단계(연결·실행, 0 기준 4) */
+const CODE_STEP: Readonly<Record<string, StepIndex>> = {
+  OPENROUTER_FREE_LIMIT: 4,
+  GATEWAY_REQUIRED: 4,
+  VLLM_TOOL_PARSER: 4,
+};
+
+/** "해당 단계로 이동" 버튼 대상. 없으면 undefined(path 있는 error·warn 이거나 code 매핑이 있는 항목만 버튼) */
+export function gotoStepOf(i: Issue): StepIndex | undefined {
+  if (i.path.length > 0) return i.level === "error" || i.level === "warn" ? stepOfPath(i.path) : undefined;
+  return CODE_STEP[i.code];
+}
