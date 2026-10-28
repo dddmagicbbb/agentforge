@@ -67,3 +67,9 @@ pre { white-space: pre-wrap; border: 1px solid var(--line); border-radius: 6px; 
 .tmux .panes { display: grid; gap: 4px; margin-top: 4px; }
 .tmux .pane { display: grid; font-size: 12px; padding: 4px 6px; border-radius: 4px; background: var(--line); }
 .tmux .bar { display: block; margin-top: 8px; font: 11px ui-monospace, monospace; color: var(--muted); }
+.issues .lv-info, .issues .lv-ok { color: var(--muted); }
+.issues .lv-ok { color: #15803d; }
+.issues .i { display: inline-block; width: 1.2em; font-weight: 700; }
+.issues .goto { margin-left: 8px; padding: 0 8px; font-size: 12px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; }
+.steps .dot { margin-left: 4px; color: var(--err); font-size: 10px; }
+.next { padding-left: 20px; }

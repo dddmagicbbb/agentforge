@@ -71,7 +71,7 @@
 # 2라운드 (PH4) — T-421, T-423, T-425
 
 ## R2-0. 공통
-- core `PROVIDERS`·`CORE_SKILLS`·`devSkill`은 아직 index에서 export되지 않아 `src/catalog.ts` 사본을 유지한다(dev-1 병합 후 다음 라운드에 제거).
+- (4라운드 갱신) 사본 제거: `src/catalog.ts`·`agents.ts`는 core export(`PROVIDERS`·`provider`·`SEQ`·`FINAL`·`CORE_SKILLS.group`·`devSkill`)에서 파생한다. core 의 `label`·`layer`·`to`·`IMPORT_TARGET_LABEL` 은 생성물 문구라 화면에 쓰지 않는다.
 - `use-preview.ts`: `validate` 오류와 core `checks` 결과를 `mergeIssues`로 합친다(코드+경로+params 동일 항목 제거, `NAME_INVALID`가 있으면 `PROJECT_NAME` 생략). `exportable = canExport(issues)`. 파일은 validate 성공 때만 렌더.
 - `IssueList({issues, filter})`: `issue.<CODE>` 문구에 params 보간. 오류는 `role=alert`, 그 외 `status`. `atPath(...keys)`는 경로 첫 요소 필터.
 - 문구는 `ko.json`의 `issue.*`. 작업별로 해당 코드 문구를 추가한다.
@@ -96,3 +96,35 @@
 - 경고: core `checks` 결과 중 GATEWAY_REQUIRED, VLLM_TOOL_PARSER, OPENROUTER_FREE_LIMIT, MODEL_MISSING 만 이 화면에 표시.
 - ko 문구 추가: OPENROUTER_FREE_LIMIT, GATEWAY_REQUIRED, VLLM_TOOL_PARSER, HTTP_URL (checks 전 코드의 문구는 R2-1~3 합쳐 완비).
 - 시험: `test/round2-conn.test.tsx` 12건 — 사용 제공자만/에이전트 수, uiDesign 끔, vLLM·Ollama 주소 입력 표시/숨김, 주소 편집·오류, 안내만 있는 제공자, 키 입력란 없음, tmux 창 수(개발자 수+1)·상태 줄·반려 한도, 경고 4종.
+
+# 4라운드 (PH4) — T-426 + W1·W2·W4
+
+## 1. 작업
+- T-426(EXP-01) 6단계 생성 화면, W4(오류 원인 위치 이동), W1(catalog 사본 제거, T-422로 커밋), W2(tmux 문구 i18n, T-425로 커밋).
+
+## 2. 파일
+| 파일 | 책임 |
+|---|---|
+| `src/issue-step.ts` | `stepOfPath(path)`: agents→2단계, devs→3, skills·imported→4, connections→5, 그 외→1단계(인덱스 0 기준). `errorSteps(issues)` |
+| `src/components/ZipButton.tsx` | ZIP 다운로드(`<name>-agentforge.zip`), 오류 시 차단, 첫 오류 단계 이동 버튼. 1·6단계 공유 |
+| `src/steps/StepGenerate.tsx` | 칩 3종, 검사 전체 목록(아이콘·이동 버튼), ZIP, 받은 뒤 할 일, GitHub P1 안내 |
+| `IssueList` | `onGoto` 지정 시 수준 아이콘과 "해당 단계로 이동" 버튼 |
+| `StepBar` | `errorSteps` 단계에 경고 점(●, 접근명 "오류 있음") |
+
+## 3. 동작
+- 칩: `files.length`, `mode===0o755` 수, `author==="ai-fill"` 수(오류가 있으면 파일이 비어 0).
+- 받은 뒤 할 일 4번은 `uiDesign`에 따라 UI/UX 설계 포함 여부가 바뀐다.
+- GitHub는 P1: 안내 문구만, 토큰·소유자 입력란 없음.
+- ZIP 실패 문구는 `export.error.<code>`가 있으면 그것, 없으면 `export.failed`(코드만 표시, 원문 메시지 미노출).
+
+## 4. 사용하는 계약
+core: `PROVIDERS`·`provider`·`SEQ`·`FINAL`·`CORE_SKILLS`·`devSkill`·`validate`·`checks`·`canExport`·`render`. exporter: `toZip`.
+
+## 5. 화면 상태
+오류 있음(ZIP 차단, 이동 버튼, 단계 바 점) / 경고만(ZIP 가능) / 생성 중(버튼 비활성) / 실패(alert).
+
+## 6. 테스트
+`test/round4-gen.test.tsx`(6단계·경로 매핑), `test/round4-core.test.tsx`(W1·W2).
+
+## 7. core 변경 요청
+W3: `NAME_INVALID` params 에 slug 값 추가(PoC 문구 복원). 구현하지 않음.

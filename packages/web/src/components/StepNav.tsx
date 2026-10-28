@@ -8,8 +8,8 @@ interface Props {
   readonly onStep: (s: StepIndex) => void;
 }
 
-/** 상단 단계 바(클릭 이동) */
-export function StepBar({ step, onStep }: Props) {
+/** 상단 단계 바(클릭 이동). 오류가 있는 단계에는 경고 점을 붙인다. */
+export function StepBar({ step, onStep, errorSteps }: Props & { readonly errorSteps?: ReadonlySet<StepIndex> }) {
   const { t } = useTranslation();
   return (
     <nav aria-label={t("nav.label")}>
@@ -18,6 +18,7 @@ export function StepBar({ step, onStep }: Props) {
           <li key={k}>
             <button type="button" aria-current={i === step ? "step" : undefined} onClick={() => onStep(i as StepIndex)}>
               {`${i + 1} ${t(`steps.${k}`)}`}
+              {errorSteps?.has(i as StepIndex) ? <span className="dot" role="img" aria-label={t("nav.hasError")}>●</span> : null}
             </button>
           </li>
         ))}

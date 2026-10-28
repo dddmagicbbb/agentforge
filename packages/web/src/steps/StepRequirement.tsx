@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AppError, MAX_DEVELOPERS, resizeDevs, type Issue, type ProjectInput, type RenderedFile } from "@agentforge/core";
-import { toZip } from "@agentforge/exporter";
+import { MAX_DEVELOPERS, resizeDevs, type Issue, type ProjectInput, type RenderedFile } from "@agentforge/core";
 import { atPath, IssueList } from "../components/IssueList";
+import type { StepIndex } from "../components/StepNav";
+import { ZipButton } from "../components/ZipButton";
 
 interface Props {
   readonly draft: ProjectInput;
@@ -11,34 +11,14 @@ interface Props {
   readonly files: readonly RenderedFile[];
   /** 오류가 없을 때만 true */
   readonly exportable: boolean;
+  /** 오류 원인 단계로 이동 */
+  readonly onStep?: (s: StepIndex) => void;
 }
 
 /** 1단계: 요구사항·개발자 수·반려 한도 입력 + ZIP 다운로드 */
-export function StepRequirement({ draft, patch, issues, files, exportable }: Props) {
+export function StepRequirement({ draft, patch, issues, files, exportable, onStep }: Props) {
   const { t } = useTranslation();
-  const errorCount = issues.filter((i) => i.level === "error").length;
-  const [busy, setBusy] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
   const cmd = (k: keyof ProjectInput["commands"], v: string) => patch({ commands: { ...draft.commands, [k]: v } });
-
-  const download = async () => {
-    setBusy(true);
-    setFailure(null);
-    try {
-      const bytes = await toZip([...files], draft.name);
-      const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: "application/zip" }));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${draft.name}-agentforge.zip`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      // 원문 메시지는 화면에 노출하지 않고 오류 코드만 i18n 파라미터로 쓴다
-      setFailure(e instanceof AppError ? e.code : "UNKNOWN");
-    } finally {
-      setBusy(false);
-    }
-  };
 
   return (
     <>
@@ -72,10 +52,7 @@ export function StepRequirement({ draft, patch, issues, files, exportable }: Pro
         </select>
       </label>
       <IssueList issues={issues} filter={atPath("language", "uiDesign", "commands", "maxRejects", "developerCount")} />
-      {failure ? <p className="issues" role="alert">{t("export.failed", { reason: failure })}</p> : null}
-      <button type="button" className="primary" disabled={!exportable || busy} onClick={() => void download()}>
-        {!exportable ? t("export.blocked", { count: errorCount }) : busy ? t("export.busy") : t("export.zip")}
-      </button>
+      <ZipButton files={files} name={draft.name} issues={issues} exportable={exportable} onStep={onStep} current={0} />
     </>
   );
 }

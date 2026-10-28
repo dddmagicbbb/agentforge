@@ -31,12 +31,11 @@ describe("골격: 단계 이동", () => {
     expect(screen.getByRole("button", { name: "이전" })).toBeEnabled();
   });
 
-  it("자리표시 단계는 안내 문구를 보인다", () => {
+  it("6단계는 생성 화면이다", () => {
     mount(<App />);
-    for (const n of [6]) {
-      fireEvent.click(stepBtn(n));
-      expect(screen.getByText("다음 라운드에서 구현합니다.")).toBeInTheDocument();
-    }
+    fireEvent.click(stepBtn(6));
+    expect(screen.getByRole("heading", { name: "생성" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "받은 뒤 할 일" })).toBeInTheDocument();
   });
 
   it("1단계 입력이 미리보기에 반영된다", () => {
