@@ -60,3 +60,56 @@ WSL에서 `paths = src/order/, docs/report-dev-1.md`, AF_AGENT=dev-1로 실행�
 - 코드 검토(T-403): **통과** — 자리표시 정합, check-forge 7항목, intended-diffs·snapshot 정확
 - 코드 검토(T-404): **반려** — guard-paths.sh:20 glob 확장으로 범위 우회(저장소 밖 포함) 재현. 나머지 결정 1·5·6·7은 충족
 - 전체: **반려** (반려 1건 수정 + bats 사례 추가 후 재검토)
+
+---
+
+# 재검토: T-404 (1a0c73b, 통합 d747860)
+
+## 1. 직접 실행
+| 명령 | 결과 |
+| --- | --- |
+| `pnpm install` / `pnpm gen:templates` | 정상 / 26개 |
+| `pnpm --filter @agentforge/core test` | 9 파일, 282 통과, 실패 0 |
+| `pnpm typecheck` / `lint` / `build` | 모두 exit 0 |
+| `pnpm check:poc-static` | exit 0 (등록된 의도적 차이 6개 외 일치) |
+| `bash tests/scripts/run.sh` | bash -n 전부 통과. 로컬에 shellcheck·bats가 없어 건너뜀 → CI run 40722628452 ubuntu bats 44/44(⑩·⑩-2·⑪·⑫·⑨-2 포함)를 근거로 함. macOS는 재실행 대기 |
+
+- 1a0c73b의 `.snap` 변경 24줄 = guard-paths.sh·setup.sh 해시 × 6구성뿐. intended-diffs 목록 변동 없음(같은 6파일).
+
+## 2. 우회 재현 (1차와 같은 방식: WSL bash 5.3, 임시 git 저장소, 가짜 jq, paths = `src/order/`, `docs/report-dev-1.md`)
+| 입력 file_path | 기대 | 결과 |
+| --- | --- | --- |
+| `src/order/a.ts`, 절대 경로, `./src/order/a.ts`, `src//order/./a.ts` | 허용 | exit 0 |
+| `src/order/a b.ts`, 탭 포함, `src/order/$(id)/x` | 허용(범위 안) | exit 0 |
+| `<root>/../repo/src/order/a.ts` | 허용 | exit 0 |
+| `src/orders/a.ts`, `src/order`(끝 `/` 없음) | 차단 | exit 2 |
+| `src/order/../../docs/x.md`, `/etc/passwd`, `<root>/../repoX/...` | 차단 | exit 2 |
+| `docs/report-dev-1.md` / `docs/report-dev-1.md.bak` | 허용 / 차단 | exit 0 / exit 2 |
+| **`src/order/*/../../../docs/evil.md`** (1차 우회) | 차단 | **exit 2** |
+| **`src/order/*/../../../../outside.txt`** (1차 우회) | 차단 | **exit 2** |
+| `?`, `[a-z]*`, `.*`, `{a,b,c}`, `~` 세그먼트 + `..` | 차단 | exit 2 |
+| `src/order/x⏎/../../../docs/y` (중간 개행) | 차단 | exit 2 |
+| `src/order/a.ts⏎` (끝 개행) | 허용(범위 안) | exit 0 |
+| `docs/report-dev-1.md⏎` (끝 개행) | 차단이 이상적 | exit 0 (아래 권고 2) |
+| `src/order/..`, `src/order/x/../..` | 차단이 이상적 | exit 0 (아래 권고 1) |
+
+- glob 우회는 `set -f`(6행)와 `read -a`(23행)로 이중으로 막혔다. 1차 반려 사유는 해소됐다.
+- here-string 끝 개행: `read -r -d ''`는 NUL까지 읽으므로 `<<<`가 붙인 `\n`이 **마지막 세그먼트에 남는다**. `normalize /r/a/b/..`의 실제 출력 바이트가 `/r/a/b/..\n`이었다(od 확인).
+  - 일반 경로: `$(normalize ...)`가 끝 개행을 지우므로 루트 비교·파일 완전 일치에 영향이 없다. 위 표의 허용·차단과 CI의 "범위 안 허용"·⑧이 이를 뒷받침한다.
+  - 마지막 세그먼트가 `..`·`.`이면 `"..\n"`이 이름으로 취급돼 처리되지 않는다. 그래서 `src/order/..`(실제 `src/`)가 허용된다. 이런 경로는 항상 디렉터리를 가리켜 Write·Edit가 실패하므로(EISDIR) 파일을 쓰는 우회는 아니다. 그래서 반려가 아니라 권고로 둔다.
+- 깨진 JSON: `file=… && cwd=… || exit 2`. jq 실패 시 차단(⑫, ubuntu CI 통과).
+- setup.sh: `tr … || { echo; exit 1; }` 뒤에 `mv`(set -e 적용)를 두어 1차 권고 4가 반영됐다.
+
+## 3. 남은 지적
+| 판정 | 파일:줄 | 문제 | 고칠 방법 |
+| --- | --- | --- | --- |
+| 권고 | templates/static/guard-paths.sh:23 | here-string 끝 개행이 마지막 세그먼트에 남아 끝 `..`·`.`이 정규화되지 않는다(`src/order/..` 허용). 대상이 디렉터리라 쓰기는 실패하므로 실영향은 없지만, 정규화 함수가 부정확하다 | `IFS=/ read -r -d '' -a segs < <(printf '%s' "$1")`로 개행을 붙이지 않거나, 루프 앞에서 `segs[${#segs[@]}-1]="${segs[${#segs[@]}-1]%$'\n'}"`. bats에 `src/order/..` 차단 사례 추가 |
+| 권고 | templates/static/guard-paths.sh:15 | `$(jq -r …)`가 file_path 끝의 개행을 지워 `docs/report-dev-1.md⏎`(다른 파일)가 파일 항목 완전 일치로 허용된다. 1차부터 있던 동작이고 영향은 이름 끝에 개행만 붙은 파일 생성뿐이다 | `jq -r '…' ; printf x` 후 `${file%x}`처럼 센티널로 개행을 보존하거나, 제어 문자가 든 경로는 차단 |
+| 권고 | (1차 유지) guard-paths.sh 정규화 | 심볼릭 링크를 해석하지 않는 한계 | ADR-0004에 한계로 명시 |
+
+반려 사유(테스트 실패, 범위 밖 변경, 수용 기준 미충족, 우회 가능한 보안 결함)는 없다.
+
+## 최종 판정 (재검토)
+- 코드 검토(T-404): **통과** — glob 우회 차단을 직접 재현으로 확인. 남은 것은 권고 3건
+- T-403: 1차 통과 유지
+- 전체: **통과** (단 macOS CI 재실행 결과 확인을 리드에게 남김)
