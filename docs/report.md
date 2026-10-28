@@ -31,3 +31,11 @@
 - 결정: ADR-0004(정적 스크립트 보정: macOS 호환, guard fail-closed·완전 일치·glob/제어 문자 차단, integrate 충돌 복구, 반려 이력 순번, check-forge 7항목). 심볼릭 링크 우회는 한계로 수용(2차 방어: git diff 범위 검사·리뷰).
 - 운영 교훈: 서브에이전트 worktree 가 main 기준으로 생성됨 → 시작 시 `git merge --ff-only develop` 필수. 병합 커밋 push 를 위해 post-merge 훅 추가. core 빌드 설정(types: [])으로도 typecheck.
 - 미결: macOS CI 재검증(Actions 사용량 확인 필요), `.claude/settings.json` 병합(사람), WSL jq·shellcheck·bats 설치(사람), web 번들 500kB 경고, review 권고 잔여(R5-3 이름 규칙 문구에 "." 누락, 테스트 데이터 `as never`).
+
+## PH5 통합·실기 검증 — 2026-10-29 (진행 중, G4 전)
+- 전환: 사람 승인(2026-10-29) → prd "현재 단계" PH5, tasks T-501~T-505.
+- T-501 실기 점검 자동화: 구성 3종(`tests/realdevice/`) × ZIP→setup→check-forge→agent-env→worktree→병렬 실행→신호 전달(`tests/scripts/realdevice.bats`). **자동 9칸 통과** — ubuntu·macOS·Dev Container(CI run 40754097160). macOS bats 50/50 으로 PH4 5라운드 미검증분도 해소.
+- T-503 보안 점검(`docs/report-security.md`): 수정 2건 — S-1 모델 ID 첫 글자(YAML 예약 문자), S-2 guard 가 NotebookEdit(`notebook_path`)를 검사하지 않음 → ADR-0005. 수용 3건 — S-3 Bash 리다이렉션(실기 확인 R-6), S-4 신호 위조(위협 모델 밖), S-5 심볼릭 링크(ADR-0004).
+- T-505 잔여 권고: 이름 규칙 문구 ".", 테스트 데이터 `as never` 제거, exporter 지연 로딩(첫 화면 번들 538→443kB, 경고 해소).
+- T-504 dogfooding: 이 저장소 설정(`tests/realdevice/self-agentforge.json`)으로 다시 생성 → 51파일 중 42개 바이트 일치. 의도된 개선분 6개(scripts 4·guard·forge-agents, ADR-0004·0005)를 생성 결과로 교체. CLAUDE.md·.gitignore 는 저장소 고유 내용이라 유지. `.claude/settings.json` 은 병합안만 준비(사람 적용).
+- 남은 것(사람): T-502 — WSL 3칸, 실제 Claude Code 주기 R-1~R-8(`docs/report-realdevice.md`), settings.json 병합 적용.

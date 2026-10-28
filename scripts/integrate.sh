@@ -18,7 +18,8 @@ git tag -f pre-integration
 for i in $(seq 1 "$n"); do
   if ! git merge --no-ff "feature/dev$i" -m "[integrator] merge feature/dev$i"; then
     git merge --abort
-    echo "feature/dev$i 병합 충돌. develop 은 pre-integration 태그 상태로 유지됩니다." >&2
+    git reset --hard pre-integration
+    echo "feature/dev$i 병합 충돌. develop 을 pre-integration 태그 상태로 되돌렸습니다." >&2
     exit 1
   fi
 done

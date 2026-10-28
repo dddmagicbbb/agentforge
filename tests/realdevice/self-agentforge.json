@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "name": "agentforge",
+  "language": "ko",
+  "requirement": "AgentForge: Claude Code 멀티 에이전트 병렬 개발 환경 생성기. 상세 요구사항은 docs/prd.md(기능 ID), 규칙은 docs/project-rules.md, 동작 기준은 docs/reference/poc.html.",
+  "uiDesign": false,
+  "commands": {
+    "install": "pnpm install",
+    "test": "pnpm test",
+    "e2e": ""
+  },
+  "maxRejects": 3,
+  "agents": {
+    "planner": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "analyst": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "ux-designer": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "architect": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "common-dev": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "integrator": {
+      "provider": "claude",
+      "model": "opus"
+    }
+  },
+  "developerCount": 3,
+  "devs": [
+    {
+      "domain": "core",
+      "paths": [
+        "packages/core/",
+        "templates/"
+      ],
+      "dev": {
+        "provider": "claude",
+        "model": "sonnet"
+      },
+      "review": {
+        "provider": "claude",
+        "model": "opus"
+      }
+    },
+    {
+      "domain": "exporter",
+      "paths": [
+        "packages/exporter/",
+        "packages/server/",
+        "tests/scripts/",
+        "tests/e2e/"
+      ],
+      "dev": {
+        "provider": "claude",
+        "model": "sonnet"
+      },
+      "review": {
+        "provider": "claude",
+        "model": "opus"
+      }
+    },
+    {
+      "domain": "web",
+      "paths": [
+        "packages/web/"
+      ],
+      "dev": {
+        "provider": "claude",
+        "model": "sonnet"
+      },
+      "review": {
+        "provider": "claude",
+        "model": "opus"
+      }
+    }
+  ],
+  "skills": {
+    "conventions": true,
+    "tdd": true
+  },
+  "imported": [],
+  "connections": {
+    "vllmUrl": "",
+    "ollamaUrl": "http://localhost:11434"
+  }
+}
