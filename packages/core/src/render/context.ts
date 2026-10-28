@@ -19,6 +19,15 @@ export const SEQ: readonly SeqStep[] = [
 ];
 export const FINAL: SeqStep = { id: "integrator", step: "통합 검증" };
 
+/**
+ * 화면의 단계별 산출물(out)·관문(gate) 문구용 i18n 키 규칙: `seq.<id>.out` / `seq.<id>.gate`.
+ * 문장은 core 에 두지 않는다(project-rules: 문장은 web). web 의 i18n 사전이 이 키로 문장을 가진다.
+ * `SeqStep.step` 은 생성물(CLAUDE.md 표)에 들어가는 값이라 core 에 남는다.
+ */
+export function seqI18nKey(id: SeqAgentIdT, field: "out" | "gate"): string {
+  return `seq.${id}.${field}`;
+}
+
 export interface CoreSkill {
   readonly id: "conventions" | "tdd" | "detail-design" | "code-review" | "forge-init" | "forge-agents";
   readonly layer: string;
