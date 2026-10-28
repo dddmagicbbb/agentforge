@@ -34,8 +34,9 @@ copy_golden() {  # copy_golden <구성> <대상>
       .claude/skills/*/SKILL.md) src="${p#.claude/skills/}"; src="$REPO/templates/md/${src%/SKILL.md}.md" ;;
       *) continue ;;
     esac
-    [ -f "$src" ] && [ -f "$2/$p" ] && cp "$src" "$2/$p"
+    if [ -f "$src" ] && [ -f "$2/$p" ]; then cp "$src" "$2/$p"; fi
   done < <(grep -o '"path": *"[^"]*"' "$REPO/tests/golden/intended-diffs.json" | sed 's/.*"\([^"]*\)"$/\1/')
+  return 0  # 마지막 경로가 이 구성에 없어도 실패로 끝나지 않게(review-2 권고 2)
 }
 
 need_tools() {
