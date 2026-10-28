@@ -113,3 +113,63 @@ WSL에서 `paths = src/order/, docs/report-dev-1.md`, AF_AGENT=dev-1로 실행�
 - 코드 검토(T-404): **통과** — glob 우회 차단을 직접 재현으로 확인. 남은 것은 권고 3건
 - T-403: 1차 통과 유지
 - 전체: **통과** (단 macOS CI 재실행 결과 확인을 리드에게 남김)
+
+---
+
+# PH4 5라운드: T-404 보강(권고 1·2), T-405 보강(W3 NAME_INVALID slug)
+
+- 대상: `git diff develop...HEAD`(develop 050e515), 커밋 d30bf0e(T-404), 733924d(T-405).
+- 범위: 변경 7파일(`templates/static/guard-paths.sh`, `packages/core/src/checks.ts`, core 시험 2개·스냅샷, `tests/golden/intended-diffs.json` 사유 문구, 상세 설계). 모두 dev-1 담당 안이다. 스냅샷 변경 12줄은 guard-paths.sh 해시 × 6구성뿐이다.
+
+## 1. 직접 실행
+| 명령 | 결과 |
+| --- | --- |
+| `pnpm install` / `pnpm gen:templates` | 정상 / 26개 |
+| `pnpm --filter @agentforge/core test` | 9 파일, 285 통과, 실패 0 (normalize bash 실행 시험 포함, skip 없음) |
+| `pnpm typecheck` / `lint` / `build` | 모두 exit 0 |
+| `pnpm check:poc-static` | exit 0 |
+| `bash tests/scripts/run.sh` | bash -n 전부 통과. 로컬(Git Bash·WSL)에 shellcheck·bats 없음 → 건너뜀 |
+
+## 2. guard-paths.sh 재현
+- 방식: WSL bash 5.3, 임시 git 저장소, paths = `src/order/`, `docs/report-dev-1.md`, AF_AGENT=dev-1. hook에는 `json.dumps`로 만든 실제 JSON을 stdin으로 넣었다.
+- WSL에 **jq 실물이 없어** Python으로 만든 가짜 jq를 썼다. 이 가짜 jq는 JSON을 실제로 파싱하고, 세 필터(`file_path // empty`, `cwd // empty`, `-e … explode | any(. < 32 or . == 127)`)의 의미만 흉내 낸다. 따라서 제어 문자 분기는 **jq 실물의 `explode`·`-e` 종료 코드 동작까지 검증한 것은 아니다**. 실물 검증은 CI bats(dev-2에 사례 요청됨)에 남는다.
+
+| 입력 file_path | 기대 | 결과 |
+| --- | --- | --- |
+| `src/order/a.ts`, 절대 경로, `./src/order/a.ts`, `src//order/./a.ts`, `a b.ts`, `$(id)/x` | 허용 | exit 0 |
+| `docs/report-dev-1.md` | 허용 | exit 0 |
+| `src/orders/a.ts`, `docs/report-dev-1.md.bak` | 차단 | exit 2 |
+| **`src/order/..`** (권고 1) | 차단 | **exit 2** (rel=`src`) |
+| **`src/order/x/../..`** (권고 1) | 차단 | **exit 2** (rel=`src`) |
+| `src/order/.`, `src/order/` (디렉터리 자신) | 차단(설계상 범위는 그 아래 파일만) | exit 2 |
+| **`docs/report-dev-1.md⏎`** (권고 2) | 차단 | **exit 2** (제어 문자 안내) |
+| `src/order/a.ts⏎`, 탭, 중간 개행, DEL(0x7f) | 차단 | exit 2 (제어 문자 안내) |
+| `src/order/*/../../../docs/evil.md`, `…/../../../../outside.txt` (3라운드 회귀) | 차단 | exit 2 |
+| `/`, `/etc/passwd`, `<root>/../repoX/…` | 차단 | exit 2 |
+| 깨진 JSON | 차단 | exit 2 |
+| file_path 없음, `""` | 통과(Edit·Write 아님) | exit 0 |
+| **`⏎`만, `⏎⏎`만** | 차단이 맞음 | **exit 0** (아래 권고 1) |
+
+- `normalize()` 경계(WSL bash 5.3·Git Bash 5.3, `set -u; set -f`):
+  - `read -r -d ''`는 NUL을 만나지 못해 **rc=1이지만 배열은 채워진다**(`/x/y` → 3개, 마지막 `y`, 끝 개행 없음).
+  - `""`·`/`·`//` → `/`, `/r/a/b/..` → `/r/a`, `/r/a/b/.`·`/r/a/b/` → `/r/a/b`. set -u 오류 없음.
+  - `normalize` 호출부는 `$(…)` 안이고 스크립트에 `set -e`가 없어, read의 rc=1이 흐름에 영향을 주지 않는다.
+  - 참고: 빈 배열 `"${segs[@]}"`은 bash 3.2(macOS)의 set -u에서 unbound 오류가 난다. 그러나 `file`과 `root`는 이 시점에 비어 있을 수 없어(앞에서 `[ -z "$file" ]` 통과, root는 git 출력) 실제로는 발생하지 않는다. 혹시 나더라도 `file`이 비어 `inside=0`으로 차단되는 쪽이다.
+
+## 3. T-405 slug
+- PoC 222행 `slug()` = `(S.name || "my-project").trim().toLowerCase().replace(/[^a-z0-9._-]+/g,"-").replace(/^-+|-+$/g,"") || "my-project"`.
+- core: `name = str(p.name).trim()` 후 같은 치환과 `|| "my-project"`. 빈 값·공백만 있는 값 모두 `my-project`로 PoC와 결과가 같다. NAME_INVALID 판정식(PoC 446행)도 그대로다.
+- `params: { name, slug }`. Issue.params는 임의 키를 허용하므로 계약 변경이 없다. 시험 6건(공백·대문자·특수문자·앞뒤 `-`·한글·빈 값)이 있다. 다만 web `issue.NAME_INVALID` 문구에 `{{slug}}`를 반영하는 일은 dev-3 몫으로 남아 있다.
+
+## 4. 지적 사항
+| 판정 | 파일:줄 | 문제 | 고칠 방법 |
+| --- | --- | --- | --- |
+| 권고 | templates/static/guard-paths.sh:18,21 | 제어 문자 검사(21행)가 `[ -z "$file" ] && exit 0`(18행) 뒤에 있다. file_path가 개행만으로 된 값(`"\n"`, `"\n\n"`)이면 `$(jq -r)`이 전부 지워 빈 값이 되고, 제어 문자 검사 전에 exit 0으로 통과한다. 결과는 cwd에 개행 이름 파일 하나를 만드는 정도이고 임의 경로를 겨눌 수는 없어 실영향은 미미하다. 그래도 이번 커밋의 의도(제어 문자 경로 차단)에 틈이 있다 | 제어 문자 검사를 18행 앞으로 옮기거나, 빈 값 판정을 `jq -e '.tool_input.file_path == null or .tool_input.file_path == ""'`처럼 원시 JSON 기준으로 바꾼다. 상세 설계 3장의 "file 비어 있음 판정 뒤" 문구도 함께 고친다 |
+| 권고 | tests/scripts/guard-paths.bats (dev-2) | 제어 문자 분기와 끝 `..` 차단은 core 시험(문자열 단언 + normalize bash 실행)만 있다. jq 실물로 도는 행동 시험이 없다 | 상세 설계 7장대로 dev-2에 bats 사례(끝 개행 파일 항목, 탭, `src/order/..`, 개행만 있는 경로) 추가 요청. CI ubuntu·macOS 통과 확인 |
+
+반려 사유(테스트 실패, 범위 밖 변경, 계약 불일치, 수용 기준 미충족, 실질적 우회)는 없다.
+
+## 최종 판정 (5라운드)
+- T-404 보강: **통과** — 권고 1·2 입력 3종 모두 차단 재현, 정상 경로 허용 유지, 3라운드 glob 차단 회귀 없음
+- T-405 보강: **통과** — slug가 PoC와 같은 변환
+- 남은 권고 2건(개행만 있는 경로, jq 실물 bats)
