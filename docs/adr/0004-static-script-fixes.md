@@ -28,6 +28,11 @@
 7. 변경한 템플릿은 `tests/golden/intended-diffs.json`의 `templates`에, 그 결과 달라지는 생성 파일은 `diffs`에 config별로 등록한다. golden(PoC 실행 결과)은 그대로 두고, 새 동작은 bats·Vitest 전용 시험으로 검증한다.
 8. 변경 후 bash -n·shellcheck 0·bats(ubuntu·macOS 모두, D7 skip 제거)·모의 병렬 실행을 다시 통과해야 한다.
 
+## 보안 보강 (review-1 반려, 2026-10-29)
+- **G3 glob 우회**: 첫 구현의 `normalize()`가 따옴표 없는 `for seg in $1`로 `*`·`?`를 펼쳐 `src/order/*/../../../docs/evil.md`(범위 밖)·저장소 밖 경로가 통과했다. → 경로 분해는 `IFS=/ read -r -a` + `"${segs[@]}"`, 스크립트 전체 `set -f`. bats에 glob 우회 사례(저장소 안·밖)를 고정한다.
+- **G4 입력 파싱 실패**: jq가 hook 입력 JSON을 해석하지 못하면 차단(exit 2). file_path가 없는 정상 입력은 통과.
+- **한계(수용)**: 경로를 어휘적으로만 정규화하므로 담당 범위 안의 심볼릭 링크가 범위 밖을 가리키면 막지 못한다(이전 `realpath -m`은 링크를 따라갔다). 이식성(macOS)을 우선하고, 심볼릭 링크를 통한 우회는 `wait-and-review.sh`의 `git diff` 범위 검사(링크 대상 변경은 실제 경로로 기록됨)와 review-N 검토가 2차로 잡는다. 범위 안 심볼릭 링크 생성 자체는 code-review 반려 사유에 추가를 검토한다.
+
 ## 대안
 | 대안 | 판단 |
 | --- | --- |
