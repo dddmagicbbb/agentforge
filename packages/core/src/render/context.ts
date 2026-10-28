@@ -30,21 +30,26 @@ export function seqI18nKey(id: SeqAgentIdT, field: "out" | "gate"): string {
 
 export interface CoreSkill {
   readonly id: "conventions" | "tdd" | "detail-design" | "code-review" | "forge-init" | "forge-agents";
+  /** 언어 중립 분류. web 이 i18n 키 `skills.layer.<group>` 로 표시한다. */
+  readonly group: "common" | "role" | "gen";
+  /** CLAUDE.md 생성물 전용 한국어 문구 — 화면 표시에 쓰지 말 것 */
   readonly layer: string;
+  /** CLAUDE.md 생성물 전용 한국어 문구 — 화면 표시에 쓰지 말 것 */
   readonly to: string;
   readonly fixed: boolean;
 }
 
 /** 내장 스킬(SKL-01, GEN-01·02). fixed=false 는 skills 토글을 따른다. */
 export const CORE_SKILLS: readonly CoreSkill[] = [
-  { id: "conventions", layer: "공통", to: "dev-* · review-* · common-dev", fixed: false },
-  { id: "tdd", layer: "공통", to: "dev-* · common-dev", fixed: false },
-  { id: "detail-design", layer: "역할", to: "dev-*", fixed: true },
-  { id: "code-review", layer: "역할", to: "review-* · integrator", fixed: true },
-  { id: "forge-init", layer: "생성", to: "사용자가 /forge-init 으로 실행", fixed: true },
-  { id: "forge-agents", layer: "생성", to: "사용자가 /forge-agents 로 실행", fixed: true },
+  { id: "conventions", group: "common", layer: "공통", to: "dev-* · review-* · common-dev", fixed: false },
+  { id: "tdd", group: "common", layer: "공통", to: "dev-* · common-dev", fixed: false },
+  { id: "detail-design", group: "role", layer: "역할", to: "dev-*", fixed: true },
+  { id: "code-review", group: "role", layer: "역할", to: "review-* · integrator", fixed: true },
+  { id: "forge-init", group: "gen", layer: "생성", to: "사용자가 /forge-init 으로 실행", fixed: true },
+  { id: "forge-agents", group: "gen", layer: "생성", to: "사용자가 /forge-agents 로 실행", fixed: true },
 ];
 
+/** CLAUDE.md 생성물 문구 — 화면 표시에 쓰지 말 것 */
 export const IMPORT_TARGET_LABEL = { all: "dev-* · review-* 전원", dev: "dev-* 전원", review: "review-* 전원" } as const;
 export const TRUST_LABEL = { official: "공식", org: "조직 승인", community: "커뮤니티", unverified: "미검증" } as const;
 
@@ -96,7 +101,7 @@ export function fmModel(a: AgentModelT): string {
   return a.provider === "claude" ? a.model || "sonnet" : "inherit";
 }
 
-/** 표시용 "제공자 · 모델" (PoC label) */
+/** CLAUDE.md 생성물용 "제공자 · 모델" 문구 — 화면 표시에 쓰지 말 것 */
 export function label(a: AgentModelT): string {
   if (a.provider === "claude") return `Claude ${a.model}`;
   return `${provider(a.provider).label.replace(/·LiteLLM| 로컬/, "")} · ${a.model || "모델 미입력"}`;

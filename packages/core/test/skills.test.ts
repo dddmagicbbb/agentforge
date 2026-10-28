@@ -109,6 +109,14 @@ describe("core 공개 export", () => {
     expect(core.SEQ.map((s) => s.id)).toEqual(["planner", "analyst", "ux-designer", "architect", "common-dev"]);
     expect(core.FINAL.id).toBe("integrator");
     expect(core.CORE_SKILLS.map((k) => k.id)).toContain("forge-agents");
+    expect(Object.fromEntries(core.CORE_SKILLS.map((k) => [k.id, k.group]))).toEqual({
+      conventions: "common",
+      tdd: "common",
+      "detail-design": "role",
+      "code-review": "role",
+      "forge-init": "gen",
+      "forge-agents": "gen",
+    });
     expect(core.IMPORT_TARGET_LABEL.all).toContain("review-*");
     expect(core.fmModel({ provider: "vllm", model: "m" })).toBe("inherit");
     expect(core.label({ provider: "claude", model: "opus" })).toBe("Claude opus");
