@@ -25,6 +25,17 @@ isolate_git() {
 # golden 구성의 생성 파일을 임시 폴더로 복사(실행 권한 부여는 setup.sh 가 한다)
 copy_golden() {  # copy_golden <구성> <대상>
   mkdir -p "$2"; cp -R "$REPO/tests/golden/$1/files/." "$2/"
+  # golden 은 PoC 실행 결과라 ADR-0004 이전 스크립트다. 의도적 차이(intended-diffs.json diffs)로
+  # 등록된 생성 파일은 현재 템플릿(= core render 결과)으로 덮어써 제품이 실제로 내보내는 내용을 시험한다.
+  local p src
+  while IFS= read -r p; do
+    case "$p" in
+      scripts/*.sh|.claude/hooks/*.sh) src="$REPO/templates/static/${p##*/}" ;;
+      .claude/skills/*/SKILL.md) src="${p#.claude/skills/}"; src="$REPO/templates/md/${src%/SKILL.md}.md" ;;
+      *) continue ;;
+    esac
+    [ -f "$src" ] && [ -f "$2/$p" ] && cp "$src" "$2/$p"
+  done < <(grep -o '"path": *"[^"]*"' "$REPO/tests/golden/intended-diffs.json" | sed 's/.*"\([^"]*\)"$/\1/')
 }
 
 need_tools() {
