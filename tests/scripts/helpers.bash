@@ -36,6 +36,11 @@ skip_on_bsd_sed() {
   sed --version >/dev/null 2>&1 || skip "D7: BSD sed 에서 setup.sh 실패(T-404 에서 수정 예정)"
 }
 
+# PoC 결함 D7: guard-paths.sh 의 `realpath -m` 은 GNU 전용(macOS BSD realpath 는 -m 없음)
+skip_on_no_realpath_m() {
+  realpath -m / >/dev/null 2>&1 || skip "D7: realpath -m 미지원(macOS) — guard-paths.sh 수정 예정"
+}
+
 wait_for() {  # wait_for <초> <grep 패턴> <파일>
   local i; for ((i = 0; i < $1 * 2; i++)); do grep -q -- "$2" "$3" 2>/dev/null && return 0; sleep 0.5; done
   echo "시간 초과: '$2' ($3)"; cat "$3" 2>/dev/null; return 1
