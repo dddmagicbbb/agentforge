@@ -76,7 +76,7 @@ run_integrate() {
   start_agents
 
   # 1~2회: dev-1 에게 코드 반려 메시지가 가고 blocked 는 없다
-  # (신호 이력 이름의 초 단위 시각이 겹치지 않도록, 소비된 뒤에 다음 신호를 낸다)
+  # (소비 전에 다시 touch 해 두 신호가 하나로 합쳐지는 것을 막으려고, 소비된 뒤에 다음 신호를 낸다)
   touch "$SIG/review-1.reject"; wait_gone 25 "$SIG/review-1.reject"
   wait_count 10 "dev-1 got: 코드 반려" "$LOG" 1
   touch "$SIG/review-1.reject"; wait_gone 25 "$SIG/review-1.reject"
@@ -179,6 +179,9 @@ run_integrate() {
   sig="$BATS_TEST_TMPDIR/sig"; mkdir -p "$sig"
   take_fn="$(sed -n '/^take() {/,/^}/p' "$REPO/templates/static/wait-and-review.sh")"
   [ -n "$take_fn" ]
+  # 템플릿 형태가 바뀌어 sed 범위가 EOF 까지 넘어가면 감시 루프를 eval 해 멈추므로 추출 결과를 검증한다
+  [ "$(printf '%s\n' "$take_fn" | wc -l)" -le 15 ]
+  [ "$(printf '%s\n' "$take_fn" | tail -n 1)" = "}" ]
   run bash -c 'sig="$1"; eval "$2"; for _ in 1 2 3; do touch "$sig/x.reject"; take x.reject; done; ls "$sig" | wc -l' _ "$sig" "$take_fn"
   [ "$status" -eq 0 ]
   [ "$output" -eq 3 ]
