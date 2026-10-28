@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# 병합(merge·pull) 직후에도 push 한다. post-commit 과 같은 규칙. pull 로 받은 변경만 있으면 push 할 것이 없어 바로 끝난다.
+[ -n "$AGENTFORGE_NO_AUTOPUSH" ] && exit 0
+branch=$(git symbolic-ref --short -q HEAD) || exit 0
+git remote get-url origin >/dev/null 2>&1 || exit 0
+upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null) || exit 0
+[ "$(git rev-list --count "$upstream"..HEAD 2>/dev/null)" -gt 0 ] || exit 0
+echo "[auto-push] 병합 결과를 origin/$branch 로 push 합니다..."
+git push origin "$branch" || echo "[auto-push] push 실패 — 'git push' 를 직접 실행하세요." >&2
+exit 0
