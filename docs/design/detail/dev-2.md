@@ -117,3 +117,8 @@ wait-and-review.sh 의 이력 이름이 `date +%s` 라 같은 초에 두 번 소
 
 ### R3-3. 계약 변경
 없음. `templates/` 수정 없음(dev-1 담당). 옛 템플릿에서는 ⑦·⑧·⑩·⑪·⑫·D-A·D-B(1)·setup/ macOS 사례가 실패하는 것이 정상.
+
+## 5라운드: T-415 (EXP-01) E2E
+- 파일: `tests/e2e/playwright.config.ts`(Chromium, vite preview 4173 고정, 직렬), `helpers.ts`(core render 기대값·jszip 풀기·셸 단계 skip 판정·격리 env), `export.spec.ts`, `tsconfig.json`. 루트 `test:e2e` 스크립트, typecheck 에 `tsc -p tests/e2e` 추가, devDependencies `@playwright/test`·`jszip`(리드 승인).
+- 시험: ① 기본값 1→6단계·칩·`order-portal-agentforge.zip` / ② e2e-demo·개발자 2·UI 끔·폴더 겹침 차단→이동→수정→다운로드 / ③ ZIP 목록·루트·권한 = core render(모든 OS) / ④ 풀기→setup.sh→더미 prd·tasks→check-forge.sh→`-x` (Linux/macOS 에서만, 그 외 skip).
+- 계약 변경: 없음.
