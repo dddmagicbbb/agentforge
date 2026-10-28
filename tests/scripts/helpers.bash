@@ -25,20 +25,22 @@ isolate_git() {
 # golden 구성의 생성 파일을 임시 폴더로 복사(실행 권한 부여는 setup.sh 가 한다)
 copy_golden() {  # copy_golden <구성> <대상>
   mkdir -p "$2"; cp -R "$REPO/tests/golden/$1/files/." "$2/"
+  # golden 은 PoC 실행 결과라 ADR-0004 이전 스크립트다. 의도적 차이(intended-diffs.json diffs)로
+  # 등록된 생성 파일은 현재 템플릿(= core render 결과)으로 덮어써 제품이 실제로 내보내는 내용을 시험한다.
+  local p src
+  while IFS= read -r p; do
+    case "$p" in
+      scripts/*.sh|.claude/hooks/*.sh) src="$REPO/templates/static/${p##*/}" ;;
+      .claude/skills/*/SKILL.md) src="${p#.claude/skills/}"; src="$REPO/templates/md/${src%/SKILL.md}.md" ;;
+      *) continue ;;
+    esac
+    if [ -f "$src" ] && [ -f "$2/$p" ]; then cp "$src" "$2/$p"; fi
+  done < <(grep -o '"path": *"[^"]*"' "$REPO/tests/golden/intended-diffs.json" | sed 's/.*"\([^"]*\)"$/\1/')
+  return 0  # 마지막 경로가 이 구성에 없어도 실패로 끝나지 않게(review-2 권고 2)
 }
 
 need_tools() {
   local t; for t in "$@"; do command -v "$t" >/dev/null || skip "$t 없음"; done
-}
-
-# PoC 결함 D7: setup.sh 의 sed -i 는 GNU 전용(macOS 실패). T-404 에서 ADR 후 수정
-skip_on_bsd_sed() {
-  sed --version >/dev/null 2>&1 || skip "D7: BSD sed 에서 setup.sh 실패(T-404 에서 수정 예정)"
-}
-
-# PoC 결함 D7: guard-paths.sh 의 `realpath -m` 은 GNU 전용(macOS BSD realpath 는 -m 없음)
-skip_on_no_realpath_m() {
-  realpath -m / >/dev/null 2>&1 || skip "D7: realpath -m 미지원(macOS) — guard-paths.sh 수정 예정"
 }
 
 wait_for() {  # wait_for <초> <grep 패턴> <파일>

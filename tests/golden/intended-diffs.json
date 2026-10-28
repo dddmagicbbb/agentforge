@@ -1,5 +1,79 @@
 {
   "$comment": "PoC 와 제품의 의도적 차이(ADR-0003·0004). 추가·삭제는 리드 승인. templates: { template(templates/ 상대 경로), defect, adr, reason } — check:poc-static 제외. diffs: { config, path, defect, reason } — golden 내용 비교 제외(대신 전용 시험으로 새 동작을 검증).",
-  "templates": [],
-  "diffs": []
+  "templates": [
+    {
+      "template": "static/setup.sh",
+      "defect": "D7a",
+      "adr": "0004",
+      "reason": "sed -i 가 GNU 전용이라 macOS 에서 실패 → tr + mv 로 교체"
+    },
+    {
+      "template": "static/guard-paths.sh",
+      "defect": "D7b·G1·G2",
+      "adr": "0004",
+      "reason": "realpath -m 제거(bash 어휘 정규화), jq 부재 시 exit 2(fail-closed), 파일 항목은 완전 일치"
+    },
+    {
+      "template": "static/integrate.sh",
+      "defect": "D-A",
+      "adr": "0004",
+      "reason": "병합 충돌 시 abort 후 reset --hard pre-integration 으로 앞선 병합까지 되돌림"
+    },
+    {
+      "template": "static/wait-and-review.sh",
+      "defect": "D-B",
+      "adr": "0004",
+      "reason": "신호 이력 파일명 충돌 시 .<초>.<n> 순번으로 덮어쓰기 방지"
+    },
+    {
+      "template": "static/check-forge.sh",
+      "defect": "D2",
+      "adr": "0004",
+      "reason": "7번째 항목: 에이전트·스킬에 남은 {{TOKEN}} 검사"
+    },
+    {
+      "template": "md/forge-agents.md",
+      "defect": "D2",
+      "adr": "0004",
+      "reason": "채울 자리표시 목록을 dev/review 템플릿과 같게 하고 값의 출처 명시"
+    }
+  ],
+  "diffs": [
+    {
+      "config": "*",
+      "path": ".claude/hooks/guard-paths.sh",
+      "defect": "D7b·G1·G2",
+      "reason": "guard-paths.sh 보정 (ADR-0004, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": ".claude/skills/forge-agents/SKILL.md",
+      "defect": "D2",
+      "reason": "forge-agents 자리표시 목록 (ADR-0004, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": "scripts/setup.sh",
+      "defect": "D7a",
+      "reason": "setup.sh 보정 (ADR-0004, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": "scripts/check-forge.sh",
+      "defect": "D2",
+      "reason": "check-forge.sh 7항목 (ADR-0004, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": "scripts/wait-and-review.sh",
+      "defect": "D-B",
+      "reason": "wait-and-review.sh 이력 순번 (ADR-0004, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": "scripts/integrate.sh",
+      "defect": "D-A",
+      "reason": "integrate.sh 충돌 복구 (ADR-0004, 전 구성 공통)"
+    }
+  ]
 }

@@ -101,3 +101,19 @@ bats 는 jq·git 필요(없으면 skip), `realpath -m` 없으면 skip(D7, macOS)
 
 ## R2-7. 계약·공통 모듈에 필요한 변경
 없음. 발견 결함(수정은 범위 밖, report 기록): `integrate.sh` 는 dev2 이후 병합이 충돌하면 `git merge --abort` 로 해당 병합만 되돌리므로 먼저 병합된 feature 가 develop 에 남는다. 안내문 "develop 은 pre-integration 태그 상태로 유지됩니다" 와 불일치. 시험은 "첫 병합 충돌" 사례에서만 develop = 태그를 단언하고, 두 번째 병합 충돌 사례는 "태그 존재 + 태그의 후손"까지만 단언한다.
+
+## R3. PH4 3라운드 (ADR-0004 시험, T-412·T-413·T-414 보강)
+
+### R3-1. 변경 요약
+| 작업 | 파일 | 내용 |
+|---|---|---|
+| T-412 | `guard-paths.bats` | ⑦ jq 없음 exit 2 + `jq 가 없어 담당 범위를 검사할 수 없습니다. 설치 후 다시 실행하세요.`(⑦-2 AF_AGENT 없으면 통과), ⑧ 파일 항목 완전 일치(`docs/report-dev-1.md` 허용, `.bak`·하위 차단), ⑨ 루트 밖 차단(옛 템플릿에서도 exit 2 이므로 판별 시험이 아니라 **회귀 방지**; `/` 없이 접두어를 떼는 정규화 실수는 ⑨-2 로 잡는다), ⑩~⑫ glob 우회·깨진 JSON. `skip_on_no_realpath_m`·`skip_on_bsd_sed` 도우미 삭제 |
+| T-412 | `setup.bats`·`g3-vertical-slice.bats`·`parallel-mock.bats` | `skip_on_bsd_sed` 제거. `stat -c`→`ls -l`, `sed -i`→awk+mv 로 시험 코드 이식. g3 의 `&&` 연쇄 분리, `! grep`→`not_in_file`(review-2 권고 2) |
+| T-413 | `check-forge.bats` | ⑦ 미치환 `{{TOKEN}}` → `✗ <파일> 에 채우지 않은 자리표시 <토큰>` exit 1, forge-agents/SKILL.md·소문자 `{{x}}` 제외 |
+| T-414 | `parallel-mock.bats` | D-A: 두 번째 병합 충돌 시 develop == pre-integration + `develop 을 pre-integration 태그 상태로 되돌렸습니다.`(review-2 권고 1 의 올바른 기대값). D-B 사례 |
+
+### R3-2. D-B 기록 (review-2 권고 3)
+wait-and-review.sh 의 이력 이름이 `date +%s` 라 같은 초에 두 번 소비되면 덮어써 반려 횟수가 과소 집계되었다. ADR-0004 결정 6 으로 `.<n>` 순번을 붙인다. 시험: (1) `take` 함수를 스크립트에서 추출해 같은 초에 3번 소비 → 파일 3개(결정적), (2) 통합 경로에서 reject 2회 → 이력 2건·blocked 없음. 폴링이 10초 간격이라 통합 시험만으로는 같은 초 충돌을 재현할 수 없어 (1)을 둔다.
+
+### R3-3. 계약 변경
+없음. `templates/` 수정 없음(dev-1 담당). 옛 템플릿에서는 ⑦·⑧·⑩·⑪·⑫·D-A·D-B(1)·setup/ macOS 사례가 실패하는 것이 정상.
