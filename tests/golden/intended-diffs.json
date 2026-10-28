@@ -11,7 +11,7 @@
       "template": "static/guard-paths.sh",
       "defect": "D7b·G1·G2",
       "adr": "0004",
-      "reason": "realpath -m 제거(bash 어휘 정규화), jq 부재 시 exit 2(fail-closed), 파일 항목은 완전 일치"
+      "reason": "realpath -m 제거(bash 어휘 정규화), jq 부재 시 exit 2(fail-closed), 파일 항목은 완전 일치, 끝 개행 없는 분할(마지막 .. 정규화), 제어 문자 경로 차단"
     },
     {
       "template": "static/integrate.sh",

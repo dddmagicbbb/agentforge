@@ -1,8 +1,18 @@
+import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { TEMPLATES } from "../src/index.js";
 import { build, find } from "./fixtures.js";
 
 // ADR-0004: 정적 스크립트·생성 스킬 템플릿 보정이 생성 파일에 반영됐는지 확인한다(동작 시험은 tests/scripts bats).
+
+const hasBash = (() => {
+  try {
+    execFileSync("bash", ["-c", "exit 0"]);
+    return true;
+  } catch {
+    return false;
+  }
+})();
 
 const files = build();
 const setup = find(files, "scripts/setup.sh");
@@ -41,6 +51,27 @@ describe("ADR-0004 T-404 정적 스크립트", () => {
     expect(guard).not.toMatch(/for \w+ in \$/);
     expect(guard).toContain("read -r -d '' -a segs");
     expect(guard).toContain('for seg in "${segs[@]}"');
+  });
+
+  it("guard-paths.sh: here-string 미사용(끝 개행), 제어 문자 차단 분기와 문구", () => {
+    expect(guard).not.toContain("<<<");
+    expect(guard).toContain("< <(printf '%s' \"$1\")");
+    expect(guard).toContain("explode | any(. < 32 or . == 127)");
+    expect(guard).toContain('echo "경로에 제어 문자가 있어 수정을 막았습니다." >&2; exit 2;');
+    // 제어 문자 검사는 file 값 변환(정규화) 앞에 있어야 한다
+    expect(guard.indexOf("경로에 제어 문자")).toBeLessThan(guard.indexOf('file="$(normalize'));
+  });
+
+  it.skipIf(!hasBash)("guard-paths.sh normalize(): 끝 .. · . 도 정규화(bash 실행)", () => {
+    const fn = /^normalize\(\) \{[\s\S]*?^\}$/m.exec(guard)?.[0];
+    expect(fn).toBeDefined();
+    const run = (p: string) => execFileSync("bash", ["-c", `set -u; set -f; ${fn}\nnormalize "$1"`, "bash", p], { encoding: "utf8" });
+    expect(run("/r/src/order/..")).toBe("/r/src");
+    expect(run("/r/src/order/x/../..")).toBe("/r/src");
+    expect(run("/r/src/order/.")).toBe("/r/src/order");
+    expect(run("/r/src/order/")).toBe("/r/src/order");
+    expect(run("/r//src/./order/../a")).toBe("/r/src/a");
+    expect(run("/..")).toBe("/");
   });
 
   it("guard-paths.sh: jq 해석 실패는 exit 2 와 안내 문구(fail-closed)", () => {
