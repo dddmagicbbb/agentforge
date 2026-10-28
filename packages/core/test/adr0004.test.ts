@@ -58,6 +58,8 @@ describe("ADR-0004 T-404 정적 스크립트", () => {
     expect(guard).toContain("< <(printf '%s' \"$1\")");
     expect(guard).toContain("explode | any(. < 32 or . == 127)");
     expect(guard).toContain('echo "경로에 제어 문자가 있어 수정을 막았습니다." >&2; exit 2;');
+    // 제어 문자 검사는 빈 값 통과보다 앞(개행만 있는 경로가 빈 값으로 통과하지 않게)
+    expect(guard.indexOf("경로에 제어 문자")).toBeLessThan(guard.indexOf('[ -z "$file" ] && exit 0'));
     // 제어 문자 검사는 file 값 변환(정규화) 앞에 있어야 한다
     expect(guard.indexOf("경로에 제어 문자")).toBeLessThan(guard.indexOf('file="$(normalize'));
   });

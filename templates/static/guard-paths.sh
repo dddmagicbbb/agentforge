@@ -15,11 +15,11 @@ command -v jq >/dev/null 2>&1 || {
 file="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')" &&
 cwd="$(printf '%s' "$input" | jq -r '.cwd // empty')" || {
   echo "hook 입력을 해석하지 못해 수정을 막았습니다." >&2; exit 2; }
-[ -z "$file" ] && exit 0
-# 제어 문자(개행·탭 등)가 든 경로는 차단한다. 명령 치환이 끝 개행을 지워 완전 일치로 우회되는 것을 막으려고
-# 값 변환 전의 원시 JSON 문자열을 jq 로 직접 검사한다(-e: 참이면 exit 0).
+# 제어 문자(개행·탭 등)가 든 경로는 차단한다. 명령 치환이 끝 개행을 지워 완전 일치로 우회되거나
+# 개행만 있는 값이 빈 값으로 통과되는 것을 막으려고, 값 변환·빈 값 통과보다 앞에서 원시 JSON 을 jq 로 직접 검사한다(-e: 참이면 exit 0).
 printf '%s' "$input" | jq -e '(.tool_input.file_path // "") | explode | any(. < 32 or . == 127)' >/dev/null 2>&1 && {
   echo "경로에 제어 문자가 있어 수정을 막았습니다." >&2; exit 2; }
+[ -z "$file" ] && exit 0
 
 # 어휘적 경로 정규화(파일이 없어도 동작, GNU 전용 도구 불필요): . 와 빈 세그먼트 제거, .. 는 앞 세그먼트 제거
 normalize() {
