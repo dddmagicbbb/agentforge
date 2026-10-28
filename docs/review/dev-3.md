@@ -143,3 +143,53 @@ R1 시험 추가, R2 보고서 커밋 후 `pnpm --filter @agentforge/web test`�
 | 권고 W3 | packages/web/src/locales/ko.json `issue.NAME_INVALID` | PoC 문장의 "지금 값으로는 "<slug>" 로 만듭니다"가 빠졌다. core params에는 `name`만 있어 지금은 재현할 수 없다. | 필요하면 core에 slug 파라미터 추가를 요청하거나(dev-1·리드), 생략을 설계에 적는다. |
 | 권고 W4 | packages/web/src/steps/StepRequirement.tsx:72, StepRoutine.tsx | 순차 에이전트의 `MODEL_MISSING`(path `agents.*`)은 1·2단계에 표시되지 않고 5단계에만 나온다. 1단계 ZIP 버튼은 "오류 N건"으로 막히지만 원인 위치가 보이지 않는다. | T-426 생성 화면의 전체 검사 목록으로 해소되는지 확인하고, 아니면 2단계에 `IssueList filter={atPath("agents")}`를 붙인다. |
 | 참고 | packages/web/test/round2-dev.test.tsx:89 | `getByText(/담당 폴더/, { selector: "li" })`는 PATH_PREFIX와 PATH_DOT_SEGMENT 중 어느 코드인지 구분하지 않는다. | 기대 코드의 문구(예: `/\. 또는 \.\. 경로 요소/`)로 좁힌다. |
+
+---
+
+# 4라운드 검토 — T-426 + W1·W2·W4 (커밋 b61f61d, dd6c85b, b10199b / develop 병합 def121e)
+
+## 최종 판정: 통과
+
+반려 사유는 없다. 아래 권고는 PH5 이전 정리 작업으로 처리하면 된다.
+
+## 실행한 시험
+| 명령 | 결과 |
+|---|---|
+| `pnpm install` / `pnpm gen:templates` | 성공 / templates.generated.ts 26개 |
+| `pnpm --filter @agentforge/web test` | 시험 파일 6개, **68개 통과 / 0 실패** |
+| `pnpm typecheck` | 통과(exit 0) |
+| `pnpm lint` | 통과(exit 0) |
+| `pnpm build` | 통과(exit 0). web 번들 534.18 kB, 500 kB 초과 경고만 1건 |
+
+## 범위
+`git diff --name-only develop...HEAD` 20개 파일은 모두 `packages/web/**`와 `docs/design/detail/dev-3.md`이다. `pnpm-lock.yaml` 변경은 없다.
+
+## 지적 반영 확인
+| 항목 | 결과 | 근거 |
+|---|---|---|
+| W1 catalog 사본 제거 | 해소 | `catalog.ts:1-21`은 core `PROVIDERS`·`provider`·`SEQ`·`FINAL`에서 파생값만 만든다. `agents.ts`는 `SEQ`·`FINAL`, `StepSkills`는 `CORE_SKILLS.group`·`devSkill`을 쓴다. `git grep`으로 web/src를 찾아보니 제공자 추천 모델·스킬 목록 사본은 없다. 남은 리터럴은 `defaultModel`의 `"sonnet"`(PoC 규칙), `OPTIONAL_AGENT` 대체값, `StepSkills` 토글 대상(`skills` 스키마 키), `StepConnection`의 제공자별 연결 칸 분기, ko.json의 i18n 키뿐이다. 생성물 문구(`label`·`layer`·`to`·`IMPORT_TARGET_LABEL`)는 화면에서 쓰지 않는다. |
+| W2 tmux 하드코딩 | 해소 | `TmuxPreview.tsx:5-13`은 `tmux.paneModel`·`paneModel_claude`(i18next context)와 `provider.short.<id>` 키로 문구를 만든다. `` `Claude `` 리터럴과 `.replace()`는 없다. |
+| W4 오류 원인 위치 | 해소 | `issue-step.ts` `stepOfPath`의 매핑: name·language·requirement·uiDesign·commands.*·maxRejects·developerCount·schemaVersion·`[]` → 1단계, agents.* → 2, devs.* → 3, skills·imported.* → 4, connections.* → 5. `ProjectObject`의 모든 최상위 키(`schema/project.ts:52-76`)가 편집 가능한 단계로 간다. 화면이 없는 `tmux`·`devcontainer`(P1)는 1단계로 가며 지금 화면에서는 생기지 않는다. 1단계·6단계 ZIP 옆 이동 버튼, 6단계 목록의 항목별 이동 버튼, 단계 바 오류 점(●, 접근명 "오류 있음")이 모두 있다. |
+
+## T-426 (EXP-01) 점검
+- **칩**: 파일 수, `mode===0o755` 수, `ai-fill` 수를 보인다(PoC `p5()`). 시험에서 core `render` 결과와 수치를 비교한다.
+- **검사 목록**: `mergeIssues` 결과 전체를 아이콘(✓ ! ✕ i)과 `lv-*` 클래스로 보인다. 경고만 있으면 ZIP을 받을 수 있고, 오류가 있으면 "오류 N건" 문구와 함께 막힌다.
+- **ZIP**: 파일명 `<name>-agentforge.zip`이 PoC와 같다. 실패하면 `export.error.<code>`가 있으면 그 문구, 없으면 `export.failed`를 쓰고 코드만 보인다.
+- **받은 뒤 할 일**: 7단계 문구가 PoC와 같고, 4번은 `uiDesign`에 따라 `seqUi`·`seq`로 바뀐다.
+- **GitHub 영역**: P1 안내 문구뿐이다. 소유자·저장소·토큰 입력란이 없다(원칙 4). PoC의 입력란 3종과 "호출 계획 보기"는 P1으로 미뤘다.
+- i18n 키 누락, `any`, localStorage, 외부 리소스 사용은 없다.
+- **시험이 실제 분기를 타는지**:
+  - 오류 시험은 planner를 ollama로 바꾸고 모델을 비워 `agents.planner.model`의 `MODEL_MISSING`을 만든다. 2단계 이동, 단계 바 점, 1단계 이동 버튼까지 실제 분기를 거친다.
+  - "오류 1건"을 단언하므로 validate·checks 중복 제거도 함께 검증된다.
+  - `uiDesign` 토글 시험은 켬·끔 양쪽을 확인하고, 파일명 시험은 실제 anchor `download` 값을 확인한다.
+- **TDD 순서·커밋 경계**: W1 커밋 b61f61d에 W2 시험(`round4-core.test.tsx:40-51`)까지 들어 있다. 그 시점 `TmuxPreview.tsx`에는 `` `Claude `` 리터럴이 남아 있으므로, b61f61d 단독으로는 이 시험이 실패한다(bisect 불가). HEAD에서는 모두 통과하므로 반려하지 않는다.
+
+## 권고(반려 사유 아님)
+| 판정 | 파일:줄 | 문제 | 고칠 방법 |
+|---|---|---|---|
+| 권고 | git 이력 b61f61d | W1 커밋에 W2 시험이 섞여 해당 커밋에서 시험이 실패한다. 작업 ID 경계도 흐려진다. | 다음부터 시험은 그 시험이 검증하는 작업의 커밋에 넣고, 커밋마다 시험이 통과하게 한다. |
+| 권고 | packages/web/test/round4-core.test.tsx:34-45 | 소스 파일을 정규식으로 검사하는 시험(`not.toMatch(/exaone-32b…/)`)은 변수 이름이 바뀌면 깨지고 우회도 쉽다. 같은 시험의 렌더 결과 비교(13-32행, 48-49행)만으로 충분하다. | 소스 문자열 검사는 lint 규칙(예: `no-restricted-syntax`)으로 옮기거나 삭제한다. |
+| 권고 | packages/web/test/round4-gen.test.tsx:89 | `Object.assign(URL, …)`이 전역 `URL`을 직접 바꾸고 `vi.unstubAllGlobals()`/복원이 없다. 이후 시험에 영향이 남을 수 있다. | `vi.spyOn(URL, "createObjectURL")`으로 바꾸고 `afterEach`에서 `vi.restoreAllMocks()`를 호출한다. |
+| 권고 | packages/web/src/steps/StepConnection.tsx:39-51 | 연결 칸을 제공자 id 리터럴로 분기한다. core `provider(id).via`(litellm 등)를 쓰면 제공자가 추가될 때 화면을 고칠 곳이 줄어든다. | `via === "litellm"` 등 core 속성으로 분기한다. |
+| 참고 | packages/web/src/components/IssueList.tsx:31 | `OPENROUTER_FREE_LIMIT`(warn)처럼 path가 `[]`인 경고에는 이동 버튼이 없다. 원인이 5단계에 있는 경고라 안내가 조금 약하다. | 필요하면 코드별 기본 단계(예: OPENROUTER_FREE_LIMIT → 5단계) 매핑을 추가한다. |
+| 참고 | docs/design/detail/dev-3.md 7장 | W3(NAME_INVALID slug)는 core 변경 요청으로 남아 있다. | 리드가 dev-1 작업으로 배정할지 결정한다. |

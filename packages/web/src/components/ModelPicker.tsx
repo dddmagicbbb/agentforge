@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { AgentModelT, ProviderIdT } from "@agentforge/core";
-import { defaultModel, modelsOf, PROVIDER_OPTIONS } from "../catalog";
+import { defaultModel, modelsOf, PROVIDER_IDS } from "../catalog";
 
 interface Props {
   /** aria-label·datalist id 에 쓰는 식별자(예: planner) */
@@ -25,7 +25,7 @@ export function ModelPicker({ id, value, disabled = false, onChange }: Props) {
           onChange({ provider, model: defaultModel(provider) });
         }}
       >
-        {PROVIDER_OPTIONS.map((p) => <option key={p.id} value={p.id}>{t(`provider.${p.id}`)}</option>)}
+        {PROVIDER_IDS.map((id) => <option key={id} value={id}>{t(`provider.${id}`)}</option>)}
       </select>
       <input
         aria-label={t("routine.modelLabel", { id })}

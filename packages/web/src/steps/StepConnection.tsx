@@ -3,7 +3,7 @@ import type { Issue, ProjectInput } from "@agentforge/core";
 import { countByProvider } from "../agents";
 import { IssueList } from "../components/IssueList";
 import { TmuxPreview } from "../components/TmuxPreview";
-import { PROVIDER_OPTIONS } from "../catalog";
+import { PROVIDER_IDS } from "../catalog";
 
 interface Props {
   readonly draft: ProjectInput;
@@ -17,7 +17,7 @@ const WARN_CODES = ["GATEWAY_REQUIRED", "VLLM_TOOL_PARSER", "OPENROUTER_FREE_LIM
 export function StepConnection({ draft, patch, issues }: Props) {
   const { t } = useTranslation();
   const counts = countByProvider(draft);
-  const used = PROVIDER_OPTIONS.filter((p) => counts.has(p.id));
+  const used = PROVIDER_IDS.filter((id) => counts.has(id)).map((id) => ({ id }));
   const setConn = (k: keyof ProjectInput["connections"], v: string) => patch({ connections: { ...draft.connections, [k]: v } });
   const urlIssues = (k: string) => issues.filter((i) => i.path[0] === "connections" && i.path[1] === k);
 
