@@ -81,3 +81,10 @@
 - 화면 상태: 요구사항 30자 미만=경고(진행 가능), 이름 규칙 위반=오류(ZIP 차단).
 - 시험: `test/round2-req.test.tsx` — 스테퍼 값·미리보기 변화, 범위 경계, 반려 한도 옵션, REQ_SHORT 경고+ZIP 활성, 이름 오류 1회 표시+ZIP 차단.
 - 비고: 도메인이 빈 개발자는 파일을 만들지 않으므로(core) 개발자 수를 늘리면 파일 수는 그대로이고 `forge.config.json`의 developers 값이 바뀐다.
+
+## R2-2. T-423 (DEV-02) 3단계 개발자
+- `src/steps/StepDevelopers.tsx`: `draft.devs`마다 `<tbody data-testid="dev-row">` 1개(입력 행 + 경고 행). 도메인 input, 담당 폴더 input(쉼표 구분 → `splitPaths` → 배열; 끝 `/` 정규화·검증은 core), `ModelPicker`(dev-N, review-N).
+- 입력 원문은 행 안 state(`pathText`)에 보존해 잘못된 경로나 쉼표를 쳐도 입력을 막지 않는다. 오류는 core 가 돌려준다(PATH_PREFIX, PATH_DOT_SEGMENT, DEV_PARTIAL, DOMAIN).
+- 행 경고: `forDev(i)` = 경로가 `devs.i` 아래이거나 PATH_OVERLAP 의 devA/devB 가 i+1. 겹침은 두 행 모두에 표시. REVIEW_WEAKER(warn)·DEV_DEFERRED(info, /forge-agents 위임 안내)는 ZIP을 막지 않고 오류만 막는다.
+- ko 문구 추가: PATH_OVERLAP, DEV_DEFERRED, MODEL_MISSING, REVIEW_WEAKER, IMPORT_UNACKED, DOMAIN, MODEL_ID, PATH_PREFIX, PATH_DOT_SEGMENT, DEV_PARTIAL.
+- 시험: `test/round2-dev.test.tsx` — 스테퍼 연동 행 수, 기본값 표시, 쉼표 분리+미리보기, 겹침 경고(두 행)+ZIP 차단/해제, 약한 검증 경고, 비움 안내, 잘못된 경로 오류+입력 유지, DEV_PARTIAL, MODEL_MISSING.
