@@ -105,7 +105,9 @@
   "tmux": {
     "title": "tmux 배치 (개발자 쌍별 창)",
     "watch": "신호 감시 · 범위 검사 · 반려 {{max}}회 한도",
-    "noModel": "모델 미입력"
+    "noModel": "모델 미입력",
+    "paneModel": "{{provider}} · {{model}}",
+    "paneModel_claude": "Claude {{model}}"
   },
   "nav": {
     "label": "단계",
@@ -121,7 +123,15 @@
     "ollama": "Ollama 로컬",
     "vllm": "사내 vLLM",
     "openai": "OpenAI·LiteLLM",
-    "gemini": "Gemini·LiteLLM"
+    "gemini": "Gemini·LiteLLM",
+    "short": {
+      "claude": "Claude",
+      "openrouter": "OpenRouter",
+      "ollama": "Ollama",
+      "vllm": "사내 vLLM",
+      "openai": "OpenAI",
+      "gemini": "Gemini"
+    }
   },
   "routine": {
     "title": "루틴과 순차 단계 에이전트",

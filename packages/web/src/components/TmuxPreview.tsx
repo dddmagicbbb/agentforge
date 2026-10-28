@@ -1,13 +1,15 @@
 import { useTranslation } from "react-i18next";
 import type { AgentModelT, ProjectInput } from "@agentforge/core";
 
-/** 에이전트 표시 이름(PoC label): Claude 는 "Claude <모델>", 그 외 "<제공자> · <모델>" */
+/** 에이전트 표시 이름(PoC label): 제공자 약칭(provider.short.<id>)과 모델을 i18n 키로 조립 */
 function useAgentLabel() {
   const { t } = useTranslation();
   return (a: AgentModelT) =>
-    a.provider === "claude"
-      ? `Claude ${a.model}`
-      : `${t(`provider.${a.provider}`).replace(/·LiteLLM| 로컬/, "")} · ${a.model.trim() || t("tmux.noModel")}`;
+    t("tmux.paneModel", {
+      context: a.provider === "claude" ? "claude" : undefined, // paneModel_claude: "Claude <모델>" (PoC label)
+      provider: t(`provider.short.${a.provider}`),
+      model: a.model.trim() || t("tmux.noModel"),
+    });
 }
 
 /** tmux 배치 미리보기: 0:watch + 개발자별 dev/review 창(PoC tmuxPreview) */
