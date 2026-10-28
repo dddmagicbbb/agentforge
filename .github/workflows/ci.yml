@@ -38,3 +38,15 @@ jobs:
       - name: E2E 브라우저 설치 (Chromium)
         run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+
+  # PH5 실기 점검(T-501): Dev Container 환경 칸. 표준 devcontainer 이미지 안에서 구성 3종 주기를 돌린다
+  realdevice-devcontainer:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/devcontainers/javascript-node:22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - run: apt-get update && apt-get install -y tmux jq bats unzip
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: bats tests/scripts/realdevice.bats

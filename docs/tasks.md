@@ -54,6 +54,17 @@
 | T-425 | PRV-01, PRV-04 | dev-3 | web | `packages/web/` | T-421 | 화면 5 연결·실행: 사용 제공자·주소, tmux 미리보기, 경고 |
 | T-426 | EXP-01 | dev-3 | web | `packages/web/` | T-421~T-425 | 화면 6 생성: 검사 목록, 오류 시 내보내기 차단, ZIP, 미리보기 트리(AI·755 표시), 100ms 갱신 |
 
+## PH5 통합·실기 검증 (lead + 사람, 신규 기능 없음)
+| 작업 ID | 기능 ID | 담당 | 도메인 | 담당 폴더 | 선행 | 완료 기준 |
+| --- | --- | --- | --- | --- | --- | --- |
+| T-501 | — | lead | 공통 | `tests/realdevice/`, `tests/scripts/realdevice.bats`, CI | PH4 | 구성 3종(Claude 단일 / 제공자 혼용 / 개발자 1명·UI 끔) × ZIP→setup→check-forge→agent-env→worktree→병렬 실행→신호 전달 자동 점검. CI: ubuntu·macOS·Dev Container |
+| T-502 | — | 사람 | 공통 | — | T-501 | WSL 칸(`pnpm test:scripts`) + 실제 Claude Code 로 `/forge-init` → `/forge-agents` → `check-forge.sh` → 병렬 실행 1주기, `model` vs `ANTHROPIC_MODEL` 우선순위 확인(prd 9장) → `docs/report-realdevice.md` 기록 |
+| T-503 | — | lead | 공통 | `docs/report-security.md` | PH4 | 셸 인자 이스케이프, 비밀 값 미저장, 외부 CDN 미사용, hook 우회(`../`, glob, Bash 리다이렉션) 점검과 조치 |
+| T-504 | — | lead + 사람 | 공통 | `.claude/`, `scripts/` | T-501, T-503 | dogfooding: 완성된 앱으로 이 저장소 개발 환경을 다시 생성해 현재 PoC 산출물과 대조 → 교체(settings.json 병합은 사람) |
+| T-505 | — | lead | 공통 | 해당 패키지 | PH4 | PH4 잔여 권고 정리: 이름 규칙 문구 ".", 테스트 데이터 `as never`, web 번들 500kB 경고 |
+
+G4(`v0.1.0`): 점검표 12칸 통과(T-501 자동 9칸 + T-502 WSL 3칸·실제 주기), 보안 조치 완료(T-503).
+
 ## 기능 ID 배정 확인 (P0 22개)
 REQ-01 T-302·T-421 / REQ-02 T-302·T-421 / RTN-01 T-303·T-421 / RTN-02 T-303·T-422 / DEV-01 T-401·T-421 / DEV-02 T-401·T-423 / DEV-03 T-404·T-412 / GEN-01 T-403 / GEN-02 T-403 / GEN-03 T-404·T-413 / DOC-01 T-304 / DOC-02 T-304 / SKL-01 T-402·T-424 / SKL-02 T-402·T-424 / PRV-01 T-305·T-425 / PRV-02 T-405 / PRV-04 T-405·T-425 / RUN-01 T-306 / RUN-02 T-306·T-308·T-414 / RUN-03 T-406·T-414 / VSC-01 T-406 / EXP-01 T-307·T-411·T-415·T-426
 
