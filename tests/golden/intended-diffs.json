@@ -1,4 +1,5 @@
 {
-  "$comment": "PoC golden 과 core 출력의 의도적 차이(ADR-0003). 항목: { config, path, defect, reason }. 추가·삭제는 리드 승인.",
+  "$comment": "PoC 와 제품의 의도적 차이(ADR-0003·0004). 추가·삭제는 리드 승인. templates: { template(templates/ 상대 경로), defect, adr, reason } — check:poc-static 제외. diffs: { config, path, defect, reason } — golden 내용 비교 제외(대신 전용 시험으로 새 동작을 검증).",
+  "templates": [],
   "diffs": []
 }
