@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# T-413 / GEN-03: scripts/check-forge.sh 6사례
+# T-413 / GEN-03: scripts/check-forge.sh 7항목(⑦ = ADR-0004 미치환 자리표시)
 # golden g3-claude-only 파일 + 더미 prd/tasks 로 통과 사례를 만들고, 사례마다 한 가지씩 망가뜨려 ✗ 문구를 확인한다.
 # PoC 결함 D1: 6번 항목은 `F-[0-9]{3}` 형식의 기능 ID 만 인식한다(더미 PRD 도 이 형식).
 
@@ -61,4 +61,27 @@ setup() {
   run bash scripts/check-forge.sh
   [ "$status" -eq 1 ]
   [[ "$output" == *"✗ docs/prd.md 또는 docs/tasks.md 가 없습니다"* ]]
+}
+
+# ---------------------------------------------------------------- ADR-0004 D2: 7번째 항목
+
+@test "⑦ 채우지 않은 {{TOKEN}} 자리표시가 agents·skills 에 남음 → exit 1, 파일·토큰 표시" {
+  echo '담당 범위: {{PATHS_INLINE}}' >> .claude/agents/dev-1.md
+  echo '참조: {{UI_READ}}' >> .claude/skills/dev1-alpha/SKILL.md
+  run bash scripts/check-forge.sh
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"✗ .claude/agents/dev-1.md 에 채우지 않은 자리표시 {{PATHS_INLINE}}"* ]]
+  [[ "$output" == *"✗ .claude/skills/dev1-alpha/SKILL.md 에 채우지 않은 자리표시 {{UI_READ}}"* ]]
+  [[ "$output" == *"검증 실패"* ]]
+  # 깨끗한 파일은 지적하지 않는다
+  [[ "$output" != *"dev-2.md 에 채우지 않은"* ]]
+}
+
+@test "⑦-2 forge-agents/SKILL.md 의 자리표시 설명과 소문자 {{x}} 는 오류가 아니다" {
+  mkdir -p .claude/skills/forge-agents
+  printf '%s\n' '---' 'name: forge-agents' '---' '채울 값: {{PATHS_INLINE}} {{MODEL}}' > .claude/skills/forge-agents/SKILL.md
+  echo '예시 코드: {{foo}}' >> .claude/agents/dev-2.md
+  run bash scripts/check-forge.sh
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"채우지 않은 자리표시"* ]]
 }
