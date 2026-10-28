@@ -117,7 +117,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: UI 끔 1`] = `
 
 exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = `
 "files=43
-644 ai 65116c87e2b2 CLAUDE.md
+644 ai 97834a2de2ec CLAUDE.md
 644 tp e86b56834eeb README.md
 644 tp 75e35ad2859d .gitignore
 644 tp 37ebf42a3fdd .claude/settings.json
@@ -128,7 +128,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = 
 644 tp 8b7b31556d11 .claude/agents/architect.md
 644 tp 63251042b74f .claude/agents/common-dev.md
 644 tp 0ffad92898d0 .claude/agents/integrator.md
-644 ai 4276aa9d2755 .claude/agents/dev-1.md
+644 ai af398856b128 .claude/agents/dev-1.md
 644 ai 7b01c6efe12f .claude/agents/review-1.md
 644 ai d3d58b535c5e .claude/devs/dev-1.paths
 644 tp af29972b393c .claude/devs/review-1.paths
@@ -139,15 +139,15 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = 
 644 tp 93602345e233 .claude/skills/code-review/SKILL.md
 644 tp 36bf15840601 .claude/skills/forge-init/SKILL.md
 644 tp b6bdb64632ff .claude/skills/forge-agents/SKILL.md
-644 tp 4e1a73eb08fc .agentforge/forge.config.json
+644 tp 5b3345dece49 .agentforge/forge.config.json
 644 tp cfcc6ac15b89 .agentforge/requirements.md
-644 tp a90491a52d01 .agentforge/env.local.example
+644 tp 5a3a711622d9 .agentforge/env.local.example
 644 tp 7b99df1bf63b .agentforge/templates/prd.md
 644 tp 820dea37d576 .agentforge/templates/dev.md
 644 tp 97d2c8043ad0 .agentforge/templates/review.md
 644 tp c3b9c0c68301 .agentforge/templates/dev-skill.md
 755 tp 3847816c52cf scripts/setup.sh
-755 tp de5054a146e5 scripts/agent-env.sh
+755 tp 2f5d09c5866f scripts/agent-env.sh
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1266feef0c17 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
@@ -164,7 +164,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = 
 
 exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = `
 "files=68
-644 ai fd6381f144ef CLAUDE.md
+644 ai a9759bc931fd CLAUDE.md
 644 tp e86b56834eeb README.md
 644 tp 75e35ad2859d .gitignore
 644 tp 37ebf42a3fdd .claude/settings.json
@@ -175,17 +175,17 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = 
 644 tp 8b7b31556d11 .claude/agents/architect.md
 644 tp 63251042b74f .claude/agents/common-dev.md
 644 tp 0ffad92898d0 .claude/agents/integrator.md
-644 ai 4276aa9d2755 .claude/agents/dev-1.md
+644 ai af398856b128 .claude/agents/dev-1.md
 644 ai 7b01c6efe12f .claude/agents/review-1.md
 644 ai d3d58b535c5e .claude/devs/dev-1.paths
 644 tp af29972b393c .claude/devs/review-1.paths
 644 ai ca63d3e7b44c .claude/skills/dev1-order/SKILL.md
-644 ai b6ab77f945eb .claude/agents/dev-2.md
+644 ai 8d55acede00a .claude/agents/dev-2.md
 644 ai 4323df674b85 .claude/agents/review-2.md
 644 ai e0ac175da5a3 .claude/devs/dev-2.paths
 644 tp 53ab85ccba43 .claude/devs/review-2.paths
 644 ai 50a88247600f .claude/skills/dev2-payment/SKILL.md
-644 ai 147e144b47b9 .claude/agents/dev-3.md
+644 ai ad4d2460e140 .claude/agents/dev-3.md
 644 ai 8bff7de5ab45 .claude/agents/review-3.md
 644 ai 8820cb020eba .claude/devs/dev-3.paths
 644 tp 805e9c1eeb3e .claude/devs/review-3.paths
@@ -211,15 +211,15 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = 
 644 tp 93602345e233 .claude/skills/code-review/SKILL.md
 644 tp 36bf15840601 .claude/skills/forge-init/SKILL.md
 644 tp b6bdb64632ff .claude/skills/forge-agents/SKILL.md
-644 tp 6208e96b0b2a .agentforge/forge.config.json
+644 tp 9db99ba37eaf .agentforge/forge.config.json
 644 tp cfcc6ac15b89 .agentforge/requirements.md
-644 tp a90491a52d01 .agentforge/env.local.example
+644 tp d33635562268 .agentforge/env.local.example
 644 tp 7b99df1bf63b .agentforge/templates/prd.md
 644 tp 820dea37d576 .agentforge/templates/dev.md
 644 tp 97d2c8043ad0 .agentforge/templates/review.md
 644 tp c3b9c0c68301 .agentforge/templates/dev-skill.md
 755 tp 3847816c52cf scripts/setup.sh
-755 tp 97d39e236a77 scripts/agent-env.sh
+755 tp 23ca80af467c scripts/agent-env.sh
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1266feef0c17 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
@@ -235,8 +235,8 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = 
 `;
 
 exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 정보 비움 1`] = `
-"files=48
-644 ai c069fbd70e76 CLAUDE.md
+"files=38
+644 ai f3fcfdcf38b9 CLAUDE.md
 644 tp e86b56834eeb README.md
 644 tp 75e35ad2859d .gitignore
 644 tp 37ebf42a3fdd .claude/settings.json
@@ -247,16 +247,6 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 정보 비�
 644 tp 8b7b31556d11 .claude/agents/architect.md
 644 tp 63251042b74f .claude/agents/common-dev.md
 644 tp 0ffad92898d0 .claude/agents/integrator.md
-644 ai af398856b128 .claude/agents/dev-1.md
-644 ai 7b01c6efe12f .claude/agents/review-1.md
-644 ai d3d58b535c5e .claude/devs/dev-1.paths
-644 tp af29972b393c .claude/devs/review-1.paths
-644 ai ca63d3e7b44c .claude/skills/dev1-order/SKILL.md
-644 ai ad4d2460e140 .claude/agents/dev-3.md
-644 ai 8bff7de5ab45 .claude/agents/review-3.md
-644 ai 8820cb020eba .claude/devs/dev-3.paths
-644 tp 805e9c1eeb3e .claude/devs/review-3.paths
-644 ai 8db7e572f287 .claude/skills/dev3-admin/SKILL.md
 644 tp 03d78d1f2d24 .claude/skills/conventions/SKILL.md
 644 tp 49810ce12f5e .claude/skills/tdd/SKILL.md
 644 tp aa772bf28017 .claude/skills/detail-design/SKILL.md
