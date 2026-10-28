@@ -3,6 +3,7 @@
 # PreToolUse(Edit|Write): 에이전트별 담당 범위 밖 파일 수정을 막는다.
 # AF_AGENT 가 없으면(리드·순차 단계 세션) 검사하지 않는다.
 set -u
+set -f   # 글롭 확장 끔(경로 조각이 패턴으로 펼쳐지는 우회 방지)
 input="$(cat)"
 [ -z "${AF_AGENT:-}" ] && exit 0
 
@@ -10,14 +11,17 @@ input="$(cat)"
 command -v jq >/dev/null 2>&1 || {
   echo "jq 가 없어 담당 범위를 검사할 수 없습니다. 설치 후 다시 실행하세요." >&2; exit 2; }
 
-file="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')"
-cwd="$(printf '%s' "$input" | jq -r '.cwd // empty')"
+# JSON 해석 실패는 통과시키지 않고 차단한다(fail-closed). file_path 가 비는 경우(Edit·Write 아님)는 아래에서 통과.
+file="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')" &&
+cwd="$(printf '%s' "$input" | jq -r '.cwd // empty')" || {
+  echo "hook 입력을 해석하지 못해 수정을 막았습니다." >&2; exit 2; }
 [ -z "$file" ] && exit 0
 
 # 어휘적 경로 정규화(파일이 없어도 동작, GNU 전용 도구 불필요): . 와 빈 세그먼트 제거, .. 는 앞 세그먼트 제거
 normalize() {
-  local IFS=/ seg out=""
-  for seg in $1; do
+  local seg out="" segs=()
+  IFS=/ read -r -d '' -a segs <<< "$1"   # 따옴표 없는 확장(글롭 펼침) 대신 배열로 분할
+  for seg in "${segs[@]}"; do
     case "$seg" in
       ""|.) ;;
       ..) out="${out%/*}" ;;
