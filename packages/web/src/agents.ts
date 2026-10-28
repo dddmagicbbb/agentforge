@@ -1,5 +1,5 @@
 import type { AgentModelT, ProjectInput, ProviderIdT } from "@agentforge/core";
-import { ROUTINE_IDS } from "./catalog";
+import { FINAL, SEQ } from "@agentforge/core";
 
 export interface NamedAgent {
   readonly name: string;
@@ -11,12 +11,12 @@ export interface NamedAgent {
  * 순차 단계(ux-designer 는 uiDesign 일 때만, integrator 는 마지막) → dev/review 쌍.
  */
 export function usedAgents(draft: ProjectInput): NamedAgent[] {
-  const seq = ROUTINE_IDS.filter((id) => id !== "integrator" && (id !== "ux-designer" || draft.uiDesign)).map((id) => ({ name: id, agent: draft.agents[id] }));
+  const seq = SEQ.filter((s) => !s.optional || draft.uiDesign).map((s) => ({ name: s.id, agent: draft.agents[s.id] }));
   const devs = draft.devs.flatMap((d, i) => [
     { name: `dev-${i + 1}`, agent: d.dev },
     { name: `review-${i + 1}`, agent: d.review },
   ]);
-  return [...seq, ...devs, { name: "integrator", agent: draft.agents.integrator }];
+  return [...seq, ...devs, { name: FINAL.id, agent: draft.agents[FINAL.id] }];
 }
 
 /** 제공자별 에이전트 수. 표시 순서는 호출하는 쪽이 정한다. */

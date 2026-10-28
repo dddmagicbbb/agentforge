@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { devReady, type ProjectInput } from "@agentforge/core";
-import { CORE_SKILLS, devSkillName, type CoreSkillDef, type SkillLayer } from "../catalog";
+import { CORE_SKILLS, devReady, devSkill, type CoreSkill, type ProjectInput } from "@agentforge/core";
 
 interface Props {
   readonly draft: ProjectInput;
@@ -11,7 +10,7 @@ interface Props {
 export function StepSkills({ draft, patch }: Props) {
   const { t } = useTranslation();
 
-  const row = (k: CoreSkillDef) => {
+  const row = (k: CoreSkill) => {
     const toggleable = k.id === "conventions" || k.id === "tdd";
     const checked = toggleable ? draft.skills[k.id] : true;
     return (
@@ -30,7 +29,7 @@ export function StepSkills({ draft, patch }: Props) {
       </label>
     );
   };
-  const layer = (l: SkillLayer) => CORE_SKILLS.filter((k) => k.layer === l).map(row);
+  const layer = (g: CoreSkill["group"]) => CORE_SKILLS.filter((k) => k.group === g).map(row);
 
   return (
     <>
@@ -44,7 +43,7 @@ export function StepSkills({ draft, patch }: Props) {
           devReady(d) ? (
             <div className="sk" key={i}>
               <span className="chip acc">{`dev-${i + 1}`}</span>
-              <span><code>{devSkillName(d, i + 1)}</code> — {t("skills.devDesc", { domain: d.domain })} <span className="chip ver">{t("preview.ai")}</span></span>
+              <span><code>{devSkill(d, i + 1)}</code> — {t("skills.devDesc", { domain: d.domain })} <span className="chip ver">{t("preview.ai")}</span></span>
             </div>
           ) : (
             <div className="sk" key={i}>
