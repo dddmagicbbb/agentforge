@@ -60,6 +60,10 @@
     "PATH_PREFIX": "담당 폴더는 저장소 루트 기준 상대 경로(영문·숫자·.·_·-, 하위는 /)로 적습니다.",
     "PATH_DOT_SEGMENT": "담당 폴더에는 . 또는 .. 경로 요소를 쓸 수 없습니다.",
     "DEV_PARTIAL": "dev-{{dev}}: 도메인과 담당 폴더는 함께 채우거나 함께 비워야 합니다.",
+    "OPENROUTER_FREE_LIMIT": "OpenRouter 무료 모델 {{count}}개 에이전트: 계정 전체 분당 20회·하루 50회(10달러 이상 충전 시 하루 1,000회) 한도를 함께 씁니다.",
+    "GATEWAY_REQUIRED": "OpenAI·Gemini 는 LiteLLM 게이트웨이를 거칩니다. 병렬 실행 전에 scripts/start-gateway.sh 를 띄우세요.",
+    "VLLM_TOOL_PARSER": "사내 vLLM 은 --enable-auto-tool-choice --tool-call-parser 옵션으로 실행되어야 파일 수정이 됩니다.",
+    "HTTP_URL": "주소 형식이 올바르지 않습니다. http(s)://호스트[:포트] 만 쓰며 계정 정보·공백·따옴표는 쓸 수 없습니다.",
     "DEV_COUNT_MISMATCH": "개발자 수({{developerCount}})와 개발자 목록({{devs}})이 맞지 않습니다.",
     "DEV_COUNT_OVER_TIER": "현재 등급은 개발자를 {{tierLimit}}명까지 쓸 수 있습니다.",
     "COMMAND": "명령은 한 줄로 입력합니다.",
@@ -81,6 +85,27 @@
     "domainPh": "예: order",
     "pathsPh": "src/order/, tests/order/",
     "note": "담당 범위는 hook이 강제합니다. Edit·Write 가 범위 밖 파일을 건드리면 guard-paths.sh 가 막고(exit 2) 이유를 에이전트에게 돌려줍니다. Bash 로 우회한 변경은 검토 전에 git diff 범위 검사로 다시 걸러냅니다."
+  },
+  "conn": {
+    "title": "연결과 병렬 실행",
+    "lead": "AgentForge 는 키를 받지 않습니다. 생성된 .agentforge/env.local.example 을 복사해 사용자가 직접 넣습니다. 주소 기본값만 여기서 정합니다.",
+    "table": "사용 중인 제공자",
+    "col": {
+      "provider": "사용 중인 제공자",
+      "count": "에이전트 수",
+      "connect": "연결"
+    },
+    "vllmLabel": "vLLM 주소",
+    "ollamaLabel": "Ollama 주소",
+    "claude": "직접 로그인(구독 또는 API 키)",
+    "openrouter": "https://openrouter.ai/api · 키는 env.local",
+    "litellm": "http://localhost:4000 (LiteLLM) · 키는 env.local",
+    "note": "VS Code: 통합 터미널(WSL)에서 Tasks: Run Task → AF: 병렬 실행. 신호 파일은 메인 저장소의 .agentforge/signals/ 에 모이고, 감시 창이 tmux pane id 로 메시지를 전달합니다."
+  },
+  "tmux": {
+    "title": "tmux 배치 (개발자 쌍별 창)",
+    "watch": "신호 감시 · 범위 검사 · 반려 {{max}}회 한도",
+    "noModel": "모델 미입력"
   },
   "nav": {
     "label": "단계",

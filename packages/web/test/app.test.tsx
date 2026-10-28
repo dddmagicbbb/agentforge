@@ -33,7 +33,7 @@ describe("골격: 단계 이동", () => {
 
   it("자리표시 단계는 안내 문구를 보인다", () => {
     mount(<App />);
-    for (const n of [5, 6]) {
+    for (const n of [6]) {
       fireEvent.click(stepBtn(n));
       expect(screen.getByText("다음 라운드에서 구현합니다.")).toBeInTheDocument();
     }

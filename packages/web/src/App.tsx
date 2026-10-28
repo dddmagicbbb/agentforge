@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { defaultDraft, type ProjectInput } from "@agentforge/core";
 import { PreviewPane } from "./components/PreviewPane";
 import { StepBar, StepButtons, STEP_KEYS, type StepIndex } from "./components/StepNav";
+import { StepConnection } from "./steps/StepConnection";
 import { StepDevelopers } from "./steps/StepDevelopers";
 import { StepPlaceholder } from "./steps/StepPlaceholder";
 import { StepRequirement } from "./steps/StepRequirement";
@@ -33,7 +34,8 @@ export function App() {
           {key === "routine" ? <StepRoutine draft={draft} patch={patch} /> : null}
           {key === "skills" ? <StepSkills draft={draft} patch={patch} /> : null}
           {key === "developers" ? <StepDevelopers draft={draft} patch={patch} issues={issues} /> : null}
-          {key === "connection" || key === "generate" ? <StepPlaceholder stepKey={key} /> : null}
+          {key === "connection" ? <StepConnection draft={draft} patch={patch} issues={issues} /> : null}
+          {key === "generate" ? <StepPlaceholder stepKey={key} /> : null}
           <StepButtons step={step} onStep={setStep} />
         </section>
         <PreviewPane files={files} />

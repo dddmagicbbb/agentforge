@@ -60,3 +60,10 @@ pre { white-space: pre-wrap; border: 1px solid var(--line); border-radius: 6px; 
 .stepper button:disabled { opacity: .4; cursor: not-allowed; }
 .issues .lv-warn { color: #b45309; }
 .issues .lv-info, .issues .lv-ok { color: var(--muted); }
+.tmux { border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin-bottom: 12px; }
+.tmux .wins { display: flex; flex-wrap: wrap; gap: 8px; }
+.tmux .win { border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; min-width: 120px; }
+.tmux .wn { font: 11px ui-monospace, monospace; color: var(--acc); }
+.tmux .panes { display: grid; gap: 4px; margin-top: 4px; }
+.tmux .pane { display: grid; font-size: 12px; padding: 4px 6px; border-radius: 4px; background: var(--line); }
+.tmux .bar { display: block; margin-top: 8px; font: 11px ui-monospace, monospace; color: var(--muted); }

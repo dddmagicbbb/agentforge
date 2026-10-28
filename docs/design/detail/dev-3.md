@@ -88,3 +88,11 @@
 - 행 경고: `forDev(i)` = 경로가 `devs.i` 아래이거나 PATH_OVERLAP 의 devA/devB 가 i+1. 겹침은 두 행 모두에 표시. REVIEW_WEAKER(warn)·DEV_DEFERRED(info, /forge-agents 위임 안내)는 ZIP을 막지 않고 오류만 막는다.
 - ko 문구 추가: PATH_OVERLAP, DEV_DEFERRED, MODEL_MISSING, REVIEW_WEAKER, IMPORT_UNACKED, DOMAIN, MODEL_ID, PATH_PREFIX, PATH_DOT_SEGMENT, DEV_PARTIAL.
 - 시험: `test/round2-dev.test.tsx` — 스테퍼 연동 행 수, 기본값 표시, 쉼표 분리+미리보기, 겹침 경고(두 행)+ZIP 차단/해제, 약한 검증 경고, 비움 안내, 잘못된 경로 오류+입력 유지, DEV_PARTIAL, MODEL_MISSING.
+
+## R2-3. T-425 (PRV-01, PRV-04) 5단계 연결·실행
+- `src/agents.ts`: `usedAgents(draft)`(core checks/render 순서, uiDesign=false 면 ux-designer 제외)와 `countByProvider`.
+- `src/steps/StepConnection.tsx`: 사용 중인 제공자만 표에 표시(순서는 `PROVIDER_OPTIONS`), 에이전트 수, 연결 칸 — vLLM·Ollama 는 주소 input(`connections.vllmUrl`/`ollamaUrl`, 형식 오류는 core `HTTP_URL` 을 표 안에 표시하되 입력은 막지 않음), OpenRouter·LiteLLM(OpenAI·Gemini)·Claude 는 안내 문구만. **키 입력란 없음**(원칙 4).
+- `src/components/TmuxPreview.tsx`: `0:watch`(반려 한도 표시) + 개발자별 `N:devN` 창(dev-N/review-N 창구, 제공자·모델 라벨). 창 수 = 개발자 수 + 1.
+- 경고: core `checks` 결과 중 GATEWAY_REQUIRED, VLLM_TOOL_PARSER, OPENROUTER_FREE_LIMIT, MODEL_MISSING 만 이 화면에 표시.
+- ko 문구 추가: OPENROUTER_FREE_LIMIT, GATEWAY_REQUIRED, VLLM_TOOL_PARSER, HTTP_URL (checks 전 코드의 문구는 R2-1~3 합쳐 완비).
+- 시험: `test/round2-conn.test.tsx` 12건 — 사용 제공자만/에이전트 수, uiDesign 끔, vLLM·Ollama 주소 입력 표시/숨김, 주소 편집·오류, 안내만 있는 제공자, 키 입력란 없음, tmux 창 수(개발자 수+1)·상태 줄·반려 한도, 경고 4종.
