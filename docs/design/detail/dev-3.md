@@ -65,3 +65,19 @@
 
 ## 7. 계약·공통 모듈에 필요한 변경
 - core index가 `PROVIDERS`·`CORE_SKILLS`·`SEQ`/`FINAL`·`devSkill`을 export하지 않는다. core를 고치지 않고 `src/catalog.ts`에 화면용 사본을 둔다. 추후 core export가 생기면 사본 제거를 요청(report 기재).
+
+---
+
+# 2라운드 (PH4) — T-421, T-423, T-425
+
+## R2-0. 공통
+- core `PROVIDERS`·`CORE_SKILLS`·`devSkill`은 아직 index에서 export되지 않아 `src/catalog.ts` 사본을 유지한다(dev-1 병합 후 다음 라운드에 제거).
+- `use-preview.ts`: `validate` 오류와 core `checks` 결과를 `mergeIssues`로 합친다(코드+경로+params 동일 항목 제거, `NAME_INVALID`가 있으면 `PROJECT_NAME` 생략). `exportable = canExport(issues)`. 파일은 validate 성공 때만 렌더.
+- `IssueList({issues, filter})`: `issue.<CODE>` 문구에 params 보간. 오류는 `role=alert`, 그 외 `status`. `atPath(...keys)`는 경로 첫 요소 필터.
+- 문구는 `ko.json`의 `issue.*`. 작업별로 해당 코드 문구를 추가한다.
+
+## R2-1. T-421 (REQ-01·02, DEV-01, RTN-01) 1단계
+- `StepRequirement`: 개발자 수 스테퍼(`resizeDevs`, 1~6, 경계에서 버튼 비활성, `output` 접근명 "개발자 수"), 반려 한도 select(2~5), `REQ_SHORT`는 요구사항 아래, 이름 오류는 이름 아래에 표시. ZIP은 `exportable`일 때만 활성(경고·정보는 막지 않음).
+- 화면 상태: 요구사항 30자 미만=경고(진행 가능), 이름 규칙 위반=오류(ZIP 차단).
+- 시험: `test/round2-req.test.tsx` — 스테퍼 값·미리보기 변화, 범위 경계, 반려 한도 옵션, REQ_SHORT 경고+ZIP 활성, 이름 오류 1회 표시+ZIP 차단.
+- 비고: 도메인이 빈 개발자는 파일을 만들지 않으므로(core) 개발자 수를 늘리면 파일 수는 그대로이고 `forge.config.json`의 developers 값이 바뀐다.

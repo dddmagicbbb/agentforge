@@ -15,7 +15,7 @@ export function App() {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<ProjectInput>(defaultDraft);
   const [step, setStep] = useState<StepIndex>(0);
-  const { issues, files } = usePreview(draft);
+  const { issues, files, exportable } = usePreview(draft);
   const patch = (p: Partial<ProjectInput>) => setDraft((d) => ({ ...d, ...p }));
 
   const key = STEP_KEYS[step];
@@ -28,7 +28,7 @@ export function App() {
       </header>
       <main>
         <section className="panel">
-          {key === "requirement" ? <StepRequirement draft={draft} patch={patch} issues={issues} files={files} /> : null}
+          {key === "requirement" ? <StepRequirement draft={draft} patch={patch} issues={issues} files={files} exportable={exportable} /> : null}
           {key === "routine" ? <StepRoutine draft={draft} patch={patch} /> : null}
           {key === "skills" ? <StepSkills draft={draft} patch={patch} /> : null}
           {key === "developers" || key === "connection" || key === "generate" ? <StepPlaceholder stepKey={key} /> : null}
