@@ -142,3 +142,65 @@ run_guard_nojq() {
   run_guard "$R" "${R}2/src/a.ts"
   [ "$status" -eq 2 ]
 }
+
+# ---------------------------------------------------------------- glob 우회·깨진 입력 (review-1 지적)
+
+# run_guard_at_root <cwd> <file_path> : 훅 프로세스의 작업 폴더를 저장소 루트로 하여 실행
+# (Claude Code 는 프로젝트 루트에서 hook 을 실행한다. 옛 normalize() 의 따옴표 없는 `for seg in $1` 은
+#  프로세스 cwd 기준으로 `*`·`?` 를 펼치므로, 루트에 항목이 여럿 있어야 우회가 재현된다.)
+run_guard_at_root() {
+  local json
+  json="$(jq -cn --arg cwd "$1" --arg f "$2" '{cwd: $cwd, tool_input: {file_path: $f}}')"
+  run bash -c 'cd "$3" && printf "%s" "$1" | bash "$2"' _ "$json" "$GUARD" "$R"
+}
+
+# glob 이 실제로 펼쳐지도록 루트에 파일·폴더를 여럿 만든다
+make_glob_fixture() {
+  mkdir -p "$R/src/order/sub" "$R/docs"
+  : > "$R/src/order/README.md"
+  : > "$R/docs/a.md"
+  : > "$R/docs/b.md"
+  : > "$R/other/o.txt"
+}
+
+@test "⑩ glob(*·?) 로 범위 밖(저장소 안)에 닿는 경로는 차단(exit 2)" {
+  export AF_AGENT=dev-1
+  make_glob_fixture
+  # 옛 구현: `*` 가 루트 항목(docs other src)으로 펼쳐져 `..` 개수가 어긋나 docs/evil.md 가 범위 안으로 오인되어 exit 0
+  run_guard_at_root "$R" "src/order/*/../../../docs/evil.md"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"담당 범위 밖 파일입니다: docs/evil.md (dev-1)"* ]]
+  # 절대 경로로 준 같은 우회
+  run_guard_at_root "$R" "$R/src/order/*/../../../docs/evil.md"
+  [ "$status" -eq 2 ]
+  # `?` 도 같다(한 글자 이름 폴더가 있어야 펼쳐지므로 만든다)
+  mkdir -p "$R/src/order/x"
+  run_guard_at_root "$R" "src/order/?/../../../docs/evil.md"
+  [ "$status" -eq 2 ]
+}
+
+@test "⑪ glob 으로 저장소 밖에 닿는 경로는 차단(exit 2)" {
+  export AF_AGENT=dev-1
+  make_glob_fixture
+  run_guard_at_root "$R" "src/order/*/../../../../outside.txt"
+  [ "$status" -eq 2 ]
+  run_guard_at_root "$R" "$R/src/order/*/../../../../outside.txt"
+  [ "$status" -eq 2 ]
+}
+
+@test "⑩-2 glob 문자가 든 범위 안 경로는 오탐 없이 허용" {
+  export AF_AGENT=dev-1
+  make_glob_fixture
+  run_guard_at_root "$R" "src/order/*/a.ts"
+  [ "$status" -eq 0 ]
+}
+
+@test "⑫ 깨진 JSON 입력은 차단(exit 2, 해석 실패 안내) — jq 는 있는 상태" {
+  export AF_AGENT=dev-1
+  run bash -c 'printf "%s" "{not json" | bash "$1"' _ "$GUARD"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"hook 입력을 해석하지 못해 수정을 막았습니다."* ]]
+  # 잘린 JSON 도 같다
+  run bash -c 'printf "%s" "{\"cwd\":" | bash "$1"' _ "$GUARD"
+  [ "$status" -eq 2 ]
+}
