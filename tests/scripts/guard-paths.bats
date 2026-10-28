@@ -143,6 +143,16 @@ run_guard_nojq() {
   [ "$status" -eq 2 ]
 }
 
+# ⑨ 는 옛 훅에서도 exit 2 라 회귀 방지용이다. 아래는 루트 접두어를 `/` 없이 떼는 실수를 잡는다.
+@test "⑨-2 루트 접두어를 / 없이 떼면 범위 안으로 오인되는 경로(repo 옆 'reposrc')는 차단" {
+  export AF_AGENT=dev-1
+  # "${R}src/a.ts" = repo 와 같은 부모의 'reposrc/a.ts' — `${file#"$root"}` 식 정규화면 'src/a.ts' 로 보여 통과해 버린다
+  run_guard "$R" "${R}src/a.ts"
+  [ "$status" -eq 2 ]
+  run_guard "$R" "${R}/src/a.ts"
+  [ "$status" -eq 0 ]
+}
+
 # ---------------------------------------------------------------- glob 우회·깨진 입력 (review-1 지적)
 
 # run_guard_at_root <cwd> <file_path> : 훅 프로세스의 작업 폴더를 저장소 루트로 하여 실행
