@@ -15,7 +15,8 @@ const forgeAgents = find(files, ".claude/skills/forge-agents/SKILL.md");
 describe("ADR-0004 T-404 정적 스크립트", () => {
   it("setup.sh: sed -i 없이 tr + mv, chmod 는 mv 뒤", () => {
     expect(setup).not.toContain("sed -i");
-    expect(setup).toContain(`tr -d '\\r' < "$f" > "$f.af-tmp" && mv "$f.af-tmp" "$f"`);
+    expect(setup).toContain(`tr -d '\\r' < "$f" > "$f.af-tmp"`);
+    expect(setup).toContain('mv "$f.af-tmp" "$f"');
     expect(setup.indexOf('mv "$f.af-tmp"')).toBeLessThan(setup.indexOf('chmod +x "$f"'));
   });
 
@@ -33,6 +34,22 @@ describe("ADR-0004 T-404 정적 스크립트", () => {
     expect(guard).toContain('*/) case "$rel" in "$p"*) exit 0;; esac;;');
     expect(guard).toContain('*) [ "$rel" = "$p" ] && exit 0;;');
     expect(guard).toContain('echo "담당 범위 밖 파일입니다: $rel ($AF_AGENT). 수정하지 말고 report에 필요한 변경을 적은 뒤 멈추세요." >&2');
+  });
+
+  it("guard-paths.sh: 글롭 미확장(set -f, 따옴표 없는 for 확장 없음, 배열 분할)", () => {
+    expect(guard).toMatch(/^set -f\b/m);
+    expect(guard).not.toMatch(/for \w+ in \$/);
+    expect(guard).toContain("read -r -d '' -a segs");
+    expect(guard).toContain('for seg in "${segs[@]}"');
+  });
+
+  it("guard-paths.sh: jq 해석 실패는 exit 2 와 안내 문구(fail-closed)", () => {
+    expect(guard).toContain('echo "hook 입력을 해석하지 못해 수정을 막았습니다." >&2; exit 2;');
+  });
+
+  it("setup.sh: tr 실패가 set -e 를 우회하지 않도록 mv 와 분리", () => {
+    expect(setup).not.toMatch(/tr -d '\\r'[^\n]*&& mv/);
+    expect(setup).toContain("CR 제거 실패");
   });
 
   it("integrate.sh: 충돌 시 abort 후 reset --hard pre-integration, 안내문 일치", () => {

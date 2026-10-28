@@ -12,7 +12,8 @@ if [ "$miss" -ne 0 ]; then
 fi
 # CRLF → LF (GNU/BSD 공통 동작을 위해 인플레이스 sed 대신 tr + mv). mv 가 권한을 바꾸므로 chmod 는 그 뒤에 한다.
 while IFS= read -r f; do
-  tr -d '\r' < "$f" > "$f.af-tmp" && mv "$f.af-tmp" "$f"
+  tr -d '\r' < "$f" > "$f.af-tmp" || { echo "CR 제거 실패: $f"; exit 1; }
+  mv "$f.af-tmp" "$f"
   chmod +x "$f"
 done < <(find scripts .claude/hooks -name '*.sh')
 mkdir -p .agentforge/signals .agentforge/panes
