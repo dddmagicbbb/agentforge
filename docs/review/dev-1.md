@@ -101,3 +101,42 @@
 ## 최종 판정 (2라운드)
 - 설계 검토: **통과** (기능 ID·테스트 목록 완비)
 - 코드 검토(T-402, T-406 + export 보강): **반려** — 시험 268건 전부 통과, 범위 준수. 반려 사유 1건: `CORE_SKILLS` 공개 export가 web 사본 제거 목적을 충족하지 못함(context.ts:33,39-46). 해당 1건 수정 후 재검토. T-402·T-406 시험 자체는 수용 기준 충족.
+
+---
+
+# 2라운드 재검토: T-402, T-406 (1818283, 513d49f)
+
+## 1. 반려 항목 확인
+| 항목 | 결과 |
+| --- | --- |
+| `CORE_SKILLS.group` (context.ts:33-50) | `common`·`role`·`gen` 이 web `skills.layer.<group>`(locales/ko.json:121-127)·`catalog.ts` 사본 값과 일치. web 사본 제거 가능. `skills.test.ts`에 id→group 전수 단언 추가 |
+| golden 바이트 | `golden.test.ts` 통과(`layer`·`to` 값 불변, `claude-md.ts` 미변경). `tests/golden/` diff 없음 |
+| `check:poc-static` | PoC 원본 26개와 일치 |
+
+## 2. 권고 반영 확인
+- index.ts:4-6, context.ts: `label`·`IMPORT_TARGET_LABEL`·`layer`·`to`를 "CLAUDE.md 생성물 문구 — 화면 표시 금지"로 정정. 반영됨.
+- snapshots.test.ts: 1명·6명이 `resizeDevs` 기반(새 빈 슬롯만 도메인 채움), 정보 비움이 전원 비움으로 바뀜. dev-N/review-N/devN- 파일 0개, dev 에이전트 수 1·6 단언 추가. 반영됨.
+- 보고서 파일: 리드 결정으로 면제 — 기준에서 제외.
+
+## 3. 스냅샷 갱신 범위
+- `git show 513d49f --stat`: `.snap`·`snapshots.test.ts` 2파일뿐.
+- `.snap` 변경 hunk는 `개발자 1명`·`개발자 6명`·`개발자 정보 비움` 3종에만 있음(기본·UI 끔·LiteLLM 불변). 의도한 범위로 한정됨.
+
+## 4. 직접 실행
+| 명령 | 결과 |
+| --- | --- |
+| `pnpm gen:templates` | 26개 |
+| `pnpm --filter @agentforge/core test` | 8 파일, 270 통과, 실패 0 (+2: 전원 비움·dev 수 단언) |
+| `pnpm typecheck` / `pnpm lint` / `pnpm build` | 모두 exit 0 |
+| `pnpm check:poc-static` | exit 0, 26개 일치 |
+
+## 5. 범위
+`git diff --name-only develop...HEAD`: `packages/core/**`, `docs/design/detail/dev-1.md`, `docs/review/dev-1.md`(review-1 본인) 뿐. `templates/**`·`schema/` 불변.
+
+## 6. 남은 지적
+| 판정 | 파일:줄 | 문제 | 고칠 방법 |
+| --- | --- | --- | --- |
+| - | - | 없음 | - |
+
+## 최종 판정 (2라운드 재검토)
+- 코드 검토(T-402, T-406 + export 보강): **통과**
