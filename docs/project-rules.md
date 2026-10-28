@@ -15,7 +15,7 @@
 
 ## 기술 스택
 - TypeScript(strict), Node 22 LTS, pnpm workspaces 모노레포
-- core: zod, eta(템플릿) — 순수 함수만
+- core: zod — 순수 함수만. 템플릿은 `{{KEY}}` 자리표시 + TS 렌더 함수(ADR-0002)
 - exporter: jszip(브라우저·Node 공용), Octokit(GitHub·GHES)
 - server(선택 배포): Fastify — 마켓플레이스 색인 캐시, GHES·GitLab 중계, 라이선스 검증
 - web: React + Vite, TanStack Query, Tailwind, i18next(ko 원본, en 번역)
