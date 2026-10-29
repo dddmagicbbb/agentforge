@@ -6,6 +6,9 @@ import { ZipButton } from "../components/ZipButton";
 
 interface Props {
   readonly draft: ProjectInput;
+  /** 기존 CLAUDE.md 붙여넣기 값(저장하지 않음) */
+  readonly existingMd: string;
+  readonly onExistingMd: (v: string) => void;
   readonly issues: readonly Issue[];
   readonly files: readonly RenderedFile[];
   readonly exportable: boolean;
@@ -16,7 +19,7 @@ interface Props {
 const NEXT_KEYS = ["setup", "login", "planner", "seq", "agents", "models", "worktrees", "integrate"] as const;
 
 /** 6단계: 파일 수 칩, 검사 전체 목록, ZIP, 받은 뒤 할 일, GitHub(P1 안내) — EXP-01 */
-export function StepGenerate({ draft, issues, files, exportable, onStep }: Props) {
+export function StepGenerate({ existingMd, onExistingMd, draft, issues, files, exportable, onStep }: Props) {
   const { t } = useTranslation();
   const exec = files.filter((f) => f.mode === 0o755).length;
   const ai = files.filter((f) => f.author === "ai-fill").length;
@@ -29,6 +32,12 @@ export function StepGenerate({ draft, issues, files, exportable, onStep }: Props
         <span className="chip ver">{t("generate.chip.ai", { count: ai })}</span>
       </div>
       <IssueList issues={issues} onGoto={onStep} testId="check-list" />
+      <label className="block">
+        {t("doc.label")}
+        <textarea rows={6} value={existingMd} spellCheck={false} aria-describedby="doc-hint" onChange={(e) => onExistingMd(e.target.value)} />
+      </label>
+      <small id="doc-hint">{t("doc.hint")}</small>
+      <small>{t("doc.note")}</small>
       <ZipButton files={files} name={draft.name} issues={issues} exportable={exportable} onStep={onStep} current={5} />
       <h3>{t("generate.nextTitle")}</h3>
       <ol className="next" data-testid="next-steps">

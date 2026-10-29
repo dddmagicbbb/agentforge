@@ -23,3 +23,13 @@
 - 권고 반영: buildPreview 수준 시험(기본값 복귀 시 생성물 동일, tmux 지정 시 config 포함), prefix 오류 `aria-invalid`+`aria-describedby`(IssueList `id` 속성 추가), Dev Container 안내 `aria-describedby`.
 - `DEVCONTAINER_CLOSED_NET` issue 키는 ko·en 모두 있음. 실제 render 시험으로 교체는 3라운드.
 - web 96개 통과, typecheck·lint 통과, 번들 461.74 kB.
+
+## PH6 3라운드
+
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+| --- | --- | --- | --- | --- |
+| T-624 | 완료 | `use-preview.ts`, `App.tsx`, `steps/StepGenerate.tsx`, `issue-step.ts`, `locales/*`, `app.css`, `test/round7-doc.test.tsx` | web 106개 통과, typecheck·lint 통과 | 없음 |
+
+- 6단계에 "기존 CLAUDE.md 붙여넣기(선택)". 빈 값이면 생성물 동일, 값이 있으면 CLAUDE.md 만 `mergeClaudeMd` 결과로 교체(미리보기·ZIP 동일). 마커 오류는 `CLAUDE_MD_MARKERS` 문구(구간 ID)로 표시하고 ZIP 차단. 붙여넣은 내용은 저장하지 않음. 코드블록 안 마커도 센다는 안내 포함.
+- review-3 권고: aria-describedby 단언을 `tmux-prefix-error`+문구로 강화, `DEVCONTAINER_CLOSED_NET` 시험을 실제 `buildPreview(devcontainer: true)` 결과로 교체(기본 draft 에는 없음도 확인).
+- 번들 468.92 kB(gzip 149.05), 500kB 경고 없음.

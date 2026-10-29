@@ -97,7 +97,8 @@
     "SCHEMA_INVALID": "Check the input: {{path}}",
     "default": "{{code}} — {{path}}",
     "DEVCONTAINER_CLOSED_NET": "Dev Container: the image and packages are downloaded in your environment, so network access is required (the app itself calls nothing external). On a closed network, switch to an image from your internal registry.",
-    "TMUX_PREFIX": "Write the tmux prefix as C-a to C-z (for example C-a)."
+    "TMUX_PREFIX": "Write the tmux prefix as C-a to C-z (for example C-a).",
+    "CLAUDE_MD_MARKERS": "The AGENTFORGE:{{id}} markers in the existing CLAUDE.md are unpaired, duplicated or out of order. Fix the markers or clear the box."
   },
   "dev": {
     "title": "Agents per developer",
@@ -273,5 +274,10 @@
   "devcontainer": {
     "label": "Generate a Dev Container",
     "hint": "When on, .devcontainer/devcontainer.json is created. Put env.local in yourself inside the container as well."
+  },
+  "doc": {
+    "label": "Paste an existing CLAUDE.md (optional)",
+    "hint": "If you paste a CLAUDE.md you already use, text outside the markers (AGENTFORGE:…) and the PROJECT section stay as they are, and only the other sections are replaced with the newly generated content. Leave it empty to use the generated file as is.",
+    "note": "Markers are counted even inside code blocks. The pasted text is not saved and disappears when you close the page."
   }
 }

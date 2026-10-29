@@ -97,7 +97,8 @@
     "SCHEMA_INVALID": "입력값을 확인하세요: {{path}}",
     "default": "{{code}} — {{path}}",
     "DEVCONTAINER_CLOSED_NET": "Dev Container: 이미지와 패키지를 내려받으므로 사용자 환경에서 네트워크가 필요합니다(앱 자체는 외부를 호출하지 않습니다). 폐쇄망이면 사내 레지스트리 이미지로 바꾸세요.",
-    "TMUX_PREFIX": "tmux 접두키는 C-a ~ C-z 형식으로 적습니다(예: C-a)."
+    "TMUX_PREFIX": "tmux 접두키는 C-a ~ C-z 형식으로 적습니다(예: C-a).",
+    "CLAUDE_MD_MARKERS": "기존 CLAUDE.md 의 AGENTFORGE:{{id}} 마커가 짝이 맞지 않거나 중복되었거나 순서가 뒤집혔습니다. 마커를 바로잡거나 입력란을 비우세요."
   },
   "dev": {
     "title": "개발자별 에이전트",
@@ -273,5 +274,10 @@
   "devcontainer": {
     "label": "Dev Container 생성",
     "hint": "켜면 .devcontainer/devcontainer.json 을 만듭니다. 컨테이너 안에서도 env.local 은 직접 넣습니다."
+  },
+  "doc": {
+    "label": "기존 CLAUDE.md 붙여넣기(선택)",
+    "hint": "이미 쓰고 있는 CLAUDE.md 를 붙여넣으면 마커(AGENTFORGE:…) 밖의 내용과 PROJECT 구간은 그대로 두고 나머지 구간만 새로 생성한 내용으로 바꿉니다. 비워 두면 생성본 그대로입니다.",
+    "note": "마커는 코드블록 안에 있어도 셈에 들어갑니다. 붙여넣은 내용은 저장하지 않으며, 화면을 닫으면 사라집니다."
   }
 }

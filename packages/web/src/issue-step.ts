@@ -19,6 +19,8 @@ export function stepOfPath(path: readonly (string | number)[]): StepIndex {
     case "tmux":
     case "devcontainer":
       return 4;
+    case "existingClaudeMd":
+      return 5;
     default:
       return 0;
   }
