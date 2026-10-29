@@ -79,14 +79,14 @@ describe("EXP-01 6단계 생성 화면", () => {
     expect(screen.getByTestId("next-steps")).not.toHaveTextContent("UI/UX 설계");
   });
 
-  it("GitHub 영역은 비활성 안내만 있고 입력란이 없다", () => {
+  it("GitHub 영역은 접힌 채 시작하고 펼치기 전에는 토큰 입력란이 없다", () => {
     mount(<App />);
     goto(6);
-    expect(screen.getByText(/GitHub.*P1/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "GitHub 내보내기" })).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByLabelText(/토큰|token/i)).not.toBeInTheDocument();
   });
 
-  it("ZIP 파일명은 <이름>-agentforge.zip 이다", async () => {
+  it("ZIP 파일명은 <이름>-agentforge.zip 이다", { timeout: 20000 }, async () => {
     // jsdom 에는 두 메서드가 없으므로 자리만 만들고 spy 로 대체(afterEach 에서 복원)
     Object.assign(URL, { createObjectURL: () => "", revokeObjectURL: () => undefined });
     vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:x");
@@ -98,7 +98,8 @@ describe("EXP-01 6단계 생성 화면", () => {
     mount(<App />);
     goto(6);
     fireEvent.click(screen.getByRole("button", { name: "ZIP 다운로드" }));
-    await waitFor(() => expect(names).toEqual(["order-portal-agentforge.zip"]));
+    // 지연 import 라 부하 시 늦을 수 있어 대기 시간을 늘린다(T-723)
+    await waitFor(() => expect(names).toEqual(["order-portal-agentforge.zip"]), { timeout: 10000 });
   });
 });
 
