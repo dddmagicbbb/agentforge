@@ -15,7 +15,7 @@ import { applyExistingClaudeMd, usePreview } from "./use-preview";
 import "./app.css";
 
 // App 이 ProjectInput 하나를 소유한다. 키·비밀 값은 입력받지 않는다.
-export function App() {
+export function App({ marketFetch }: { readonly marketFetch?: typeof fetch } = {}) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<ProjectInput>(defaultDraft);
   const [step, setStep] = useState<StepIndex>(0);
@@ -41,7 +41,7 @@ export function App() {
         <section className="panel">
           {key === "requirement" ? <StepRequirement draft={draft} patch={patch} issues={issues} files={files} exportable={exportable} onStep={setStep} /> : null}
           {key === "routine" ? <StepRoutine draft={draft} patch={patch} /> : null}
-          {key === "skills" ? <StepSkills draft={draft} patch={patch} /> : null}
+          {key === "skills" ? <StepSkills draft={draft} patch={patch} issues={issues} marketFetch={marketFetch} /> : null}
           {key === "developers" ? <StepDevelopers draft={draft} patch={patch} issues={issues} /> : null}
           {key === "connection" ? <StepConnection draft={draft} patch={patch} issues={issues} /> : null}
           {key === "generate" ? <StepGenerate existingMd={existingMd} onExistingMd={setExistingMd} draft={draft} issues={issues} files={files} exportable={exportable} onStep={setStep} /> : null}

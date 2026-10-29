@@ -81,3 +81,10 @@ pre { white-space: pre-wrap; border: 1px solid var(--line); border-radius: 6px; 
 .chk { display: inline-flex; gap: 6px; align-items: center; }
 .block { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
 .block textarea { font-family: ui-monospace, monospace; font-size: 12px; }
+
+/* PH7 마켓 */
+.market h4, .mimp ~ h4 { margin: 12px 0 6px; font-size: 13px; }
+.market ul, .mimp { padding-left: 18px; }
+.market li, .mimp > li { margin-bottom: 6px; }
+.chip.warn { color: #b45309; border-color: #b45309; }
+.mpreview pre { max-height: 40vh; }

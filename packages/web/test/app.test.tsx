@@ -135,10 +135,10 @@ describe("SKL-01·02 4단계", () => {
     expect(screen.queryByText("도메인 미정 · /forge-agents가 생성")).not.toBeInTheDocument();
   });
 
-  it("마켓 영역은 비활성 안내만 있다", () => {
-    mount(<App />);
+  it("마켓 서버가 없으면 마켓 영역은 비활성 안내만 있다", async () => {
+    mount(<App marketFetch={(async () => { throw new TypeError("no server"); }) as unknown as typeof fetch} />);
     fireEvent.click(stepBtn(4));
-    expect(screen.getByText(/P1.*예정/)).toBeInTheDocument();
+    expect(await screen.findByText(/서버를 실행하면 사용할 수 있습니다/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "가져오기" })).not.toBeInTheDocument();
   });
 

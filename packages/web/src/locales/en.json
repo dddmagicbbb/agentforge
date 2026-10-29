@@ -98,7 +98,14 @@
     "default": "{{code}} — {{path}}",
     "DEVCONTAINER_CLOSED_NET": "Dev Container: the image and packages are downloaded in your environment, so network access is required (the app itself calls nothing external). On a closed network, switch to an image from your internal registry.",
     "TMUX_PREFIX": "Write the tmux prefix as C-a to C-z (for example C-a).",
-    "CLAUDE_MD_MARKERS": "The AGENTFORGE:{{id}} markers in the existing CLAUDE.md are unpaired, duplicated or out of order. Fix the markers or clear the box."
+    "CLAUDE_MD_MARKERS": "The AGENTFORGE:{{id}} markers in the existing CLAUDE.md are unpaired, duplicated or out of order. Fix the markers or clear the box.",
+    "IMPORT_NO_SKILL_MD": "{{id}}: SKILL.md is missing.",
+    "IMPORT_NAME_MISMATCH": "{{id}}: the name in SKILL.md differs from the skill ID.",
+    "IMPORT_DUP_PATH": "{{id}}: duplicate file paths.",
+    "IMPORT_TOO_LARGE": "{{id}}: total skill size exceeds 512,000 characters.",
+    "SKILL_FILE_PATH": "Invalid skill file path (relative, depth 5 or less, no . or ..).",
+    "SKILL_REF": "The source commit must be 7-40 lowercase hex characters.",
+    "GIT_BRANCH": "Invalid branch name."
   },
   "dev": {
     "title": "Agents per developer",
@@ -243,7 +250,6 @@
     "runInUser": "Run in your own Claude Code",
     "devDesc": "Terms, rules, APIs and test data of the {{domain}} domain",
     "devPending": "Domain undecided, created by /forge-agents",
-    "market": "Marketplace import will be offered in phase P1. It is not available yet.",
     "core": {
       "conventions": {
         "to": "dev-* · review-* · common-dev",
@@ -279,5 +285,72 @@
     "label": "Paste an existing CLAUDE.md (optional)",
     "hint": "If you paste a CLAUDE.md you already use, text outside the markers (AGENTFORGE:…) and the PROJECT section stay as they are, and only the other sections are replaced with the newly generated content. Leave it empty to use the generated file as is.",
     "note": "Markers are counted even inside code blocks. The pasted text is not saved and disappears when you close the page."
+  },
+  "market": {
+    "region": "Marketplace",
+    "checking": "Checking server…",
+    "unavailable": "The marketplace server was not found. The marketplace is available when the optional server (packages/server) is running. Everything else works without it.",
+    "sources": "Sources",
+    "addTitle": "Add source",
+    "searchTitle": "Search skills",
+    "remove": "Delete",
+    "removeSource": "Delete {{id}}",
+    "refreshAll": "Refresh all",
+    "register": "Add source",
+    "f": {
+      "kind": "Kind",
+      "id": "Source ID",
+      "trust": "Trust level",
+      "q": "Query",
+      "trustFilter": "Trust filter"
+    },
+    "tokenEnvHint": "tokenEnv is the \"name of a server environment variable\" that holds the token for a private repository. Token values are never entered, stored or sent from this screen.",
+    "trust": {
+      "official": "official",
+      "org": "org",
+      "community": "community",
+      "unverified": "unverified"
+    },
+    "all": "All",
+    "search": "Search",
+    "noResult": "No results.",
+    "files": "{{count}} files",
+    "flagCount": "Risks {{count}}",
+    "blocked": "Cannot import",
+    "blockedReason": {
+      "tooLarge": "too large",
+      "binary": "contains non-text file"
+    },
+    "preview": "Preview",
+    "import": "Import",
+    "previewTitle": "Preview of {{id}}",
+    "noRisk": "No risk items detected.",
+    "fileList": "Files",
+    "noSkillMd": "SKILL.md is missing.",
+    "importedTitle": "Imported skills (not saved)",
+    "target": "Target",
+    "targets": {
+      "all": "All",
+      "dev": "Developers (dev)",
+      "review": "Reviewers (review)"
+    },
+    "ack": "I have checked the risk items and include them",
+    "removeImported": "Remove",
+    "error": {
+      "UNKNOWN": "Marketplace request failed ({{code}}).",
+      "NETWORK": "Could not reach the marketplace server.",
+      "SOURCE_EXISTS": "This source ID is already registered.",
+      "SOURCE_INVALID": "The source input is not valid.",
+      "SOURCE_FETCH_FAILED": "Could not fetch skills from the source.",
+      "SOURCE_TIMEOUT": "The source timed out.",
+      "SKILL_BLOCKED": "This skill cannot be imported (too large or contains non-text files)."
+    }
+  },
+  "risk": {
+    "SCRIPTS": "Contains script files (scripts/ or executable extensions).",
+    "BANG_COMMAND": "SKILL.md has load-time dynamic commands (! syntax).",
+    "BROAD_TOOLS": "allowed-tools permits all of Bash.",
+    "BYPASS_PERMISSIONS": "Contains a setting that skips permission checks (bypassPermissions).",
+    "REMOTE_DOWNLOAD": "Contains a command that downloads from outside and runs it (curl, wget, ...)."
   }
 }
