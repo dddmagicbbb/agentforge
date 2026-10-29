@@ -73,3 +73,10 @@ GPL 계열 신규 의존성 없음(전이 의존성도 확인: 기존 jszip 의 
 - 등록·갱신 API 에 인증이 없다. 등록된 주소를 서버가 가져가므로(SSRF 성격) 사내 설치형이라도 접근 통제(리버스 프록시·내부망)가 필요하다. 인증은 이번 범위 밖이다.
 - github 소스는 트리 `truncated`(저장소가 매우 큼) 를 지원하지 않는다. `anthropics/skills` 규모는 해당 없음. 실제 github.com 호출은 시험하지 않았다(가짜 fetch).
 - Windows 에서 git 시간 제한 종료 시 자식 프로세스가 남을 수 있다(임시 폴더 삭제는 재시도 후 실패 무시).
+
+## PH7 1라운드 보강 (리드 요청, review-2 전)
+- **관리 API 보호(SSRF 대책)**: `POST/DELETE /api/market/sources`, `POST /api/market/refresh` 는 `env.AF_MARKET_ADMIN === "1"` 일 때만 동작하고, 아니면 본문 파싱 전에 403 `ADMIN_DISABLED`. 읽기 API 는 항상 허용. `GET /api/market/health` 는 `{ ok, version, admin }`.
+- **listen**: 진입점(헬퍼)은 만들지 않았다. 호출자는 기본 host 를 `127.0.0.1` 로 둔다(`createServer` 옵션 주석에 명시). 외부 노출 시 별도 접근 통제 필요.
+- **scan**: 주입 유지. `fakeScan` 은 `packages/server/test/helpers.ts` 에만 있고 `src/` 에는 없다. 통합 때 리드가 core `scanSkillRisk` 를 기본값으로 연결.
+- **9.6 외 추가 코드**: `NOT_FOUND`(404), `INTERNAL`(500), `ADMIN_DISABLED`(403). `blocked` 값 `badPath`(스킬 파일 경로가 SkillFilePath 패턴 위반).
+- 시험: 관리 꺼짐(3개 API 403, 깨진 본문도 403, 읽기 정상, health.admin=false), 미설정도 꺼짐 추가. server 34건 통과, typecheck·lint 통과.

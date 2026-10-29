@@ -24,7 +24,9 @@ export function tmpDir(prefix = "af-srv-"): string {
 
 export async function makeServer(extra: Partial<ServerOptions> = {}) {
   const dataDir = tmpDir("af-data-");
-  const app = await createServer({ dataDir, scan: fakeScan, defaultSourcesFile: join(dataDir, "none.json"), ...extra });
+  // 관리 API 는 기본 켬(시험 편의). 끄는 시험은 env 로 AF_MARKET_ADMIN 을 덮어쓴다
+  const env = { AF_MARKET_ADMIN: "1", ...extra.env };
+  const app = await createServer({ dataDir, scan: fakeScan, defaultSourcesFile: join(dataDir, "none.json"), ...extra, env });
   return { app, dataDir };
 }
 

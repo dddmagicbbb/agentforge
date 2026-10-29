@@ -25,7 +25,34 @@ describe("MKT-01 API", () => {
   it("health", async () => {
     const { app } = await makeServer();
     const r = await app.inject({ url: "/api/market/health" });
-    expect(r.json()).toMatchObject({ ok: true, version: expect.any(String) });
+    expect(r.json()).toMatchObject({ ok: true, version: expect.any(String), admin: true });
+  });
+
+  it("관리 API 꺼짐: 3개 관리 API 는 403 ADMIN_DISABLED, 읽기는 정상, health.admin=false", async () => {
+    const { app } = await makeServer({ env: { AF_MARKET_ADMIN: "0" } });
+    for (const [method, url, payload] of [
+      ["POST", "/api/market/sources", { id: "n", kind: "github", owner: "o", repo: "r" }],
+      ["DELETE", "/api/market/sources/n", undefined],
+      ["POST", "/api/market/refresh", {}],
+    ] as const) {
+      const r = await app.inject({ method, url, payload });
+      expect(r.statusCode, url).toBe(403);
+      expect(r.json()).toEqual({ code: "ADMIN_DISABLED", params: {} });
+    }
+    // 깨진 본문이어도 파싱 전에 403
+    const bad = await app.inject({ method: "POST", url: "/api/market/sources", headers: { "content-type": "application/json" }, payload: "{bad" });
+    expect(bad.statusCode).toBe(403);
+    expect((await app.inject({ url: "/api/market/sources" })).statusCode).toBe(200);
+    expect((await app.inject({ url: "/api/market/search" })).statusCode).toBe(200);
+    expect((await app.inject({ url: "/api/market/skills/a/b" })).statusCode).toBe(404);
+    const h = (await app.inject({ url: "/api/market/health" })).json();
+    expect(h.admin).toBe(false);
+  });
+
+  it("AF_MARKET_ADMIN 미설정도 꺼짐", async () => {
+    const dataDir = tmpDir("af-data-");
+    const app = await createServer({ dataDir, scan: fakeScan, env: {}, defaultSourcesFile: join(dataDir, "none.json") });
+    expect((await app.inject({ method: "POST", url: "/api/market/refresh", payload: {} })).statusCode).toBe(403);
   });
 
   it("등록 기본 trust=unverified, 중복은 SOURCE_EXISTS(409), 목록에 색인 상태", async () => {
@@ -137,11 +164,11 @@ describe("기본 소스·저장", () => {
     const dataDir = tmpDir("af-data-");
     const cat = join(tmpDir("af-cat-"), "market-sources.json");
     writeFileSync(cat, JSON.stringify({ sources: [{ id: "anthropic-skills", kind: "github", owner: "anthropics", repo: "skills", trust: "official" }] }));
-    const app = await createServer({ dataDir, scan: fakeScan, defaultSourcesFile: cat });
+    const app = await createServer({ dataDir, scan: fakeScan, env: { AF_MARKET_ADMIN: "1" }, defaultSourcesFile: cat });
     const list = (await app.inject({ url: "/api/market/sources" })).json() as { sources: { id: string; trust: string }[] };
     expect(list.sources.map((s) => [s.id, s.trust])).toEqual([["anthropic-skills", "official"]]);
     await app.inject({ method: "DELETE", url: "/api/market/sources/anthropic-skills" });
-    const again = await createServer({ dataDir, scan: fakeScan, defaultSourcesFile: cat });
+    const again = await createServer({ dataDir, scan: fakeScan, env: { AF_MARKET_ADMIN: "1" }, defaultSourcesFile: cat });
     expect(((await again.inject({ url: "/api/market/sources" })).json() as { sources: unknown[] }).sources).toEqual([]);
   });
 
@@ -157,7 +184,7 @@ describe("기본 소스·저장", () => {
     const { app, dataDir } = await makeServer({ fetch: g.fetch });
     await app.inject({ method: "POST", url: "/api/market/sources", payload: { id: "one", kind: "github", owner: "o", repo: "r" } });
     await app.inject({ method: "POST", url: "/api/market/refresh", payload: {} });
-    const app2 = await createServer({ dataDir, scan: fakeScan, fetch: g.fetch, defaultSourcesFile: join(dataDir, "none.json") });
+    const app2 = await createServer({ dataDir, scan: fakeScan, env: { AF_MARKET_ADMIN: "1" }, fetch: g.fetch, defaultSourcesFile: join(dataDir, "none.json") });
     expect(((await app2.inject({ url: "/api/market/search" })).json() as { skills: unknown[] }).skills).toHaveLength(2);
   });
 

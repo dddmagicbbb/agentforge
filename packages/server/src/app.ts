@@ -22,7 +22,11 @@ export interface ServerOptions {
   fetch?: FetchLike;
   gitBin?: string;
   webDist?: string;
-  /** 서버 환경 변수(tokenEnv 조회, AF_ALLOW_FILE_SOURCES). 기본 process.env */
+  /**
+   * 서버 환경 변수(tokenEnv 조회, AF_ALLOW_FILE_SOURCES, AF_MARKET_ADMIN). 기본 process.env.
+   * AF_MARKET_ADMIN=1 이 아니면 관리 API(소스 등록·삭제, 갱신)는 403 ADMIN_DISABLED (SSRF 대책).
+   * listen 은 호출자 책임이며, 기본 host 는 127.0.0.1 로 둘 것(외부 노출 시 별도 접근 통제 필요).
+   */
   env?: Record<string, string | undefined>;
   /** 기본 소스 파일(기본: 저장소 catalog/market-sources.json) */
   defaultSourcesFile?: string;
@@ -71,6 +75,11 @@ export async function createServer(opts: ServerOptions): Promise<FastifyInstance
   if (opts.webDist) await app.register(fastifyStatic, { root: opts.webDist });
 
   const allowFile = env["AF_ALLOW_FILE_SOURCES"] === "1";
+  const admin = env["AF_MARKET_ADMIN"] === "1";
+  // 관리 API 보호: 라우트 config.admin 이 true 인 요청은 본문 파싱 전에 차단한다
+  app.addHook("onRequest", async (req) => {
+    if ((req.routeOptions.config as { admin?: boolean } | undefined)?.admin && !admin) throw new ServerError("ADMIN_DISABLED", 403);
+  });
 
   // ---- 색인 갱신 -------------------------------------------------------------------
   async function collect(src: SourceRecord): Promise<{ collected: Collected; cleanup?: () => Promise<void> }> {
@@ -118,11 +127,11 @@ export async function createServer(opts: ServerOptions): Promise<FastifyInstance
   }
 
   // ---- 라우트 ----------------------------------------------------------------------
-  app.get("/api/market/health", async () => ({ ok: true, version: SERVER_VERSION }));
+  app.get("/api/market/health", async () => ({ ok: true, version: SERVER_VERSION, admin }));
 
   app.get("/api/market/sources", async () => ({ sources: await store.readSources() }));
 
-  app.post("/api/market/sources", async (req, reply) => {
+  app.post("/api/market/sources", { config: { admin: true } }, async (req, reply) => {
     const input = parse(SourceInput, req.body);
     if (input.kind === "git" && input.url.startsWith("file://") && !allowFile) throw new ServerError("SOURCE_INVALID", 400, { field: "url" });
     const rec = input as SourceRecord;
@@ -135,7 +144,7 @@ export async function createServer(opts: ServerOptions): Promise<FastifyInstance
     return reply.status(201).send(rec);
   });
 
-  app.delete("/api/market/sources/:id", async (req) => {
+  app.delete("/api/market/sources/:id", { config: { admin: true } }, async (req) => {
     const { id } = parse(SourceParams, req.params);
     await store.lock(async () => {
       const all = await store.readSources();
@@ -146,7 +155,7 @@ export async function createServer(opts: ServerOptions): Promise<FastifyInstance
     return { ok: true };
   });
 
-  app.post("/api/market/refresh", async (req) => {
+  app.post("/api/market/refresh", { config: { admin: true } }, async (req) => {
     const { id } = parse(RefreshInput, req.body ?? {});
     const all = await store.readSources();
     const targets = id ? all.filter((s) => s.id === id) : all;
