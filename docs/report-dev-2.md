@@ -95,3 +95,9 @@ GPL 계열 신규 의존성 없음(전이 의존성도 확인: 기존 jszip 의 
 
 ### T-712 보강 (design 9.7 EXP-02 보강)
 blob 개별 요청 제거(tree content), 2차 rate limit 분류(retry-after·메시지), GITHUB_PARTIAL(create commit·pr 단계, params 는 stage·url 만), auto_init 직후 409·404 재시도 1초 x 3(`sleep` 옵션 주입), Octokit 로거 noop, 루트 index 에서 pushToGithub 재export 제거(`@agentforge/exporter/github` 만), 생존 변이 대응 시험(trunk pr, login 대소문자, retry-after 403). exporter 50 통과·typecheck·lint 통과. 참고: 재시도 소진·재시도 불가 실패도 저장소 생성 뒤라면 PARTIAL.
+
+## PH7 3라운드: T-713
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+|---|---|---|---|---|
+| T-713 | 완료 | `tests/e2e/market.spec.ts`, `tests/e2e/github.spec.ts`, `tests/e2e/helpers.ts`(freePort·repoRoot·makeGitRepo), 상세 설계 3라운드 절 | E2E 14건 중 13 통과·1 skip(기존 ④ 셸 단계, Windows). 신규 5건(마켓 2·GitHub 3) 통과, 전체 약 15초. build·typecheck·lint 통과 | 실제 GitHub 실기는 사람 확인 필요(G 조건). GitHub 시험은 브라우저 가로채기라 exporter 의 Node 경로는 단위 시험이 담당 |
+- 서버·exporter 코드 변경 없음. 마켓 시험은 서버를 spawn(임시 dataDir, 임시 git 저장소, 종료 시 삭제).
