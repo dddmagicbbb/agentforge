@@ -41,3 +41,35 @@
 - 6단계 붙여넣기 입력: 라벨 "기존 CLAUDE.md 붙여넣기(선택)". 마커 오류 시 textarea aria-invalid="true" 와 #doc-error 표시, ZIP 버튼 비활성(정상 "ZIP 다운로드" 또는 차단 "오류 N건을 먼저 해결하세요" 모두 disabled 이면 통과로 봄).
 - (b) 는 요구사항을 영어로 입력하고, 기대값은 `{...defaultDraft(), language: "en", requirement}` 의 core render 와 README·CLAUDE.md 동등 + 한글 정규식 `[가-힣]` 없음으로 단언한다.
 - 로컬 주의: 포트 4173 에 다른 worktree 의 vite preview 가 떠 있으면 `reuseExistingServer` 로 그 오래된 번들을 쓰게 된다(이번에 (a) 가 그 때문에 처음엔 실패). CI 는 `CI` 변수로 재사용하지 않는다.
+
+# dev-2 보고 (PH7 1라운드)
+
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+|---|---|---|---|---|
+| T-711 | MKT-01 마켓 색인 서버 구현. `createServer({dataDir, scan, fetch?, gitBin?, webDist?, env?, defaultSourcesFile?, gitTimeoutMs?, fetchTimeoutMs?})`, API 7종, github(REST)·git(execFile, file:// 는 `AF_ALLOW_FILE_SOURCES=1` 에서만) 소스, 스킬 인식·tooLarge·binary 차단, 색인 저장, 기본 소스 복사, webDist 정적 제공 | `packages/server/src/{app,types,schemas,store,indexer,fetch-github,fetch-git,index}.ts`, `packages/server/test/{helpers,api,github,git}.ts`, `packages/server/{package.json,tsconfig*.json,vitest.config.ts}`, `pnpm-lock.yaml`, `docs/design/detail/dev-2.md` | server 32건 통과(api 15·github 10·git 7), 전체 `pnpm build`·`typecheck`·`lint` 통과, core 382·exporter 20·web 9 파일 통과 | 아래 |
+
+## 리드 조치 필요
+1. **core 연결**: `scan` 은 필수 주입이다(`ServerOptions.scan`, 코드에 TODO). core 에 `scanSkillRisk` 가 병합되면 `app.ts` 에서 기본값을 `scanSkillRisk` 로 두거나, 서버 기동 스크립트에서 주입한다. 시험은 `scripts/` 경로만 보는 대역(`fakeScan`)을 쓴다. 반환 타입은 `readonly string[]` 이라 `RiskCode[]` 와 호환된다.
+2. 서버 기동 진입점(listen)은 만들지 않았다(계약: 호출자가 listen). E2E(T-713)에서 `createServer(...).listen()` 을 쓰면 된다.
+
+## 추가 의존성
+| 패키지 | 버전 | 라이선스 | 용도 |
+|---|---|---|---|
+| fastify | ^5.12.7 | MIT | 서버 |
+| @fastify/static | ^10.1.8 | MIT | webDist 정적 제공 |
+| zod | ^4.6.7 | MIT | 입력 검증(core 와 같은 버전). core 의 `SkillName`·`GitBranch`·`HttpUrl`·`SkillFilePath` 패턴을 import 해 재사용 |
+GPL 계열 신규 의존성 없음(전이 의존성도 확인: 기존 jszip 의 `MIT OR GPL` 이중 라이선스뿐).
+
+## 설계 판단·계약 외 확장
+- 응답 코드: 입력 오류 400 `SOURCE_INVALID`(params.field 만), 중복 409 `SOURCE_EXISTS`, 차단 409 `SKILL_BLOCKED {reason}`, 없음 404 `NOT_FOUND`, 갱신 실패는 refresh 결과 안의 `{ok:false, code, params}`(HTTP 200), 그 밖 500 `INTERNAL`. `NOT_FOUND`·`INTERNAL` 은 9.6 목록에 없는 추가 코드다.
+- `blocked` 값에 `badPath` 를 추가했다: 스킬 안 파일 경로가 SkillFilePath 패턴(공백·한글·깊이 6 이상 등)에 맞지 않으면 일부만 가져오지 않고 스킬 전체를 차단한다(원문 보존 원칙). web 은 `tooLarge|binary|badPath` 를 처리해야 한다.
+- 한도 판정: 50개·200,000자·512,000자(문자 수). 내려받기 전에는 바이트×4 기준으로만 사전 차단하고 정확한 문자 수는 디코드 후 판정.
+- 깊이 2 는 `path` 기준이다. 같은 id 의 스킬이 두 폴더에 있으면 경로순으로 먼저 나온 것만 쓴다.
+- git clone 은 `-c core.autocrlf=false` 로 원문 줄바꿈을 보존하고, `GIT_ALLOW_PROTOCOL`(https 또는 file), `GIT_TERMINAL_PROMPT=0` 을 쓴다. git 에 넘기는 환경 변수는 필요한 것만 복사한다. git 소스의 `tokenEnv` 는 `GIT_CONFIG_*` 환경 변수(`http.extraHeader`, Basic `x-access-token`)로 전달해 프로세스 인자에 나타나지 않게 했다(실제 비공개 저장소 시험은 하지 못함).
+- 갱신 실패 시 기존 색인은 유지하고 sources.json 에 `lastError` 코드만 기록한다. github 는 `commits/HEAD`(ref 없음) 로 기본 브랜치를 얻는다. tree 가 `truncated` 이면 실패 처리(대형 저장소 미지원).
+- frontmatter `name` 과 폴더명이 다른 스킬은 색인에서 걸러내지 않는다(가져오기 시 core 불변식 `IMPORT_NAME_MISMATCH` 가 막음). web 이 미리 알리려면 후속 과제.
+
+## 남은 위험
+- 등록·갱신 API 에 인증이 없다. 등록된 주소를 서버가 가져가므로(SSRF 성격) 사내 설치형이라도 접근 통제(리버스 프록시·내부망)가 필요하다. 인증은 이번 범위 밖이다.
+- github 소스는 트리 `truncated`(저장소가 매우 큼) 를 지원하지 않는다. `anthropics/skills` 규모는 해당 없음. 실제 github.com 호출은 시험하지 않았다(가짜 fetch).
+- Windows 에서 git 시간 제한 종료 시 자식 프로세스가 남을 수 있다(임시 폴더 삭제는 재시도 후 실패 무시).
