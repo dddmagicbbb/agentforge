@@ -4,6 +4,8 @@ import { defaultDraft, type Issue } from "@agentforge/core";
 import { App } from "../src/App";
 import { StepConnection } from "../src/steps/StepConnection";
 import { StepGenerate } from "../src/steps/StepGenerate";
+import { buildPreview } from "../src/use-preview";
+import { errorSteps, stepOfPath } from "../src/issue-step";
 import { TmuxPreview } from "../src/components/TmuxPreview";
 
 const goto = (n: number) => fireEvent.click(within(screen.getByRole("navigation", { name: "단계" })).getAllByRole("button")[n - 1]!);
@@ -115,5 +117,54 @@ describe("VSC-02·PRV-03 T-623", () => {
     expect(i).toBeGreaterThan(-1);
     expect(items[i]).toMatch(/토큰/);
     expect(i).toBeGreaterThan(items.findIndex((x) => x?.includes("check-forge.sh")));
+  });
+});
+
+describe("review-3 반려: tmux·devcontainer 오류 단계", () => {
+  it("stepOfPath: tmux·devcontainer 는 5단계(인덱스 4)", () => {
+    expect(stepOfPath(["tmux", "prefix"])).toBe(4);
+    expect(stepOfPath(["devcontainer"])).toBe(4);
+  });
+
+  it("App: prefix C-1 이면 오류 점은 5단계에만 있고 6단계 이동 버튼은 연결 단계를 가리킨다", () => {
+    mount(<App />);
+    goto(5);
+    fireEvent.change(screen.getByLabelText("tmux prefix"), { target: { value: "C-1" } });
+    const buttons = within(screen.getByRole("navigation", { name: "단계" })).getAllByRole("button");
+    const dotted = buttons.map((b, i) => (within(b).queryByRole("img", { name: "오류 있음" }) ? i : -1)).filter((i) => i >= 0);
+    expect(dotted).toEqual([4]);
+    goto(6);
+    const list = screen.getByTestId("check-list");
+    expect(within(list).getAllByRole("button", { name: "연결·실행 단계로 이동" })[0]).toBeInTheDocument();
+    expect(within(list).queryByRole("button", { name: "요구사항 단계로 이동" })).not.toBeInTheDocument();
+  });
+
+  it("errorSteps 는 tmux prefix 오류를 5단계로 센다", () => {
+    const issue: Issue = { level: "error", code: "TMUX_PREFIX", path: ["tmux", "prefix"], params: {} };
+    expect([...errorSteps([issue])]).toEqual([4]);
+  });
+
+  it("buildPreview: 기본값 복귀 시 생성물 동일, tmux 지정 시 forge.config.json 에 tmux 포함", () => {
+    const base = buildPreview(defaultDraft());
+    const reset = buildPreview({ ...defaultDraft(), tmux: undefined });
+    expect(reset.files).toEqual(base.files);
+    const set = buildPreview({ ...defaultDraft(), tmux: { ...tmuxDefault, layout: "grid", mouse: true } });
+    const cfg = (f: typeof base.files) => f.find((x) => x.path === ".agentforge/forge.config.json")!.content;
+    expect(cfg(set.files)).toContain('"tmuxLayout": "grid"');
+    expect(cfg(set.files)).toContain('"mouse": true');
+    expect(cfg(base.files)).not.toContain('"tmux":');
+  });
+
+  it("접근성: prefix 오류 시 aria-invalid·오류 연결, Dev Container 안내 연결", () => {
+    mount(<App />);
+    goto(5);
+    const input = screen.getByLabelText("tmux prefix");
+    expect(input).not.toHaveAttribute("aria-invalid", "true");
+    fireEvent.change(input, { target: { value: "C-1" } });
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    const ids = input.getAttribute("aria-describedby")!.split(" ");
+    expect(ids.map((id) => document.getElementById(id)?.textContent).join(" ")).toMatch(/C-a/);
+    const dc = screen.getByLabelText("Dev Container 생성");
+    expect(document.getElementById(dc.getAttribute("aria-describedby")!)).toHaveTextContent(/devcontainer\.json/);
   });
 });

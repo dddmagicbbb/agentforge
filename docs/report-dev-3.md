@@ -17,3 +17,9 @@
 - review-3 권고 반영: `export.goto` 를 "Go to {{step}}" 로, i18n 동일 시험을 파일 목록·README 비교로, en 전환 시험을 `en.steps` 값 기대로 강화.
 - 번들 461.53 kB(gzip 146.27), 500kB 경고 없음. typecheck·lint 통과.
 - 판단: tmux 를 한 번 바꾸면 draft.tmux 가 생겨 config 에 tmux 객체가 들어간다. 되돌리는 "tmux 기본값으로" 버튼을 추가했다. Dev Container 를 끄면 false 가 아니라 undefined 로 둔다.
+
+### 2라운드 반려 수정 (review-3)
+- `issue-step.ts` `stepOfPath` 에 `tmux`·`devcontainer` -> 5단계(인덱스 4). 단계 바 오류 점·6단계 이동 버튼이 "연결·실행"을 가리킨다.
+- 권고 반영: buildPreview 수준 시험(기본값 복귀 시 생성물 동일, tmux 지정 시 config 포함), prefix 오류 `aria-invalid`+`aria-describedby`(IssueList `id` 속성 추가), Dev Container 안내 `aria-describedby`.
+- `DEVCONTAINER_CLOSED_NET` issue 키는 ko·en 모두 있음. 실제 render 시험으로 교체는 3라운드.
+- web 96개 통과, typecheck·lint 통과, 번들 461.74 kB.

@@ -16,6 +16,8 @@ interface Props {
 export function TmuxSettings({ draft, patch, issues }: Props) {
   const { t } = useTranslation();
   const cur = draft.tmux ?? TMUX_DEFAULT;
+  const prefixIssue = (i: Issue) => i.path[0] === "tmux" && i.path[1] === "prefix";
+  const invalid = issues.some(prefixIssue);
   const set = (p: Partial<TmuxInput>) => patch({ tmux: { ...cur, ...p } });
   return (
     <fieldset className="tmux-settings">
@@ -28,10 +30,10 @@ export function TmuxSettings({ draft, patch, issues }: Props) {
       </label>
       <label>
         {t("tmux.prefixLabel")}
-        <input value={cur.prefix} maxLength={3} aria-describedby="tmux-prefix-hint" onChange={(e) => set({ prefix: e.target.value })} />
+        <input value={cur.prefix} maxLength={3} aria-invalid={invalid ? true : undefined} aria-describedby={invalid ? "tmux-prefix-hint tmux-prefix-error" : "tmux-prefix-hint"} onChange={(e) => set({ prefix: e.target.value })} />
       </label>
       <small id="tmux-prefix-hint">{t("tmux.prefixHint")}</small>
-      <IssueList issues={issues} filter={(i) => i.path[0] === "tmux" && i.path[1] === "prefix"} />
+      <IssueList issues={issues} filter={prefixIssue} id="tmux-prefix-error" />
       <label className="chk"><input type="checkbox" checked={cur.mouse} onChange={(e) => set({ mouse: e.target.checked })} />{t("tmux.mouseLabel")}</label>
       <label className="chk"><input type="checkbox" checked={cur.logs} onChange={(e) => set({ logs: e.target.checked })} />{t("tmux.logsLabel")}</label>
       <small>{t("tmux.logsHint")}</small>

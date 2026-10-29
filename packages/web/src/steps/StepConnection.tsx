@@ -62,10 +62,10 @@ export function StepConnection({ draft, patch, issues }: Props) {
       </div>
       <TmuxSettings draft={draft} patch={patch} issues={issues} />
       <label className="chk">
-        <input type="checkbox" checked={draft.devcontainer === true} onChange={(e) => patch({ devcontainer: e.target.checked ? true : undefined })} />
+        <input type="checkbox" aria-describedby="devcontainer-hint" checked={draft.devcontainer === true} onChange={(e) => patch({ devcontainer: e.target.checked ? true : undefined })} />
         {t("devcontainer.label")}
       </label>
-      <small>{t("devcontainer.hint")}</small>
+      <small id="devcontainer-hint">{t("devcontainer.hint")}</small>
       <h3>{t("tmux.title")}</h3>
       <TmuxPreview draft={draft} />
       <IssueList issues={issues} filter={(i) => WARN_CODES.includes(i.code)} />
