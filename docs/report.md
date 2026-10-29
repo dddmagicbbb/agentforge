@@ -39,4 +39,9 @@
 - T-505 잔여 권고: 이름 규칙 문구 ".", 테스트 데이터 `as never` 제거, exporter 지연 로딩(첫 화면 번들 538→443kB, 경고 해소).
 - T-504 dogfooding: 이 저장소 설정(`tests/realdevice/self-agentforge.json`)으로 다시 생성 → 51파일 중 42개 바이트 일치. 의도된 개선분 6개(scripts 4·guard·forge-agents, ADR-0004·0005)를 생성 결과로 교체. CLAUDE.md·.gitignore 는 저장소 고유 내용이라 유지. `.claude/settings.json` 은 병합안만 준비(사람 적용).
 - T-502 WSL 3칸 통과(사람 실행: realdevice 3/3, test:scripts 51/51) → 자동 점검 12칸 완료.
-- 남은 것(사람): 실제 Claude Code 주기 R-1~R-8(`docs/report-realdevice.md`), settings.json 병합 적용.
+- settings.json 병합 적용(d40c3fa): 생성 권한·guard hook + 기존 git-pull hook.
+- T-502 실제 Claude Code 주기(WSL, 구성 C) R-1~R-8 전부 ✓ — /forge-init → analyst → check-forge → 병렬 1주기 → integrate·integrator 완주. 결과는 `docs/report-realdevice.md` 3.2.
+  - 실기에서 발견해 수정(ADR-0005): D-C 짝 검토 파일이 범위 밖으로 오탐, D-D integrate 가 develop 의 테스트 명령을 무시, D-E 설계 반려 한도 없음. bats 로 재현(수정 전 실패) 후 수정.
+  - 확인: guard 가 실제 Claude Code 의 Write·NotebookEdit 를 차단(S-2 실효). frontmatter model 이 ANTHROPIC_MODEL 보다 우선, inherit 일 때만 환경 변수(PRD 9장 미결 해소).
+  - 관찰: 대화형 기본 권한이 auto mode 라 Bash 쓰기를 자동 허용할 수 있음 → S-3 갱신, PH6 권고.
+- G4 판정 대기: 점검표 12칸 ✓, 실제 주기 완주, 보안 조치 완료.

@@ -15,15 +15,15 @@
     },
     {
       "template": "static/integrate.sh",
-      "defect": "D-A",
-      "adr": "0004",
-      "reason": "병합 충돌 시 abort 후 reset --hard pre-integration 으로 앞선 병합까지 되돌림"
+      "defect": "D-A·D-D",
+      "adr": "0004·0005",
+      "reason": "병합 충돌 시 abort 후 reset --hard pre-integration 으로 앞선 병합까지 되돌림, 테스트 명령은 병합된 develop 기준으로 읽음(D-D)"
     },
     {
       "template": "static/wait-and-review.sh",
-      "defect": "D-B",
-      "adr": "0004",
-      "reason": "신호 이력 파일명 충돌 시 .<초>.<n> 순번으로 덮어쓰기 방지"
+      "defect": "D-B·D-C·D-E",
+      "adr": "0004·0005",
+      "reason": "신호 이력 파일명 충돌 시 .<초>.<n> 순번으로 덮어쓰기 방지, 짝 검토자 범위(review-N.paths) 허용(D-C), 설계 반려에도 한도 적용(D-E)"
     },
     {
       "template": "static/check-forge.sh",
@@ -66,14 +66,14 @@
     {
       "config": "*",
       "path": "scripts/wait-and-review.sh",
-      "defect": "D-B",
-      "reason": "wait-and-review.sh 이력 순번 (ADR-0004, 전 구성 공통)"
+      "defect": "D-B·D-C·D-E",
+      "reason": "wait-and-review.sh 이력 순번 (ADR-0004·0005, 전 구성 공통)"
     },
     {
       "config": "*",
       "path": "scripts/integrate.sh",
-      "defect": "D-A",
-      "reason": "integrate.sh 충돌 복구 (ADR-0004, 전 구성 공통)"
+      "defect": "D-A·D-D",
+      "reason": "integrate.sh 충돌 복구 (ADR-0004·0005, 전 구성 공통)"
     },
     {
       "config": "*",

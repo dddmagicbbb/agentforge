@@ -186,3 +186,47 @@ run_integrate() {
   [ "$status" -eq 0 ]
   [ "$output" -eq 3 ]
 }
+
+# ---------------------------------------------------------------- PH5 실기 점검에서 찾은 결함(ADR-0005 D-C·D-D·D-E)
+
+@test "D-C: 짝 검토자 산출물(review-1.paths 의 docs/review/dev-1.md)은 dev-1 범위 밖으로 보지 않는다" {
+  # dev-1·review-1 은 같은 worktree 를 쓰므로 review-1 이 쓴 검토 파일이 dev-1 변경 목록에 섞인다
+  commit_in "$WT1" src/alpha/a.ts "export const a = 1;"
+  mkdir -p "$WT1/docs/review"; echo "검토" > "$WT1/docs/review/dev-1.md"
+  start_agents
+
+  touch "$SIG/dev-1.done"
+  wait_for 30 "review-1 got: 코드 검토:" "$LOG"
+  not_in_file "dev-1 got: 담당 범위 밖" "$LOG"
+}
+
+@test "D-D: integrate.sh 는 병합된 develop 의 테스트 명령을 쓴다(메인 폴더가 main 이어도)" {
+  # 공통 개발이 develop 에서 테스트 명령을 바꾼 상황(메인 폴더는 main 에 있음)
+  git worktree add -q "$BATS_TEST_TMPDIR/dv" develop
+  jq '.commands.test = "echo AF_TEST_FROM_DEVELOP"' "$BATS_TEST_TMPDIR/dv/.agentforge/forge.config.json" > "$BATS_TEST_TMPDIR/fc.json"
+  mv "$BATS_TEST_TMPDIR/fc.json" "$BATS_TEST_TMPDIR/dv/.agentforge/forge.config.json"
+  git -C "$BATS_TEST_TMPDIR/dv" commit -qam "[common-dev] 테스트 명령"
+  git worktree remove "$BATS_TEST_TMPDIR/dv"
+  [ "$(git branch --show-current)" = "main" ]
+  start_agents
+  pass_all
+
+  run_integrate
+  [ "$status" -eq 0 ]
+  grep -q "## 단위 테스트: echo AF_TEST_FROM_DEVELOP" docs/report/integration-test.log
+  grep -qx "AF_TEST_FROM_DEVELOP" docs/report/integration-test.log
+}
+
+@test "D-E: design-1.reject 도 maxRejects(3)번 쌓이면 dev-1.blocked(설계 반려 무한 반복 방지)" {
+  start_agents
+  touch "$SIG/design-1.reject"; wait_gone 25 "$SIG/design-1.reject"
+  wait_count 10 "dev-1 got: 설계 반려" "$LOG" 1
+  touch "$SIG/design-1.reject"; wait_gone 25 "$SIG/design-1.reject"
+  wait_count 10 "dev-1 got: 설계 반려" "$LOG" 2
+  [ ! -e "$SIG/dev-1.blocked" ]
+
+  touch "$SIG/design-1.reject"; wait_gone 25 "$SIG/design-1.reject"
+  wait_file 10 "$SIG/dev-1.blocked"
+  [ "$(grep -c "dev-1 got: 설계 반려" "$LOG")" -eq 2 ]
+  not_in_file "dev-2 got:" "$LOG"
+}

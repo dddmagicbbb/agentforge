@@ -49,8 +49,8 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: LiteLLM + 마켓 가�
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 775bf7238249 scripts/wait-and-review.sh
-755 tp ca182df98d99 scripts/integrate.sh
+755 tp 29d2f6726422 scripts/wait-and-review.sh
+755 tp 635ebe6849ec scripts/integrate.sh
 755 tp b9ebd0a5c3ea scripts/start-gateway.sh
 644 tp 9f04d37559ad .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
@@ -106,8 +106,8 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: UI 끔 1`] = `
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 775bf7238249 scripts/wait-and-review.sh
-755 tp ca182df98d99 scripts/integrate.sh
+755 tp 29d2f6726422 scripts/wait-and-review.sh
+755 tp 635ebe6849ec scripts/integrate.sh
 644 tp 9f04d37559ad .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
@@ -152,8 +152,8 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = 
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 775bf7238249 scripts/wait-and-review.sh
-755 tp ca182df98d99 scripts/integrate.sh
+755 tp 29d2f6726422 scripts/wait-and-review.sh
+755 tp 635ebe6849ec scripts/integrate.sh
 644 tp 9f04d37559ad .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
@@ -224,8 +224,8 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = 
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 775bf7238249 scripts/wait-and-review.sh
-755 tp ca182df98d99 scripts/integrate.sh
+755 tp 29d2f6726422 scripts/wait-and-review.sh
+755 tp 635ebe6849ec scripts/integrate.sh
 644 tp 9f04d37559ad .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
@@ -266,8 +266,8 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 정보 비�
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 775bf7238249 scripts/wait-and-review.sh
-755 tp ca182df98d99 scripts/integrate.sh
+755 tp 29d2f6726422 scripts/wait-and-review.sh
+755 tp 635ebe6849ec scripts/integrate.sh
 644 tp 9f04d37559ad .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
@@ -323,8 +323,8 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 기본 1`] = `
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 775bf7238249 scripts/wait-and-review.sh
-755 tp ca182df98d99 scripts/integrate.sh
+755 tp 29d2f6726422 scripts/wait-and-review.sh
+755 tp 635ebe6849ec scripts/integrate.sh
 644 tp 9f04d37559ad .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep

@@ -101,7 +101,7 @@
 - [ ] 제품명 확정(상표 검색), "for Claude Code" 표기 가능 여부
 - [ ] 가격 정책(구독/영구)
 - [ ] Gemini·OpenAI 기본 추천 모델 ID(카탈로그로 관리)
-- [ ] `claude --agent` 실행 시 frontmatter `model`과 `ANTHROPIC_MODEL` 우선순위 실기 확인
+- [x] `claude --agent` 실행 시 frontmatter `model`과 `ANTHROPIC_MODEL` 우선순위 실기 확인 → frontmatter 우선, `inherit` 일 때만 `ANTHROPIC_MODEL`(PH5 R-8)
 
 ## 10. 개발 단계
 

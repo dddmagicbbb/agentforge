@@ -2,7 +2,7 @@
 
 - 점검: 리드, 2026-10-29. 기준은 `docs/project-rules.md` 보안 규칙과 PRD 10.2 PH5 점검 항목이다.
 - 대상: `develop` 9ebec05 이후 core 렌더러·스키마, `templates/static/*.sh`, exporter, web 빌드 결과(`packages/web/dist`).
-- 결론: **조치 필요 2건(S-1·S-2)은 수정 완료(ADR-0005).** 수용 위험 3건(S-3~S-5)은 근거와 2차 방어를 기록했다. 그중 S-3은 실제 Claude Code 확인이 T-502로 남아 있다.
+- 결론: **조치 필요 2건(S-1·S-2)은 수정 완료(ADR-0005)이고, 실제 Claude Code 에서도 차단을 확인했다(R-7).** 수용 위험 3건(S-3~S-5)은 근거와 2차 방어를 기록했다. S-3 은 실기 확인 결과를 반영했다(R-6).
 
 ## 1. 점검 결과 요약
 | 영역 | 점검 내용 | 결과 |
@@ -39,11 +39,16 @@
 - 조치: matcher를 `Edit|Write|MultiEdit|NotebookEdit`로 바꾸고, guard는 `file_path // notebook_path`를 읽게 했다(제어 문자 검사 포함). 의도적 차이로 등록했다.
 - 시험: `render.test.ts` matcher 검사, `guard-paths.bats` ⑯(차단·허용·제어 문자).
 
-### S-3 Bash 경유 파일 쓰기(리다이렉션) — 수용, 실기 확인 필요
+### S-3 Bash 경유 파일 쓰기(리다이렉션) — 수용, 실기 확인 완료(R-6)
 - 내용: guard hook은 파일 변경 도구에만 걸리고 Bash에는 걸리지 않는다. 허용 목록의 Bash 명령(`git commit:*`, `touch:*`, 사용자 테스트 명령)에 `>`가 붙으면 범위 밖 쓰기가 가능할 수 있다.
 - 1차 방어: settings.json allow는 고정 목록뿐이다. 그 밖의 Bash는 사용자 승인 프롬프트가 뜬다. Claude Code가 접두어 규칙을 `&&`·`;`·`|`·리다이렉션까지 확장하지 않는지는 실제 Claude Code에서 확인한다(T-502 점검표 항목 R-6).
 - 2차 방어: `wait-and-review.sh`의 `out_of_scope`가 `dev-N.done` 시점에 worktree 안의 커밋과 미커밋 변경(추적 안 됨 포함)을 범위와 대조한다. 범위 밖이면 리뷰로 넘기지 않는다(bats `parallel-mock` 시험).
-- 남는 위험: worktree **밖**에 대한 Bash 쓰기는 2차 방어가 잡지 못한다. 실기 확인 결과 접두어 규칙이 리다이렉션을 허용하면 PH6에서 Bash용 PreToolUse 검사를 추가한다.
+- 남는 위험: worktree **밖**에 대한 Bash 쓰기는 2차 방어가 잡지 못한다.
+- 실기 결과(2026-10-29, Claude Code 2.1.309~2.1.312):
+  - 기본 권한 모드에서는 허용 접두어(`git log:*`)에 리다이렉션을 붙여도 worktree 안·밖 모두 승인을 요구했다. 접두어 규칙은 리다이렉션과 명령 연결로 확장되지 않는다.
+  - 대화형 기본값인 **auto mode** 는 분류기가 Bash 를 판단해, 범위 안 `cat > docs/report-dev-1.md` 를 자동 허용했다. 범위 밖 Bash 쓰기도 auto mode 가 허용할 가능성이 있다.
+  - 2차 방어 `out_of_scope` 는 실제 주기에서 범위 밖 변경을 잡았다(D-C 오탐도 이때 발견해 수정).
+- 권고(PH6): Bash PreToolUse 에서 리다이렉션 대상 경로를 guard 와 같은 규칙으로 검사한다. 또는 생성 README 에 "dev pane 은 default 권한 모드 권장"을 안내한다.
 
 ### S-4 신호 파일 위조 — 수용(위협 모델 밖)
 - 내용: `Bash(touch:*)`가 허용되어 있다. dev-N과 review-N은 같은 worktree와 같은 OS 사용자로 실행된다. 따라서 dev-N이 `review-N.pass`를 만들 수 있다.
@@ -70,5 +75,4 @@
 - PoC의 jszip CDN·Google Fonts·localStorage는 이식하지 않았다.
 
 ## 6. 남은 일
-- T-502 실기 확인 R-6: 허용된 Bash 접두어에 리다이렉션·명령 연결을 붙였을 때 승인 프롬프트가 뜨는지. 결과에 따라 S-3을 갱신한다.
 - PH6 검토 후보: Bash PreToolUse 범위 검사(S-3), integrate 전 리뷰 판정 확인(S-4).

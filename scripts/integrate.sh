@@ -4,8 +4,6 @@ set -euo pipefail
 root="$(git rev-parse --show-toplevel)"; cd "$root"
 cfg=.agentforge/forge.config.json
 n="$(jq -r '.developers' "$cfg")"
-test_cmd="$(jq -r '.commands.test // "npm test"' "$cfg")"
-e2e_cmd="$(jq -r '.commands.e2e // empty' "$cfg")"
 sig="$root/.agentforge/signals"; log="$root/docs/report"; mkdir -p "$log"
 
 for i in $(seq 1 "$n"); do
@@ -24,6 +22,9 @@ for i in $(seq 1 "$n"); do
   fi
 done
 
+# 테스트 명령은 병합된 develop 기준으로 읽는다(공통 개발이 develop 에서 바꾼 명령 반영 — 메인 폴더가 main 이었을 수 있음)
+test_cmd="$(jq -r '.commands.test // "npm test"' "$cfg")"
+e2e_cmd="$(jq -r '.commands.e2e // empty' "$cfg")"
 status=0
 { echo "## 단위 테스트: $test_cmd"; bash -c "$test_cmd"; } > "$log/integration-test.log" 2>&1 || status=1
 if [ -n "$e2e_cmd" ]; then
