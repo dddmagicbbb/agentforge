@@ -314,3 +314,119 @@ PoC에 기준 구현이 없는 기능이라, 병렬 개발 전에 계약을 여�
 | `CLAUDE_MD_MARKERS` | AppError | 8.1 마커 짝 오류 |
 | `TMUX_PREFIX` | error(스키마) | 이미 존재 |
 | `DEVCONTAINER_CLOSED_NET` | info | `devcontainer: true`: 이미지·패키지를 내려받는다는 안내 |
+
+## 9. PH7 설계 — 마켓플레이스·GitHub 내보내기 (ADR-0007)
+PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙은 PH6과 같다. `imported: []`이고 `export`를 지정하지 않으면 생성물은 v0.2.0과 바이트 단위로 같다.
+
+### 9.1 스키마 (리드 반영 완료)
+- `ImportedSkill`에 `ref?`(출처 커밋, `^[0-9a-f]{7,40}$`, `SKILL_REF`)와 `files?`(최대 50개, `{path: SkillFilePath, content ≤ 200,000자}`)를 추가했다.
+  - `SkillFilePath`는 스킬 폴더 기준 상대 경로다. 세그먼트는 `[A-Za-z0-9._-]`, 최대 깊이 5, `.`·`..` 금지(`SKILL_FILE_PATH`).
+- `GithubTarget`에 `mode?`(create|pr, 기본 create), `baseUrl?`(GHES API, HttpUrl), `branch?`(`GitBranch`, 기본 `agentforge/setup`)를 추가했다. 토큰은 스키마에 두지 않는다.
+
+### 9.2 위험 검사 (core, 순수 함수) — MKT-02
+- `scanSkillRisk(files): RiskCode[]`는 결정적이고 정렬된 고유 코드 목록을 반환한다.
+
+| 코드 | 조건 |
+| --- | --- |
+| `SCRIPTS` | `scripts/` 아래 파일이 있거나, 확장자 `.sh .bash .py .js .mjs .cjs .ts .ps1 .bat .cmd .exe`인 파일 |
+| `BANG_COMMAND` | SKILL.md 본문의 동적 명령: 백틱 앞의 `!` 문법, 또는 줄 머리가 `!`인 명령 |
+| `BROAD_TOOLS` | frontmatter `allowed-tools`에 `Bash(*)`·`Bash` 단독·`*`가 있음 |
+| `BYPASS_PERMISSIONS` | `permissionMode: bypassPermissions` 또는 `dangerously-skip-permissions` 문자열 |
+| `REMOTE_DOWNLOAD` | `curl`·`wget`·`Invoke-WebRequest`·`iwr` 다음에 `http(s)://`가 오는 줄, 또는 `sh`·`bash`로 넘기는 파이프 |
+
+- 불변식 I6 변경:
+  - `files`가 있으면 `flags`를 **입력값이 아니라 `scanSkillRisk(files)`로 다시 계산한 값**으로 판정한다. 입력의 flags 조작으로 확인을 건너뛸 수 없다.
+  - 위험이 하나라도 있고 `acknowledged`가 false이면 `IMPORT_UNACKED`.
+- 추가 불변식:
+  - `files`가 있으면 `SKILL.md`가 반드시 있어야 한다(`IMPORT_NO_SKILL_MD`).
+  - SKILL.md frontmatter의 `name`은 `id`와 같아야 한다(`IMPORT_NAME_MISMATCH`).
+  - 파일 경로는 중복되면 안 된다(`IMPORT_DUP_PATH`).
+  - 전체 크기는 512,000자 이하여야 한다(`IMPORT_TOO_LARGE`).
+- 불변식은 schema 폴더(리드 승인 영역)지만, 이번에는 ADR-0007로 승인하고 dev-1이 구현한다.
+
+### 9.3 렌더 (core) — MKT-02
+- `files`가 있는 스킬은 `.claude/skills/<id>/<path>`로 원문을 그대로 넣는다(mode 644, 실행 권한 없음).
+  - SKILL.md도 원문 그대로 넣는다(앱이 문구를 바꾸지 않는다).
+  - `files`가 없으면 지금처럼 출처 안내만 넣는다.
+- `.agentforge/sources.lock`(imported가 비어 있지 않을 때만, 644): JSON
+  `{ "version": 1, "skills": [{ id, src, trust, ref|null, target, flags, files: [{ path, sha256 }] }] }`
+  - `sha256`은 core 순수 구현(UTF-8 바이트)이다. 키 순서는 고정한다.
+- 기존 CLAUDE.md SKILLS 표와 dev/review `skills:` 배정(SKL-02)은 그대로다.
+
+### 9.4 마켓 색인 (server, 선택 배포) — MKT-01
+- Fastify 앱 `createServer({ dataDir, fetch?, gitBin?, webDist? })`. 앱 본체(web)는 서버 없이도 동작하고, 서버가 있을 때만 마켓을 쓸 수 있다.
+- 소스 종류:
+
+| kind | 필드 | 가져오는 방법 |
+| --- | --- | --- |
+| `github` | `owner`, `repo`, `ref?`(기본 기본 브랜치), `path?`(기본 저장소 루트), `baseUrl?`(GHES API) | REST: commits(ref→sha), git/trees?recursive=1, blobs |
+| `git` | `url`(https:// 또는 테스트용 file://), `ref?`, `path?` | 시스템 `git clone --depth 1 --branch` → 임시 폴더, 끝나면 삭제 |
+
+- 공통 필드: `id`(SkillName 패턴), `trust`(official·org·community·unverified, 등록 시 지정, 기본 unverified), `tokenEnv?`(비공개 저장소 토큰을 담은 **서버 환경 변수 이름**. API로 토큰 값을 받지 않는다).
+- 스킬 인식:
+  - `path` 아래 깊이 2 이내에서 `SKILL.md`를 가진 폴더를 스킬로 본다.
+  - 폴더명이 SkillName 패턴이 아니면 건너뛴다.
+  - 파일은 50개 이하, 파일당 200,000자, 합계 512,000자 이하이고, 넘으면 `tooLarge` 표시 후 가져오기를 막는다.
+  - 텍스트가 아닌(UTF-8 디코드 실패) 파일이 있으면 `binary` 표시 후 가져오기를 막는다.
+- 저장: `dataDir/sources.json`(등록 목록), `dataDir/index/<sourceId>.json`(색인: sha, 스킬별 name·description·files·flags = core `scanSkillRisk`).
+- 기본 소스: `catalog/market-sources.json`(공식 `anthropics/skills`, trust official). 서버가 처음 시작할 때 dataDir에 없으면 복사한다.
+- API(JSON, 같은 출처, 오류는 `{ code, params }`):
+
+| 메서드·경로 | 내용 |
+| --- | --- |
+| `GET /api/market/health` | `{ ok: true, version }` — web 이 서버 존재를 감지 |
+| `GET /api/market/sources` | 등록 목록(+마지막 색인 시각·sha·오류 코드) |
+| `POST /api/market/sources` | 등록(zod 검증; id 중복 `SOURCE_EXISTS`) |
+| `DELETE /api/market/sources/:id` | 삭제(색인도 삭제) |
+| `POST /api/market/refresh` | `{ id? }` 색인 갱신(없으면 전체). 소스별 결과·오류 코드 |
+| `GET /api/market/search?q=&trust=` | 이름·설명 부분 일치(대소문자 무시), 목록 항목 = `{ sourceId, id, description, trust, src, ref, flags, fileCount, blocked? }` |
+| `GET /api/market/skills/:sourceId/:skillId` | 가져오기용 전체: `{ id, src, trust, ref, description, flags, files: [{path, content}] }` — 이 응답을 그대로 `ImportedSkill`로 바꿀 수 있어야 한다 |
+
+- 보안:
+  - 등록 URL·owner·repo·ref·path는 zod 패턴으로 검증한다. `git`은 `https://` 또는 `file://`만 허용하고, `file://`은 `AF_ALLOW_FILE_SOURCES=1`일 때만 허용한다.
+  - git 명령은 인자 배열로 실행한다(셸 금지). 시간 제한은 60초다.
+  - 토큰은 로그·응답·색인에 쓰지 않는다.
+- `webDist`가 있으면 `/`에서 web 정적 파일을 제공한다(E2E·설치형 대비).
+
+### 9.5 GitHub·GHES 내보내기 (exporter) — EXP-02
+- `planGithubTree(files: RenderedFile[]): { path, mode: "100755"|"100644", content }[]` (core 순수 함수)
+  - `.sh`는 100755, 나머지는 100644다.
+  - `env.local` 경로가 있으면 `AppError("EXPORT_SECRET_PATH")`.
+  - ZIP과 같은 `RenderedFile[]`에서 만들고, 경로 집합·내용이 ZIP 항목과 같음을 시험으로 보장한다.
+- `pushToGithub(files, target, token, { fetch?, language })`(exporter, `@octokit/core`, web에서 지연 로딩)
+  - **create**:
+    1. 저장소를 만든다(owner가 인증 사용자면 `POST /user/repos`, 아니면 `POST /orgs/:owner/repos`, `auto_init: true`, visibility).
+    2. blob과 tree를 만든다(`base_tree` 없음).
+    3. 부모 없는 commit을 만든다.
+    4. `PATCH refs/heads/<default>` `force: true`로 바꾼다.
+    - 결과 이력은 **커밋 1건**이다.
+  - **pr**:
+    1. 기본 브랜치 sha를 읽는다.
+    2. tree를 만든다(`base_tree` = 기본 브랜치 tree. 생성 파일만 덮어쓰고 다른 파일은 유지).
+    3. commit을 만든다(부모 1).
+    4. `refs/heads/<branch>`를 만든다(있으면 `GITHUB_BRANCH_EXISTS`).
+    5. PR을 만든다.
+  - 커밋 메시지: `AgentForge 환경 생성` / `Generate AgentForge environment`(language). 작성자는 토큰 사용자다.
+  - 반환: `{ url, commitSha, prUrl? }`
+  - 오류는 `AppError` 코드로만 낸다. 응답 본문·토큰은 메시지에 넣지 않는다.
+
+| 코드 | 원인 |
+| --- | --- |
+| `GITHUB_AUTH` | 401·403 |
+| `GITHUB_NOT_FOUND` | 404 |
+| `GITHUB_REPO_EXISTS` | 422 |
+| `GITHUB_BRANCH_EXISTS` | pr 모드에서 브랜치가 이미 있음 |
+| `GITHUB_RATE_LIMIT` | 요청 한도 초과 |
+| `GITHUB_NETWORK` | 네트워크 오류 |
+| `GITHUB_FAILED` | 그 밖의 실패 |
+
+- 토큰:
+  - 화면 입력(password)으로 받아 한 번만 쓰고 메모리에서 지운다.
+  - 저장소·URL·로그·오류에 남기지 않는다.
+  - 브라우저에서 GHES CORS가 막히는 경우의 서버 중계는 이번 단계 범위 밖이다(P2, ADR-0007).
+
+### 9.6 새 issue·오류 코드
+- 스키마·불변식(error): `SKILL_FILE_PATH` `SKILL_REF` `GIT_BRANCH` `IMPORT_NO_SKILL_MD` `IMPORT_NAME_MISMATCH` `IMPORT_DUP_PATH` `IMPORT_TOO_LARGE`
+- 위험 코드 5종(9.2): 화면에서 사람이 읽는 문구로 표시
+- AppError: `EXPORT_SECRET_PATH`, `GITHUB_*`
+- 서버: `SOURCE_EXISTS` `SOURCE_INVALID` `SOURCE_FETCH_FAILED` `SOURCE_TIMEOUT` `SKILL_BLOCKED`

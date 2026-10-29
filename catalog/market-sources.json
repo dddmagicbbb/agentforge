@@ -1,0 +1,6 @@
+{
+  "$comment": "마켓 기본 소스(MKT-01). 서버가 처음 시작할 때 dataDir 에 없으면 복사한다. 공통 소유(리드 승인).",
+  "sources": [
+    { "id": "anthropic-skills", "kind": "github", "owner": "anthropics", "repo": "skills", "trust": "official" }
+  ]
+}
