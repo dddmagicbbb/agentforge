@@ -122,3 +122,29 @@ wait-and-review.sh 의 이력 이름이 `date +%s` 라 같은 초에 두 번 소
 - 파일: `tests/e2e/playwright.config.ts`(Chromium, vite preview 4173 고정, 직렬), `helpers.ts`(core render 기대값·jszip 풀기·셸 단계 skip 판정·격리 env), `export.spec.ts`, `tsconfig.json`. 루트 `test:e2e` 스크립트, typecheck 에 `tsc -p tests/e2e` 추가, devDependencies `@playwright/test`·`jszip`(리드 승인).
 - 시험: ① 기본값 1→6단계·칩·`order-portal-agentforge.zip` / ② e2e-demo·개발자 2·UI 끔·폴더 겹침 차단→이동→수정→다운로드 / ③ ZIP 목록·루트·권한 = core render(모든 OS) / ④ 풀기→setup.sh→더미 prd·tasks→check-forge.sh→`-x` (Linux/macOS 에서만, 그 외 skip).
 - 계약 변경: 없음.
+
+## PH6 1라운드: T-612 (RUN-04 bats), T-614 (보안 S-4 bats)
+
+계약 기준 TDD다. 구현(dev-1)이 반영되기 전에는 새 사례가 실패하는 것이 정상이다. 문구는 dev-1 이 정하므로 동작(exit code·파일·pane·tmux 옵션) 위주로 단언한다.
+
+### P6-1. 파일
+| 파일 | 책임 |
+|---|---|
+| `tests/scripts/run-agents.bats` (신규) | design.md 8.2: g3 입력에 `tmux` 를 jq 로 주입 → ZIP → setup → develop → create-worktrees → run-agents(가짜 claude) |
+| `tests/scripts/parallel-mock.bats` (수정) | 8.6 S-4: 기존 통합 사례 준비에 검토 파일 커밋 추가(`add_reviews`), 검토 파일 누락·미커밋 사례 추가 |
+
+### P6-2. 테스트 목록
+| 계약 | 사례 |
+|---|---|
+| 8.2 pair(기본) | tmux 미지정: config 에 `tmuxLayout: pair` 만, 창 watch·dev1·dev2, 창당 2 pane, panes 파일 유효 |
+| 8.2 grid | 창 watch·agents, agents 4 pane, panes 파일이 모두 agents 창의 pane, design-1.done → review-1 전달 |
+| 8.2 role | 창 watch·dev·review, dev·review 각 2 pane, dev-i 는 dev 창·review-i 는 review 창, 신호 전달 |
+| 8.2 prefix·mouse | 세션 범위(`show-options -t`)에 prefix C-a·mouse on, 전역(`-g`)은 C-b·off 유지 |
+| 8.2 기본값 | tmux 지정이나 C-b·mouse false·logs false: 세션 옵션 없음, logs 폴더·gitignore 항목 없음 |
+| 8.2 logs | logs=true: `.agentforge/logs/<에이전트>.log` 4개 생성, `.gitignore` 에 `.agentforge/logs/` |
+| 8.6 S-4 누락 | dev-2 검토 파일 없음: integrate exit 1, develop 불변, integrator 미실행 |
+| 8.6 S-4 미커밋 | 작업 트리에만 있고 커밋 안 됨: 위와 동일 |
+| 8.6 S-4 요청 문구 | review-1 코드 검토 요청에 `docs/review/dev-1.md` 가 포함 |
+
+### P6-3. 계약 변경
+없음. `templates/` 수정 없음.
