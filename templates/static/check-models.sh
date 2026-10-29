@@ -34,10 +34,12 @@ check_one() {
   echo "✓ $a 통과 ($model)"
 }
 
-if [ "$#" -gt 0 ]; then agents=("$@"); else mapfile -t agents < <(jq -r '.agents | keys[]' "$cfg"); fi
+# bash 3.2(macOS 기본) 호환: bash 4 전용 배열 읽기 내장 명령을 쓰지 않는다
+agents=()
+if [ "$#" -gt 0 ]; then agents=("$@"); else while IFS= read -r a; do agents+=("$a"); done < <(jq -r ".agents | keys[]" "$cfg"); fi
 
 pass=0; warn=0; fail=0
-for a in "${agents[@]}"; do
+for a in ${agents[@]+"${agents[@]}"}; do
   ( check_one "$a" ); rc=$?
   case "$rc" in 0) pass=$((pass + 1)) ;; 2) warn=$((warn + 1)) ;; *) fail=$((fail + 1)) ;; esac
 done
