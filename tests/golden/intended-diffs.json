@@ -1,5 +1,5 @@
 {
-  "$comment": "PoC 와 제품의 의도적 차이(ADR-0003·0004·0005·0006). 추가·삭제는 리드 승인. templates: { template(templates/ 상대 경로), defect, adr, reason } — check:poc-static 제외. diffs: { config, path, defect, reason } — golden 내용 비교 제외(대신 전용 시험으로 새 동작을 검증).",
+  "$comment": "PoC 와 제품의 의도적 차이(ADR-0003·0004·0005·0006). 추가·삭제는 리드 승인. templates: { template(templates/ 상대 경로), defect, adr, reason } — check:poc-static 제외. diffs: { config, path, defect, reason } — golden 내용 비교 제외(대신 전용 시험으로 새 동작을 검증). added: { config, path, defect, reason } — PoC 에 없는 새 생성 파일(목록 비교 제외, 존재만 확인).",
   "templates": [
     {
       "template": "static/setup.sh",
@@ -98,6 +98,20 @@
       "path": "README.md",
       "defect": "S-3",
       "reason": "기본 권한 모드로 시작하는 이유 한 줄 (ADR-0006, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": ".vscode/tasks.json",
+      "defect": "PRV-03",
+      "reason": "VS Code 7번째 작업 \"AF: 모델 점검\" (ADR-0006, 전 구성 공통)"
+    }
+  ],
+  "added": [
+    {
+      "config": "*",
+      "path": "scripts/check-models.sh",
+      "defect": "PRV-03",
+      "reason": "모델 점검 스크립트 (ADR-0006, 전 구성 공통)"
     }
   ]
 }
