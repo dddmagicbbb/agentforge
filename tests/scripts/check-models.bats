@@ -157,13 +157,56 @@ check() { run bash scripts/check-models.sh "$@"; }
   grep -qx "dev-1 stdin-rc=1" "$FAKE_ARGS_LOG"
 }
 
-@test "8.3 키 값과 응답 원문은 어떤 판정에서도 출력하지 않는다" {
-  # 각 응답 본문에 키 값과 식별 가능한 원문을 심어 두고 출력에 없는지 확인
-  reply dev-1 "RAWBODY $SECRET" 3
-  reply review-1 "RAWBODY $SECRET $PROJECT" 3 true
-  printf 'RAWBODY %s not json\n' "$SECRET" > "$FAKE_DIR/dev-2.out"
-  check dev-1 review-1 dev-2
-  [ "$status" -eq 1 ]
-  [[ "$output" != *"$SECRET"* ]]
-  [[ "$output" != *"RAWBODY"* ]]
+# 비밀 미출력: litellm 경유 에이전트(dev-1·planner·review-2)는 ANTHROPIC_AUTH_TOKEN 에 키를 받는다.
+# 판정 경로마다 한 번씩 실행해 출력에 키 값·응답 원문이 없고 기대한 판정 기호가 나오는지 본다.
+no_leak() {  # no_leak <기대 기호> <종료 코드> <에이전트>
+  [ "$status" -eq "$2" ] || { echo "종료 코드 $status ($2 기대)"; echo "$output"; return 1; }
+  [[ "$output" == *"$1 $3"* ]] || { echo "판정 줄 없음: $1 $3"; echo "$output"; return 1; }
+  [[ "$output" != *"$SECRET"* ]] || { echo "키 값이 출력됨"; echo "$output"; return 1; }
+  [[ "$output" != *"RAWBODY"* ]] || { echo "응답 원문이 출력됨"; echo "$output"; return 1; }
+}
+
+@test "8.3 비밀: 통과 줄에 키·응답 원문이 없다(litellm 에이전트, num_turns 3)" {
+  reply dev-1 "RAWBODY $SECRET $PROJECT" 3
+  check dev-1
+  no_leak "✓" 0 dev-1
+}
+
+@test "8.3 비밀: 경고(값 없음) 줄에 키·응답 원문이 없다" {
+  reply planner "RAWBODY $SECRET" 3
+  check planner
+  no_leak "!" 0 planner
+}
+
+@test "8.3 비밀: 경고(num_turns=1) 줄에 키·응답 원문이 없다" {
+  reply review-2 "RAWBODY $SECRET $PROJECT" 1
+  check review-2
+  no_leak "!" 0 review-2
+}
+
+@test "8.3 비밀: 실패(is_error) 줄에 키·응답 원문이 없다" {
+  reply dev-1 "RAWBODY $SECRET $PROJECT" 3 true
+  check dev-1
+  no_leak "✗" 1 dev-1
+}
+
+@test "8.3 비밀: 실패(JSON 깨짐) 줄에 키·응답 원문이 없다" {
+  printf 'RAWBODY %s not json {\n' "$SECRET" > "$FAKE_DIR/planner.out"
+  check planner
+  no_leak "✗" 1 planner
+}
+
+@test "8.3 비밀: 실패(claude 비정상 종료) 줄에 키·응답 원문이 없다" {
+  printf 'RAWBODY %s\n' "$SECRET" > "$FAKE_DIR/review-2.out"
+  echo 3 > "$FAKE_DIR/review-2.rc"
+  check review-2
+  no_leak "✗" 1 review-2
+}
+
+@test "8.3 경계값: num_turns=2 는 통과(>=2), 1 은 경고" {
+  reply dev-1 "$PROJECT" 2
+  check dev-1
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"✓ dev-1"* ]]
+  [[ "$output" == *"통과 1 · 경고 0 · 실패 0"* ]]
 }
