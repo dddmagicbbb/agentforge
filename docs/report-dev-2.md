@@ -101,3 +101,8 @@ blob 개별 요청 제거(tree content), 2차 rate limit 분류(retry-after·메
 |---|---|---|---|---|
 | T-713 | 완료 | `tests/e2e/market.spec.ts`, `tests/e2e/github.spec.ts`, `tests/e2e/helpers.ts`(freePort·repoRoot·makeGitRepo), 상세 설계 3라운드 절 | E2E 14건 중 13 통과·1 skip(기존 ④ 셸 단계, Windows). 신규 5건(마켓 2·GitHub 3) 통과, 전체 약 15초. build·typecheck·lint 통과 | 실제 GitHub 실기는 사람 확인 필요(G 조건). GitHub 시험은 브라우저 가로채기라 exporter 의 Node 경로는 단위 시험이 담당 |
 - 서버·exporter 코드 변경 없음. 마켓 시험은 서버를 spawn(임시 dataDir, 임시 git 저장소, 종료 시 삭제).
+
+## PH7 실기 후속
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+|---|---|---|---|---|
+| PH7 실기 후속 | 완료. 1) 콘솔 출력 0: `@octokit/request` 는 `request.log \|\| console` 로 deprecation 경고를 내므로(`dist-bundle/index.js` 41·99행) `request: { log }` 에도 noop 로거 주입. 2) 모든 요청에 `X-GitHub-Api-Version: 2022-11-28`(core 는 생성자 `headers` 옵션을 읽지 않아 `hook.before("request")` 로 주입) | `packages/exporter/src/github.ts`, `test/github.test.ts` | exporter 52 통과(신규 2), typecheck·lint 통과 | `POST /user/repos` 는 공식 대체 경로 확인 못 해 변경 안 함. 버전 헤더 고정 + 2028-03-10 이전 재확인 필요 |

@@ -339,3 +339,23 @@ describe("EXP-02 보강", () => {
     expect("toZip" in idx).toBe(true);
   });
 });
+
+describe("pushToGithub 실기 후속", () => {
+  it("deprecation·sunset 헤더가 와도 console 출력이 0이다", async () => {
+    const spies = (["warn", "error", "log", "info", "debug"] as const).map((k) => vi.spyOn(console, k).mockImplementation(() => {}));
+    const dep = { deprecation: "true", sunset: "Fri, 10 Mar 2028 00:00:00 GMT", link: '<https://docs.github.com/x>; rel="deprecation"' };
+    const base = createRoutes();
+    const routes: Routes = { ...base, "POST /user/repos": { status: 201, headers: dep, body: { name: "proj", default_branch: "main", html_url: "https://github.com/alice/proj" } } };
+    const { f } = fake(routes);
+    await pushToGithub(FILES, T, TOKEN, { fetch: f, language: "ko" });
+    for (const s of spies) expect(s).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
+  });
+
+  it("모든 요청에 X-GitHub-Api-Version: 2022-11-28 헤더가 있다", async () => {
+    const { f, calls } = fake(createRoutes());
+    await pushToGithub(FILES, T, TOKEN, { fetch: f, language: "ko" });
+    expect(calls.length).toBeGreaterThan(3);
+    for (const c of calls) expect(c.headers["x-github-api-version"]).toBe("2022-11-28");
+  });
+});

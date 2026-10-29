@@ -51,6 +51,10 @@ function mapError(e: unknown, networkFailed: boolean, onUnprocessable?: string):
  * GitHub·GHES 로 내보낸다(EXP-02). 토큰은 Authorization 헤더로만 쓰고 저장·기록하지 않는다.
  * create: 부모 없는 커밋 1건으로 기본 브랜치를 교체, pr: 새 브랜치 + PR.
  */
+// GitHub REST API 버전 고정(2022-11-28). request 의 deprecation 경고는 request.log 로 나오므로 같이 막는다
+const API_VERSION = "2022-11-28";
+const quietLog = { debug: noop, info: noop, warn: noop, error: noop };
+
 export async function pushToGithub(files: readonly RenderedFile[], target: GithubTargetT, token: string, opts: PushOptions): Promise<PushResult> {
   const items = planGithubTree(files); // 요청 전에 검사한다(core 규칙: mode 기준, env.local 차단)
   let networkFailed = false;
@@ -64,7 +68,11 @@ export async function pushToGithub(files: readonly RenderedFile[], target: Githu
       throw e;
     }
   }) as typeof fetch;
-  const kit = new Octokit({ auth: token, baseUrl: target.baseUrl ?? "https://api.github.com", request: { fetch: wrapped }, log: { debug: noop, info: noop, warn: noop, error: noop } });
+  const kit = new Octokit({ auth: token, baseUrl: target.baseUrl ?? "https://api.github.com", request: { fetch: wrapped, log: quietLog }, log: quietLog });
+  // core 는 생성자 headers 옵션을 읽지 않으므로 hook 으로 모든 요청에 버전 헤더를 넣는다
+  kit.hook.before("request", (o) => {
+    o.headers["x-github-api-version"] = API_VERSION;
+  });
   const { owner, repo } = target;
   const message = MESSAGES[opts.language];
   const sleep = opts.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
