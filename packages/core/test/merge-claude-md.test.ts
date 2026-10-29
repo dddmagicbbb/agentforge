@@ -117,3 +117,51 @@ describe("mergeClaudeMd 속성", () => {
     );
   });
 });
+
+describe("mergeClaudeMd 구간 겹침(review-1 반려)", () => {
+  const b = (id: Id) => `<!-- AGENTFORGE:${id}:BEGIN -->`;
+  const e = (id: Id) => `<!-- AGENTFORGE:${id}:END -->`;
+  const code = (fn: () => unknown) => {
+    try {
+      fn();
+    } catch (err) {
+      return err instanceof AppError ? { code: err.code, params: err.params } : String(err);
+    }
+    return "no-throw";
+  };
+
+  it("엇갈린 구간(A:BEGIN D:BEGIN A:END D:END)은 뒤 구간 ID 로 오류", () => {
+    const bad = `${b("AGENTS")}x${b("DEVS")}y${e("AGENTS")}z${e("DEVS")}`;
+    expect(code(() => mergeClaudeMd(bad, ""))).toEqual({ code: "CLAUDE_MD_MARKERS", params: { id: "DEVS" } });
+    expect(code(() => mergeClaudeMd("", bad))).toEqual({ code: "CLAUDE_MD_MARKERS", params: { id: "DEVS" } });
+  });
+
+  it("포함된 구간(PROJECT ⊂ AGENTS)은 PROJECT 내용을 잃지 않고 오류", () => {
+    const bad = `${b("AGENTS")}${b("PROJECT")}소중${e("PROJECT")}${e("AGENTS")}`;
+    expect(code(() => mergeClaudeMd(bad, doc(["", "", "", "", ""], N)))).toEqual({ code: "CLAUDE_MD_MARKERS", params: { id: "PROJECT" } });
+  });
+
+  it("속성: 정상 병합 결과의 구간은 서로 겹치지 않는다", () => {
+    fc.assert(
+      fc.property(outers, bodies, bodies, (o, ob, nb) => {
+        const out = mergeClaudeMd(doc(o, ob), doc(o, nb));
+        const spans = IDS.map((id) => [out.indexOf(b(id)), out.indexOf(e(id)) + e(id).length] as const).sort((x, y) => x[0] - y[0]);
+        for (let i = 1; i < spans.length; i++) expect(spans[i - 1]![1]).toBeLessThanOrEqual(spans[i]![0]);
+      }),
+    );
+  });
+
+  it("속성: 마커 없는 old 이면 결과는 old(끝 줄바꿈 제외)로 시작한다", () => {
+    fc.assert(
+      fc.property(text, bodies, (plain, nb) => {
+        const out = mergeClaudeMd(plain, doc(["", "\n", "\n", "\n", "\n"], nb));
+        expect(out.startsWith(plain.replace(/(\r?\n)+$/, ""))).toBe(true);
+      }),
+    );
+  });
+
+  it("CRLF 끝 줄바꿈도 1개로 정리해 붙인다", () => {
+    const out = mergeClaudeMd("메모\r\n\r\n", doc(["", "\n", "\n", "\n", "\n"], N));
+    expect(out.startsWith("메모\n\n<!-- AGENTFORGE:PROJECT:BEGIN -->")).toBe(true);
+  });
+});

@@ -68,3 +68,17 @@ describe("RUN-04 run-agents.sh", () => {
     expect(s).toContain('key="$prefix"');
   });
 });
+
+describe("RUN-04 review-1 반려 대응", () => {
+  const s = TEMPLATES["static/run-agents.sh"] ?? "";
+  it("pipe-pane 은 bash 전용 printf %q 대신 POSIX 인용(sq)을 쓴다", () => {
+    const line = s.split("\n").find((l) => l.includes("pipe-pane")) ?? "";
+    expect(line).toContain("sq ");
+    expect(line).not.toContain("%q");
+  });
+  it("grid·role 은 창의 마지막 pane 을 나눈다", () => {
+    expect(s).toContain("list-panes");
+    expect(s).toContain("tail -n1");
+    expect(s).toMatch(/split-window[^\n]*-t "\$last"/);
+  });
+});

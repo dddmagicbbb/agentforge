@@ -19,6 +19,12 @@ if tmux has-session -t "$name" 2>/dev/null; then
   echo "tmux 세션 '$name' 이 이미 있습니다. 붙기: tmux attach -t $name" >&2; exit 1
 fi
 
+# POSIX 작은따옴표 인용: tmux 가 /bin/sh 로 실행하는 명령에 쓴다(printf %q 는 bash 전용)
+sq() { printf "'%s'" "${1//'/'\x27'}"; }
+
+# POSIX 작은따옴표 인용: tmux 가 /bin/sh 로 실행하는 명령에 쓴다(printf %q 는 bash 전용)
+sq() { local s="$1" q="'"; printf "'%s'" "${s//$q/$q\\$q$q}"; }
+
 # 한 pane 에서 실행할 명령을 만든다: 제공자 설정 → 범위 변수 → claude --agent
 launch() {  # launch <에이전트> <작업폴더> [첫 프롬프트]
   local a="$1" dir="$2" prompt="${3:-}" cmd
@@ -36,7 +42,7 @@ setup_pane() {  # setup_pane <pane id> <에이전트> <worktree>
   local pane="$1" a="$2" wt="$3" prompt=""
   echo "$pane" > "$panes/$a"
   if [ "$logs" = true ]; then
-    tmux pipe-pane -o -t "$pane" "cat >> $(printf '%q' "$logdir/$a.log")"
+    tmux pipe-pane -o -t "$pane" "cat >> $(sq "$logdir/$a.log")"
   fi
   case "$a" in dev-*) prompt="docs/tasks.md 의 $a 작업을 시작하세요. 먼저 상세 설계만 작성하고 design-${a#dev-}.done 신호를 만든 뒤 멈추세요." ;; esac
   tmux send-keys -t "$pane" "$(launch "$a" "$wt" "$prompt")" Enter
@@ -44,10 +50,11 @@ setup_pane() {  # setup_pane <pane id> <에이전트> <worktree>
 
 # grid·role: 창이 없으면 만들고, 있으면 pane 을 나눈 뒤 tiled 로 정렬한다
 tiled_pane() {  # tiled_pane <창 이름> <에이전트> <worktree>
-  local win="$1" a="$2" wt="$3" id wins
+  local win="$1" a="$2" wt="$3" id wins last
   wins="$(tmux list-windows -t "$name" -F '#{window_name}')"
   if grep -qx "$win" <<<"$wins"; then
-    id="$(tmux split-window -d -P -F '#{pane_id}' -t "$name:$win" -c "$wt")"
+    last="$(tmux list-panes -t "$name:$win" -F '#{pane_id}' | tail -n1)"  # 마지막 pane 을 나눠 생성 순서를 유지
+    id="$(tmux split-window -d -P -F '#{pane_id}' -t "$last" -c "$wt")"
     tmux select-layout -t "$name:$win" tiled
   else
     id="$(tmux new-window -d -P -F '#{pane_id}' -t "$name" -n "$win" -c "$wt")"

@@ -42,8 +42,8 @@ function locate(md: string, id: SectionId): Span | undefined {
 /** CLAUDE.md 재생성 병합: old 가 뼈대, AGENTS·DEVS·SKILLS 안쪽만 next 로 교체, PROJECT 는 old 보존. */
 export function mergeClaudeMdImpl(oldMd: string, nextMd: string): string {
   // 짝 오류는 양쪽 모두 먼저 검사한다
-  const oldSpans = new Map(IDS.map((id) => [id, locate(oldMd, id)] as const));
-  const nextSpans = new Map(IDS.map((id) => [id, locate(nextMd, id)] as const));
+  const oldSpans = locateAll(oldMd);
+  const nextSpans = locateAll(nextMd);
 
   // 1) old 에 있는 교체 대상 구간의 안쪽을 뒤에서부터 바꾼다(앞쪽 위치가 밀리지 않게)
   let out = oldMd;
@@ -60,6 +60,19 @@ export function mergeClaudeMdImpl(oldMd: string, nextMd: string): string {
     return n && !oldSpans.get(id) ? [nextMd.slice(n.start, n.stop)] : [];
   });
   if (missing.length === 0) return out;
-  const base = out.replace(/\n+$/, "");
+  const base = out.replace(/(\r?\n)+$/, "");
   return `${base === "" ? "" : `${base}\n\n`}${missing.join("\n\n")}\n`;
+}
+
+/** 모든 구간을 찾고, 서로 다른 ID 구간이 엇갈리거나 포함되면(겹침) 뒤 구간 ID 로 오류를 던진다. */
+function locateAll(md: string): Map<SectionId, Span | undefined> {
+  const spans = new Map(IDS.map((id) => [id, locate(md, id)] as const));
+  const found = IDS.flatMap((id) => {
+    const s = spans.get(id);
+    return s ? [{ id, s }] : [];
+  }).sort((a, b) => a.s.start - b.s.start);
+  for (let i = 1; i < found.length; i++) {
+    if (found[i - 1]!.s.stop > found[i]!.s.start) throw new AppError("CLAUDE_MD_MARKERS", { id: found[i]!.id });
+  }
+  return spans;
 }

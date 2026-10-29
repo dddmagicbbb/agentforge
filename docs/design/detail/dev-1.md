@@ -220,3 +220,10 @@ Issue.params 는 임의 키 허용이라 계약 변경 없음. bats 사례(제�
 
 ## 7. 계약·공통 모듈 변경
 없음. `tests/golden/intended-diffs.json` 갱신은 리드에게 요청(보고서).
+
+### PH6 보강(review-1 반려 대응)
+- 구간 겹침: old·next 모두 구간을 start 로 정렬해 앞 구간 stop > 뒤 구간 start 이면(엇갈림·포함) `CLAUDE_MD_MARKERS {id: 뒤 구간 ID}`.
+- 마커 개수는 코드블록 안의 마커도 센다(마크다운 문맥을 해석하지 않음). CLAUDE.md 본문에 마커 문자열을 예시로 쓰면 오류가 날 수 있다.
+- 끝 줄바꿈 정리는 `/(\r?\n)+$/`(CRLF 포함).
+- run-agents.sh: pipe-pane 명령은 tmux 가 /bin/sh 로 실행하므로 `printf %q` 대신 POSIX 작은따옴표 인용(`sq`). grid·role 은 창의 마지막 pane 을 나눠 dev-1, review-1, dev-2… 순서를 유지.
+- T-606: 8.6 S-3·S-4 (settings defaultMode, README 한 줄, integrate.sh 사전 검토 파일 확인, 검토 요청 문구).
