@@ -12,6 +12,8 @@ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "obj
 
 export async function collectGithub(src: SourceRecord, deps: GithubDeps): Promise<Collected> {
   const base = (src.baseUrl ?? "https://api.github.com").replace(/\/+$/, "");
+  // 토큰을 보내는 소스는 https 만(등록 시 검증하지만 손으로 고친 sources.json 에 대비해 다시 확인)
+  if (src.tokenEnv && !base.startsWith("https://")) throw new ServerError("SOURCE_INVALID", 400, { field: "baseUrl" });
   const token = src.tokenEnv ? deps.env[src.tokenEnv] : undefined;
   const headers: Record<string, string> = { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
   if (token) headers["Authorization"] = `Bearer ${token}`;

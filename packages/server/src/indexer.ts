@@ -29,7 +29,7 @@ async function mapLimit<T, R>(items: readonly T[], limit: number, fn: (x: T) => 
 
 /** SKILL.md frontmatter 의 description(한 줄 또는 > | 블록)을 읽는다 */
 export function parseDescription(md: string): string {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(md);
+  const m = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---/.exec(md);
   if (!m) return "";
   const lines = m[1]!.split(/\r?\n/);
   const i = lines.findIndex((l) => /^description\s*:/.test(l));
@@ -80,7 +80,10 @@ export async function buildSkills({ collected, basePath, srcPrefix, scan }: Buil
   // 깊이 1~2 에서 SKILL.md 를 가진 폴더 = 스킬. 폴더명이 SkillName 이 아니면 건너뜀, 같은 id 는 먼저 나온 것만
   const dirs: string[] = [];
   const seen = new Set<string>();
-  for (const p of paths) {
+  // path 가 스킬 폴더 자체인 경우: 루트 SKILL.md 가 있으면 그 폴더 전체가 하나의 스킬(id = path 의 마지막 폴더명)
+  const rootId = basePath?.split("/").pop();
+  const rootSkill = rel.has("SKILL.md") && rootId !== undefined && SkillName.safeParse(rootId).success;
+  for (const p of rootSkill ? [] : paths) {
     const segs = p.split("/");
     if (segs[segs.length - 1] !== "SKILL.md" || segs.length < 2 || segs.length > 3) continue;
     const dir = segs.slice(0, -1).join("/");
@@ -90,11 +93,12 @@ export async function buildSkills({ collected, basePath, srcPrefix, scan }: Buil
     dirs.push(dir);
   }
 
+  if (rootSkill) dirs.push("");
   const skills: IndexedSkill[] = [];
   for (const dir of dirs) {
-    const id = dir.split("/").pop()!;
-    const own = paths.filter((p) => p.startsWith(`${dir}/`)).map((p) => ({ full: p, path: p.slice(dir.length + 1), entry: rel.get(p)! }));
-    const base = { id, description: "", src: `${srcPrefix}/${prefix}${dir}`.slice(0, 200), ref: collected.sha, flags: [] as string[], fileCount: own.length, files: [] as SkillFile[] };
+    const id = dir === "" ? rootId! : dir.split("/").pop()!;
+    const own = paths.filter((p) => dir === "" || p.startsWith(`${dir}/`)).map((p) => ({ full: p, path: dir === "" ? p : p.slice(dir.length + 1), entry: rel.get(p)! }));
+    const base = { id, description: "", src: `${srcPrefix}/${prefix}${dir}`.replace(/\/$/, "").slice(0, 200), ref: collected.sha, flags: [] as string[], fileCount: own.length, files: [] as SkillFile[] };
 
     if (own.some((f) => !SkillFilePath.safeParse(f.path).success)) {
       skills.push({ ...base, blocked: "badPath" });

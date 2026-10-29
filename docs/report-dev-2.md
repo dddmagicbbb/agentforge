@@ -80,3 +80,10 @@ GPL 계열 신규 의존성 없음(전이 의존성도 확인: 기존 jszip 의 
 - **scan**: 주입 유지. `fakeScan` 은 `packages/server/test/helpers.ts` 에만 있고 `src/` 에는 없다. 통합 때 리드가 core `scanSkillRisk` 를 기본값으로 연결.
 - **9.6 외 추가 코드**: `NOT_FOUND`(404), `INTERNAL`(500), `ADMIN_DISABLED`(403). `blocked` 값 `badPath`(스킬 파일 경로가 SkillFilePath 패턴 위반).
 - 시험: 관리 꺼짐(3개 API 403, 깨진 본문도 403, 읽기 정상, health.admin=false), 미설정도 꺼짐 추가. server 34건 통과, typecheck·lint 통과.
+
+## PH7 1라운드 보안 보강 2차 (review-2 권고, design.md 9.7)
+- 반영: tokenEnv 접두(`AF_MARKET_TOKEN_`)·토큰 소스 https 만(등록·갱신 시), repo/path 의 `.`·`..` 금지, 관리 POST Content-Type JSON 만(415), Host 허용 목록(`AF_MARKET_HOSTS`, 403 `HOST_DENIED`), git `ls-tree` 로 symlink·서브모듈 제외(OS 무관), `listenServer`·`startFromEnv`·`src/main.ts`, BOM description, path 가 스킬 폴더 자체인 경우, 파일 20,000개 상한, 시험 임시 폴더 정리(setup.ts).
+- 추가 코드: `ADMIN_DISABLED`, `HOST_DENIED`, `NOT_FOUND`, `INTERNAL`, `blocked` 의 `badPath` (design/detail/dev-2.md 에 기록).
+- 시험: server 62건 통과(연속 2회, 병렬 시험 간 임시 폴더 간섭은 `workDir` 옵션으로 제거). typecheck·lint 통과, 임시 폴더 누적 없음.
+- 한계: `--` 구분자·GIT_ALLOW_PROTOCOL 은 실제 공격 재현이 어려워 `cloneArgs`·`gitEnv` 단위 시험으로 고정했다. clone 크기 상한은 없고(파일 수 상한만), 시간 제한 60초에 의존한다.
+- 리드: `src/main.ts` 는 core 에 `scanSkillRisk` 가 병합돼야 기동된다(없으면 오류로 종료). 기본 소스·`createServer` 의 `scan` 필수 주입은 그대로.

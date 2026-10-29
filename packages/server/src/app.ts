@@ -25,11 +25,14 @@ export interface ServerOptions {
   /**
    * 서버 환경 변수(tokenEnv 조회, AF_ALLOW_FILE_SOURCES, AF_MARKET_ADMIN). 기본 process.env.
    * AF_MARKET_ADMIN=1 이 아니면 관리 API(소스 등록·삭제, 갱신)는 403 ADMIN_DISABLED (SSRF 대책).
-   * listen 은 호출자 책임이며, 기본 host 는 127.0.0.1 로 둘 것(외부 노출 시 별도 접근 통제 필요).
+   * AF_MARKET_HOSTS: 허용 Host 이름 추가(쉼표 목록). 기본은 localhost·127.0.0.1·[::1] 만(DNS rebinding 방지, 아니면 403 HOST_DENIED).
+   * listen 은 listenServer(기본 host 127.0.0.1)를 쓴다(외부 노출 시 별도 접근 통제 필요).
    */
   env?: Record<string, string | undefined>;
   /** 기본 소스 파일(기본: 저장소 catalog/market-sources.json) */
   defaultSourcesFile?: string;
+  /** git clone 임시 폴더 위치(기본 OS 임시 폴더) */
+  workDir?: string;
   /** git clone 시간 제한(기본 60초) */
   gitTimeoutMs?: number;
   /** github REST 요청 1건당 시간 제한(기본 30초) */
@@ -64,6 +67,14 @@ export async function createServer(opts: ServerOptions): Promise<FastifyInstance
   });
 
   // 오류는 {code, params} 만 응답한다(내부 메시지·스택 금지)
+  // Host 허용 목록: 모든 요청의 첫 관문(정적 파일 포함)
+  const allowedHosts = new Set(["localhost", "127.0.0.1", "[::1]", ...(env["AF_MARKET_HOSTS"] ?? "").split(",").map((h) => h.trim().toLowerCase()).filter(Boolean)]);
+  app.addHook("onRequest", async (req) => {
+    const raw = (req.headers.host ?? "").toLowerCase();
+    const name = raw.startsWith("[") ? raw.slice(0, raw.indexOf("]") + 1) : raw.split(":")[0];
+    if (!name || !allowedHosts.has(name)) throw new ServerError("HOST_DENIED", 403);
+  });
+
   app.setErrorHandler((err, _req, reply) => {
     if (err instanceof ServerError) return reply.status(err.status).send({ code: err.code, params: err.params });
     const status = (err as { statusCode?: number }).statusCode;
@@ -78,7 +89,10 @@ export async function createServer(opts: ServerOptions): Promise<FastifyInstance
   const admin = env["AF_MARKET_ADMIN"] === "1";
   // 관리 API 보호: 라우트 config.admin 이 true 인 요청은 본문 파싱 전에 차단한다
   app.addHook("onRequest", async (req) => {
-    if ((req.routeOptions.config as { admin?: boolean } | undefined)?.admin && !admin) throw new ServerError("ADMIN_DISABLED", 403);
+    if (!(req.routeOptions.config as { admin?: boolean } | undefined)?.admin) return;
+    if (!admin) throw new ServerError("ADMIN_DISABLED", 403);
+    // CSRF 방지: 본문 있는 관리 요청은 application/json 만(text/plain 단순 요청·본문 없는 POST 차단)
+    if (req.method === "POST" && !/^application\/json\s*(;|$)/i.test(req.headers["content-type"] ?? "")) throw new ServerError("SOURCE_INVALID", 415, { field: "content-type" });
   });
 
   // ---- 색인 갱신 -------------------------------------------------------------------
@@ -87,7 +101,7 @@ export async function createServer(opts: ServerOptions): Promise<FastifyInstance
       return { collected: await collectGithub(src, { fetch: doFetch, env, timeoutMs: opts.fetchTimeoutMs ?? 30_000 }) };
     }
     if (src.url?.startsWith("file://") && !allowFile) throw new ServerError("SOURCE_INVALID", 400, { field: "url" });
-    return collectGit(src, { gitBin: opts.gitBin ?? "git", env, timeoutMs: opts.gitTimeoutMs ?? 60_000 });
+    return collectGit(src, { gitBin: opts.gitBin ?? "git", env, timeoutMs: opts.gitTimeoutMs ?? 60_000, ...(opts.workDir ? { workDir: opts.workDir } : {}) });
   }
 
   type RefreshResult = { id: string; ok: true; sha: string; skillCount: number } | { id: string; ok: false; code: string; params: Record<string, string | number | boolean> };

@@ -1,7 +1,6 @@
 import { readdirSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
-import { gitAvailable, makeGitRepo, makeServer, SKILL_MD } from "./helpers.js";
+import { gitAvailable, makeGitRepo, makeServer, SKILL_MD, tmpDir } from "./helpers.js";
 
 const d = gitAvailable ? describe : describe.skip;
 type App = Awaited<ReturnType<typeof makeServer>>["app"];
@@ -42,8 +41,8 @@ d("MKT-01 git 소스(file://)", () => {
 
   it("색인: 깊이 2 인식, 깊이 3·잘못된 폴더명 건너뜀, tooLarge·binary 표시, 임시 폴더 삭제", async () => {
     const repo = makeGitRepo(repoFiles);
-    const before = readdirSync(tmpdir()).filter((n) => n.startsWith("af-market-")).length;
-    const { app } = await makeServer({ env: ALLOW });
+    const workDir = tmpDir("af-work-");
+    const { app } = await makeServer({ env: ALLOW, workDir });
     expect((await reg(app, repo.url)).statusCode).toBe(201);
     const r = (await refresh(app)).json();
     expect(r.results[0]).toMatchObject({ id: "loc", ok: true, skillCount: 4 });
@@ -53,7 +52,7 @@ d("MKT-01 git 소스(file://)", () => {
     expect(skills.find((s) => s.id === "a")).toMatchObject({ flags: ["SCRIPTS"], fileCount: 2 });
     expect(skills.find((s) => s.id === "huge")!.blocked).toBe("tooLarge");
     expect(skills.find((s) => s.id === "bin")!.blocked).toBe("binary");
-    expect(readdirSync(tmpdir()).filter((n) => n.startsWith("af-market-")).length).toBe(before);
+    expect(readdirSync(workDir)).toEqual([]);
   });
 
   it("차단 스킬 상세는 SKILL_BLOCKED, 정상은 파일 원문", async () => {

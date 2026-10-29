@@ -78,6 +78,8 @@ describe("MKT-01 API", () => {
       { id: "n5", ...base, path: "/abs" },
       { id: "n6", ...base, baseUrl: "https://u:p@h/x" },
       { id: "n7", ...base, tokenEnv: "lower-case" },
+      { id: "n7b", ...base, tokenEnv: "MY_TOKEN" },
+      { id: "n7c", ...base, tokenEnv: "PATH" },
       { id: "n8", ...base, trust: "root" },
       { id: "n9", kind: "svn", url: "x" },
     ]) {

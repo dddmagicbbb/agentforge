@@ -49,8 +49,8 @@ describe("MKT-01 github 소스", () => {
   it("tokenEnv: Authorization 에만 쓰고 응답·색인 파일에는 없다", async () => {
     const TOKEN = "ghp_SUPERSECRET123";
     const gh = fakeGithub({ "acme/skills": { sha: SHA, files } });
-    const { app, dataDir } = await makeServer({ fetch: gh.fetch, env: { MY_TOKEN: TOKEN } });
-    const reg = await register(app, { tokenEnv: "MY_TOKEN" });
+    const { app, dataDir } = await makeServer({ fetch: gh.fetch, env: { AF_MARKET_TOKEN_MY: TOKEN } });
+    const reg = await register(app, { tokenEnv: "AF_MARKET_TOKEN_MY" });
     const refresh = await app.inject({ method: "POST", url: "/api/market/refresh", payload: {} });
     const list = await app.inject({ url: "/api/market/sources" });
     const all = reg.body + refresh.body + list.body + (await app.inject({ url: "/api/market/search" })).body;
@@ -58,7 +58,7 @@ describe("MKT-01 github 소스", () => {
     expect(gh.calls.every((c) => c.auth === `Bearer ${TOKEN}`)).toBe(true);
     const dump = [join(dataDir, "sources.json"), ...readdirSync(join(dataDir, "index")).map((f) => join(dataDir, "index", f))].map((f) => readFileSync(f, "utf8")).join("\n");
     expect(dump).not.toContain(TOKEN);
-    expect(dump).toContain("MY_TOKEN");
+    expect(dump).toContain("AF_MARKET_TOKEN_MY");
   });
 
   it("토큰 값 필드를 보내면 거부(SOURCE_INVALID)", async () => {

@@ -1,6 +1,6 @@
 // 시험 보조: 가짜 GitHub fetch, 임시 git 저장소, 임시 dataDir
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -18,8 +18,15 @@ export const gitAvailable = (() => {
 /** 시험용 위험 검사: scripts/ 파일이 있으면 SCRIPTS (core scanSkillRisk 대역) */
 export const fakeScan: ServerOptions["scan"] = (files) => (files.some((f) => f.path.startsWith("scripts/")) ? ["SCRIPTS"] : []);
 
+// 시험이 만든 임시 폴더는 파일 단위로 afterAll(setup.ts)에서 삭제한다
+const created: string[] = [];
 export function tmpDir(prefix = "af-srv-"): string {
-  return mkdtempSync(join(tmpdir(), prefix));
+  const d = mkdtempSync(join(tmpdir(), prefix));
+  created.push(d);
+  return d;
+}
+export function cleanupTmp(): void {
+  for (const d of created.splice(0)) rmSync(d, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
 }
 
 export async function makeServer(extra: Partial<ServerOptions> = {}) {
@@ -33,7 +40,7 @@ export async function makeServer(extra: Partial<ServerOptions> = {}) {
 export type RepoFiles = Record<string, string | Buffer>;
 
 /** 로컬 git 저장소를 만들고 file:// 주소를 돌려준다 */
-export function makeGitRepo(files: RepoFiles): { url: string; dir: string } {
+export function makeGitRepo(files: RepoFiles, symlinks: Record<string, string> = {}): { url: string; dir: string } {
   const dir = tmpDir("af-repo-");
   const git = (...a: string[]) => execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "commit.gpgsign=false", ...a], { cwd: dir, stdio: "ignore" });
   git("init", "-q", "-b", "main");
@@ -42,6 +49,11 @@ export function makeGitRepo(files: RepoFiles): { url: string; dir: string } {
     writeFileSync(join(dir, p), c);
   }
   git("add", "-A");
+  // 심볼릭 링크(mode 120000)는 OS 와 무관하게 인덱스에 직접 넣는다
+  for (const [p, target] of Object.entries(symlinks)) {
+    const blob = execFileSync("git", ["hash-object", "-w", "--stdin"], { cwd: dir, input: target }).toString().trim();
+    git("update-index", "--add", "--cacheinfo", `120000,${blob},${p}`);
+  }
   git("commit", "-q", "-m", "init");
   return { url: pathToFileURL(dir).href, dir };
 }
