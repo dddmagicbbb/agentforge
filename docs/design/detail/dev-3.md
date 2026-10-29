@@ -135,3 +135,28 @@ W3: `NAME_INVALID` params 에 slug 값 추가(PoC 문구 복원). 구현하지 �
 - T-422: 소스 정규식 시험 삭제(렌더 비교 시험으로 충분).
 - T-425: StepConnection 은 `provider(id).via` 로 분기.
 - 시험: `round4-gen.test.tsx`(code 이동, W3 slug 유무).
+
+# PH6 1라운드 — T-621 (I18N-01 화면)
+
+## 1. 작업
+I18N-01 화면 부분: `locales/en.json`, 헤더 ko/en 전환, 키·변수 일치 CI 시험. 생성물 언어(1단계 `language`)는 화면 언어와 무관하게 유지한다.
+
+## 2. 파일
+| 경로 | 책임 |
+| --- | --- |
+| `src/locales/en.json` | ko.json 과 같은 키 전체의 영어 번역 |
+| `src/i18n.ts` | en 리소스 등록(fallbackLng ko, 시작 언어 ko, 저장 없음) |
+| `src/components/LangSwitch.tsx` | 헤더 전환 컨트롤(그룹 접근명 `lang.switch`, 버튼 2개, `aria-pressed`) |
+| `src/App.tsx` | 헤더에 LangSwitch 배치 |
+| `test/i18n-parity.test.tsx` | 키 집합·변수 집합·빈 값·전환 동작 시험 |
+
+## 3. 동작
+- 전환은 `i18n.changeLanguage` 만 호출한다. localStorage 등 저장 없음 -> 새로 열면 ko.
+- `html lang` 은 건드리지 않는다(YAGNI).
+- 영어 복수형은 `count` 문구를 "{{count}} file(s)" 가 아닌 중립 표현으로 쓴다(i18next 복수 키를 새로 만들면 ko 와 키 집합이 달라지므로 쓰지 않는다).
+
+## 4. 계약
+core/exporter 변경 없음.
+
+## 6. 테스트
+`test/i18n-parity.test.tsx`: 키 집합 동일(차이 키 이름 표시), 변수 집합 동일(키 이름 표시), 빈 값 없음, en 전환 시 단계 이름·다음/이전 영어, 다시 ko 복귀, 생성물 language 입력과 독립.
