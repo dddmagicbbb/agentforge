@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { lazy, Suspense } from "react";
-import { CORE_SKILLS, devReady, devSkill, type CoreSkill, type Issue, type ProjectInput } from "@agentforge/core";
+import { CORE_SKILLS, scanSkillRisk, devReady, devSkill, type CoreSkill, type Issue, type ProjectInput } from "@agentforge/core";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { riskText } from "../market/risk";
 import { IssueList } from "../components/IssueList";
@@ -79,14 +79,14 @@ export function StepSkills({ draft, patch, issues = [], marketFetch }: Props) {
         {imported.length > 0 ? <h4>{t("market.importedTitle")}</h4> : null}
         <ul className="mimp">
           {imported.map((m, i) => {
-            // 서버 flags 를 믿지 않는다: core 가 IMPORT_UNACKED 로 판정한 항목도 확인 대상이다
-            // TODO(통합 후): 위험 목록도 core scanSkillRisk(files) 결과로 표시
+            // 서버 flags 를 믿지 않는다: files 가 있으면 core scanSkillRisk 결과로 위험 목록·확인 필요를 정한다
+            const codes: readonly string[] = m.files ? scanSkillRisk(m.files) : m.flags;
             const unacked = issues.some((x) => x.code === "IMPORT_UNACKED" && x.path[0] === "imported" && x.path[1] === i);
-            const needAck = m.flags.length > 0 || unacked;
+            const needAck = codes.length > 0 || unacked;
             return (
             <li key={m.id} data-testid={`imp-${m.id}`}>
               <code>{m.id}</code> <span className="chip">{t(`market.trust.${m.trust}`)}</span> <span className="sub">{m.src}</span>
-              {m.flags.length > 0 ? <ul>{m.flags.map((c) => <li key={c} className="sub">{riskText(t, c)}</li>)}</ul> : null}
+              {codes.length > 0 ? <ul>{codes.map((c) => <li key={c} className="sub">{riskText(t, c)}</li>)}</ul> : null}
               <div className="row">
                 <label>{t("market.target")}
                   <select value={m.target} onChange={(e) => setAt(m.id, { target: e.target.value as typeof m.target })}>

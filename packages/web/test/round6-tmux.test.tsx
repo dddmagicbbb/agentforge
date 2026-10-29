@@ -109,13 +109,13 @@ describe("VSC-02·PRV-03 T-623", () => {
   });
 
   it("6단계 검사 목록에도 표시되고 코드 원문(default)으로 떨어지지 않는다", () => {
-    mount(<StepGenerate existingMd="" onExistingMd={() => undefined} draft={defaultDraft()} issues={[info]} files={[]} exportable onStep={() => undefined} />);
+    mount(<StepGenerate existingMd="" onExistingMd={() => undefined} draft={defaultDraft()} issues={[info]} files={[]} exportable onStep={() => undefined} patch={() => undefined} />);
     expect(screen.getByTestId("check-list")).toHaveTextContent(/내려받/);
     expect(screen.getByTestId("check-list")).not.toHaveTextContent("DEVCONTAINER_CLOSED_NET");
   });
 
   it("6단계 '받은 뒤 할 일' 에 모델 점검(토큰 사용 안내)이 있다", () => {
-    mount(<StepGenerate existingMd="" onExistingMd={() => undefined} draft={defaultDraft()} issues={[]} files={[]} exportable onStep={() => undefined} />);
+    mount(<StepGenerate existingMd="" onExistingMd={() => undefined} draft={defaultDraft()} issues={[]} files={[]} exportable onStep={() => undefined} patch={() => undefined} />);
     const items = within(screen.getByTestId("next-steps")).getAllByRole("listitem").map((l) => l.textContent);
     const i = items.findIndex((x) => x?.includes("bash scripts/check-models.sh"));
     expect(i).toBeGreaterThan(-1);

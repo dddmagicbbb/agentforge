@@ -64,10 +64,6 @@
       "models": "bash scripts/check-models.sh checks each agent model (it calls the real models, so tokens are used)",
       "worktrees": "bash scripts/create-worktrees.sh && bash scripts/run-agents.sh",
       "integrate": "After everyone passes, run bash scripts/integrate.sh"
-    },
-    "github": {
-      "title": "Create a GitHub repository",
-      "note": "Creating GitHub or GHES repositories will be offered in phase P1. It is not available yet and no token is requested. Download the ZIP and upload it yourself."
     }
   },
   "issue": {
@@ -105,7 +101,11 @@
     "IMPORT_TOO_LARGE": "{{id}}: total skill size exceeds 512,000 characters.",
     "SKILL_FILE_PATH": "Invalid skill file path (relative, depth 5 or less, no . or ..).",
     "SKILL_REF": "The source commit must be 7-40 lowercase hex characters.",
-    "GIT_BRANCH": "Invalid branch name."
+    "GIT_BRANCH": "Invalid branch name.",
+    "GITHUB_OWNER": "Owner must be 1-39 letters, digits or hyphens.",
+    "GITHUB_REPO": "Repository name must be 1-100 letters, digits, . _ or -.",
+    "IMPORT_RISK": "{{id}}: risk items {{codes}}",
+    "HTTPS_URL": "The GHES address must start with https://."
   },
   "dev": {
     "title": "Agents per developer",
@@ -327,7 +327,8 @@
     "blockedReason": {
       "tooLarge": "too large",
       "binary": "contains non-text file",
-      "badPath": "invalid file path"
+      "badPath": "invalid file path",
+      "unknown": "unknown reason"
     },
     "preview": "Preview",
     "import": "Import",
@@ -366,5 +367,43 @@
     "BYPASS_PERMISSIONS": "Contains a setting that skips permission checks (bypassPermissions).",
     "REMOTE_DOWNLOAD": "Contains a command that downloads from outside and runs it (curl, wget, ...).",
     "UNKNOWN": "Unknown risk item"
+  },
+  "github": {
+    "toggle": "GitHub export",
+    "note": "Uploads the same files to a GitHub or GHES repository. The token is used for this one request only and is never stored.",
+    "owner": "Owner",
+    "repo": "Repository",
+    "visibility": "Visibility",
+    "vis": {
+      "private": "Private",
+      "public": "Public"
+    },
+    "mode": "Mode",
+    "modes": {
+      "create": "Create new repository",
+      "pr": "Pull request to existing repository"
+    },
+    "baseUrl": "GHES API URL (optional)",
+    "baseUrlHint": "An https address is required for GHES. Leave empty for github.com. Example: https://ghe.example.com/api/v3",
+    "branch": "Branch",
+    "token": "Token (not stored, used once)",
+    "tokenHint": "The field is cleared right after. It cannot be used if GHES blocks CORS in the browser.",
+    "push": "Push to GitHub",
+    "busy": "Pushing…",
+    "doneRepo": "Repository:",
+    "donePr": "PR:",
+    "error": {
+      "GITHUB_AUTH": "Authentication failed. Check the token and its permissions.",
+      "GITHUB_NOT_FOUND": "The repository or owner was not found.",
+      "GITHUB_REPO_EXISTS": "A repository with that name already exists or cannot be created.",
+      "GITHUB_BRANCH_EXISTS": "That branch already exists. Use another branch name.",
+      "GITHUB_RATE_LIMIT": "Rate limit exceeded. Try again later.",
+      "GITHUB_NETWORK": "Network error. Check the address and connection (including CORS).",
+      "GITHUB_FAILED": "Could not export to GitHub.",
+      "EXPORT_SECRET_PATH": "A secret file (env.local) is included, so it cannot be uploaded.",
+      "GITHUB_PARTIAL": "The repository (branch) was created but could not be finished — check it, then delete it or open the PR yourself."
+    },
+    "crashed": "Could not display the GitHub section.",
+    "loading": "Loading the GitHub section…"
   }
 }

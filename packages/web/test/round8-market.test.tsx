@@ -309,8 +309,11 @@ describe("T-721 반려 수정(review-3)", () => {
 
   it("연달아 두 스킬을 가져와도 둘 다 남고, 같은 스킬을 두 번 눌러도 한 번만 추가된다", async () => {
     const base = server();
+    // 수동으로 풀 수 있는 promise: 두 요청이 모두 진행 중인 상태를 시간에 의존하지 않고 만든다
+    let release!: () => void;
+    const gate = new Promise<void>((r) => { release = r; });
     const spy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      if (String(input).startsWith("/api/market/skills/")) await new Promise((r) => setTimeout(r, 30));
+      if (String(input).startsWith("/api/market/skills/")) await gate;
       return base.fn(input, init);
     });
     const f = spy as unknown as typeof fetch;
@@ -322,6 +325,7 @@ describe("T-721 반려 수정(review-3)", () => {
     expect(a).toBeDisabled();
     fireEvent.click(a);
     fireEvent.click(b);
+    release();
     await screen.findByTestId("imp-pdf-notes");
     await screen.findByTestId("imp-deploy-kit");
     expect(screen.getAllByTestId("imp-pdf-notes")).toHaveLength(1);
