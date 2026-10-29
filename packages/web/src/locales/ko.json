@@ -61,6 +61,7 @@
       "seqUi": "분석 → UI/UX 설계 → 시스템 설계 → 공통 개발 (README 순서)",
       "seq": "분석 → 시스템 설계 → 공통 개발 (README 순서)",
       "agents": "리드 세션에서 /forge-agents → bash scripts/check-forge.sh",
+      "models": "bash scripts/check-models.sh — 에이전트별 모델 점검(실제 모델을 호출하므로 토큰이 사용됩니다)",
       "worktrees": "bash scripts/create-worktrees.sh && bash scripts/run-agents.sh",
       "integrate": "전원 통과 후 bash scripts/integrate.sh"
     },
@@ -94,7 +95,9 @@
     "DEV_COUNT_OVER_TIER": "현재 등급은 개발자를 {{tierLimit}}명까지 쓸 수 있습니다.",
     "COMMAND": "명령은 한 줄로 입력합니다.",
     "SCHEMA_INVALID": "입력값을 확인하세요: {{path}}",
-    "default": "{{code}} — {{path}}"
+    "default": "{{code}} — {{path}}",
+    "DEVCONTAINER_CLOSED_NET": "Dev Container: 이미지와 패키지를 내려받으므로 사용자 환경에서 네트워크가 필요합니다(앱 자체는 외부를 호출하지 않습니다). 폐쇄망이면 사내 레지스트리 이미지로 바꾸세요.",
+    "TMUX_PREFIX": "tmux 접두키는 C-a ~ C-z 형식으로 적습니다(예: C-a)."
   },
   "dev": {
     "title": "개발자별 에이전트",
@@ -133,7 +136,21 @@
     "watch": "신호 감시 · 범위 검사 · 반려 {{max}}회 한도",
     "noModel": "모델 미입력",
     "paneModel": "{{provider}} · {{model}}",
-    "paneModel_claude": "Claude {{model}}"
+    "paneModel_claude": "Claude {{model}}",
+    "layoutLabel": "tmux 배치",
+    "prefixLabel": "tmux prefix",
+    "mouseLabel": "마우스 사용",
+    "logsLabel": "pane 로그 기록",
+    "reset": "tmux 기본값으로",
+    "layout": {
+      "pair": "pair — 개발자 쌍별 창",
+      "grid": "grid — 한 창에 바둑판",
+      "role": "role — dev 창 · review 창"
+    },
+    "prefixHint": "C-a ~ C-z 중 하나. 기본 C-b",
+    "logsHint": "켜면 .agentforge/logs/<에이전트>.log 에 출력이 쌓입니다(.gitignore 제외).",
+    "settings": "tmux 설정(선택)",
+    "unset": "설정하지 않으면 기본값(pair · C-b · 마우스 끔 · 로그 끔)이며 생성물에 tmux 항목이 추가되지 않습니다."
   },
   "nav": {
     "label": "단계",
@@ -252,5 +269,9 @@
         "desc": "tasks.md → 개발자별 에이전트·스킬·범위"
       }
     }
+  },
+  "devcontainer": {
+    "label": "Dev Container 생성",
+    "hint": "켜면 .devcontainer/devcontainer.json 을 만듭니다. 컨테이너 안에서도 env.local 은 직접 넣습니다."
   }
 }

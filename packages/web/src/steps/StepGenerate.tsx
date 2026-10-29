@@ -13,7 +13,7 @@ interface Props {
 }
 
 /** 받은 뒤 할 일 문구 키. 4번은 UI/UX 설계 사용 여부에 따라 달라진다(PoC p5). */
-const NEXT_KEYS = ["setup", "login", "planner", "seq", "agents", "worktrees", "integrate"] as const;
+const NEXT_KEYS = ["setup", "login", "planner", "seq", "agents", "models", "worktrees", "integrate"] as const;
 
 /** 6단계: 파일 수 칩, 검사 전체 목록, ZIP, 받은 뒤 할 일, GitHub(P1 안내) — EXP-01 */
 export function StepGenerate({ draft, issues, files, exportable, onStep }: Props) {
