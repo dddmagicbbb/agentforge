@@ -52,3 +52,18 @@
 - en 에서 정적 스크립트가 보내는 한국어 메시지("설계 승인" 등)는 영어 에이전트 본문이 의미로 가리킨다. 실제 en 프로젝트에서 에이전트가 이를 이해하는지는 실기 확인 필요.
 - VS Code 작업 이름은 en 에서 영어("AF: Setup" 등). 한국어 작업 이름을 가정하는 e2e·bats 는 ko 구성만 대상이어야 한다.
 - 영어 `README.md`, `.paths` 주석, env.local.example, litellm.yaml 주석도 영어. `scripts/agent-env.sh` 의 한국어 오류 문구는 정적 스크립트 범위로 유지.
+
+---
+
+# PH7 1라운드 (ph7/dev1): T-701
+
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+| --- | --- | --- | --- | --- |
+| T-701 MKT-02 | 완료 | `packages/core/src/market/risk.ts`(신규), `schema/invariants.ts`, `checks.ts`, `render/{skills,index}.ts`, `src/index.ts`, `test/market-risk.test.ts`(신규), `test/schema.test.ts`(1줄) | core 414 통과·3 건너뜀, web 109 통과, typecheck·lint 0 | 아래 |
+
+## 리드 조치·참고
+- `test/schema.test.ts` PH7 확장 시험의 정상 입력(scripts/run.py 포함)에 `acknowledged: true` 를 추가했다. 새 불변식에서는 확인 없이는 위반이므로 의도된 변경이다.
+- 공개 API: `scanSkillRisk`, `RiskCode` 를 core index 에서 export(서버·web 용). `parseSkillMd` 는 내부용(미공개).
+- `checks()`(화면 경고)는 IMPORT_UNACKED 만 files 기준으로 맞췄다. 나머지 4종(NO_SKILL_MD 등)은 validate 에서만 보고되며 web i18n 키가 필요하다 — dev-3/서버가 가져오기 단계에서 처리하거나 추후 checks 확장 필요.
+- 기본값(imported 없음) golden·스냅샷 불변.
+- 위험: BANG_LINE 은 줄 머리 `!`(공백·`[`·`=` 제외)를 모두 본다. 마크다운 본문의 `!중요` 같은 문구는 오탐 가능(보수적 방향).
