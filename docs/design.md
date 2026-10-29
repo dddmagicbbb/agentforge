@@ -460,3 +460,11 @@ PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙�
   - `BANG_COMMAND`: SKILL.md(경로가 `SKILL.md`로 끝나는 파일)에서만 판정한다.
     - 실행 문법인 백틱 앞의 `!`는 위험이다.
     - 줄 머리 `!` 다음에 공백이 아닌 문자가 오는 경우도 보수적으로 위험이다.
+- **서버 보안 보강(review-2 권고 반영, 리드 확정)**:
+  - `tokenEnv`는 `AF_MARKET_TOKEN_`으로 시작하는 환경 변수 이름만 허용한다. 그래야 임의의 서버 비밀을 외부로 보낼 수 없다.
+  - 토큰을 쓰는 소스의 `baseUrl`·`url`은 `https://`만 허용한다.
+  - `repo`·`owner`·`path` 세그먼트에 `.`·`..`는 금지한다.
+  - 관리 API는 `Content-Type: application/json`만 받는다(아니면 415 `SOURCE_INVALID`, CSRF 대비).
+  - 모든 API는 `Host` 헤더를 허용 목록(`localhost`, `127.0.0.1`, `[::1]` + 환경 변수 `AF_MARKET_HOSTS` 쉼표 목록)으로 검사한다. 아니면 403 `HOST_DENIED`(DNS rebinding 대비).
+  - git 소스의 symlink(mode 120000)는 OS와 무관하게 제외한다(`git ls-tree` 기준).
+  - 기동 진입점 `listen({ host = "127.0.0.1", port })`를 코드로 고정한다.
