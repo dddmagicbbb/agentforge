@@ -29,3 +29,16 @@
 - T-611: 비밀 미출력 사례를 판정 경로별로 분리(통과·경고 값 없음·경고 num_turns=1·is_error·JSON 깨짐·claude exit≠0, 모두 litellm 에이전트로 `ANTHROPIC_AUTH_TOKEN` 에 키가 실린 상태에서 출력에 키·응답 원문이 없음을 단언). 경계값 num_turns=2 통과 사례 추가. 설계 문서에 "PH6 2라운드: T-611·T-613" 절 추가.
 - T-613: `AF_DEVCONTAINER_REQUIRED=1` 이면 건너뛰는 대신 exit 1. 구조 확인에 name=slug·mode 644 추가.
 - 참고: `run-agents.bats` 의 작은따옴표 경로 사례는 bash 5.3(WSL)에서 현재 `sq` 가 올바르므로 회귀 검출력은 인용이 달라지는 환경, 특히 macOS 기본 bash 3.2 CI 에서 의미가 있다(`sq` 를 따옴표 미처리로 바꾸면 실패하는 것은 WSL 에서 변이로 확인).
+
+# dev-2 보고 (PH6 3라운드)
+
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+|---|---|---|---|---|
+| T-615 | 작성 완료. I18N-01 (a) 화면 en 전환 + ZIP 내용은 화면 언어와 무관, (b) language=en 생성물(README·CLAUDE.md 한글 없음, core 렌더와 동일), DOC-03 (c) 기존 CLAUDE.md 붙여넣기 병합(마커 밖·PROJECT 보존, core `mergeClaudeMd` 결과와 동일) + 마커 오류 시 ZIP 버튼 비활성 | `tests/e2e/i18n-doc.spec.ts`(신규, 4건) | 로컬 Windows 에서 `tsc -p tests/e2e` 통과, (a) 는 Playwright 실행 통과. (b) 는 T-605(생성물 영어, README 에 한글 남음)·(c) 2건은 T-624(입력 UI 없음) 구현 전이라 실패가 정상. 셸 단계는 없음 | 아래 가정 참조. 리드 통합 브랜치에서 4건 모두 확인 필요 |
+| 정리 | `check-models.bats` 19번 제목을 본문(num_turns=2 통과)에 맞춤, `devcontainer-check.sh` SC2012 사유 주석 | `tests/scripts/check-models.bats`, `tests/scripts/devcontainer-check.sh` | `bash -n` 통과 | 없음 |
+
+## 가정(T-624 입력 접근명 미정)
+- 6단계 붙여넣기 입력은 `getByLabel(/CLAUDE\.md/)` 로 찾는다(라벨에 CLAUDE.md 포함 가정). 구현 접근명이 다르면 `pasteBox` 한 곳만 고친다.
+- 마커 오류 시 "ZIP 다운로드" 버튼 또는 "오류 N건을 먼저 해결하세요" 차단 버튼이 모두 disabled 이면 통과로 본다(오류 표시 방식은 단정하지 않음).
+- (b) 는 요구사항을 영어로 입력하고, 기대값은 `{...defaultDraft(), language: "en", requirement}` 의 core render 와 README·CLAUDE.md 동등 + 한글 정규식 `[가-힣]` 없음으로 단언한다.
+- 로컬 주의: 포트 4173 에 다른 worktree 의 vite preview 가 떠 있으면 `reuseExistingServer` 로 그 오래된 번들을 쓰게 된다(이번에 (a) 가 그 때문에 처음엔 실패). CI 는 `CI` 변수로 재사용하지 않는다.

@@ -203,7 +203,7 @@ no_leak() {  # no_leak <기대 기호> <종료 코드> <에이전트>
   no_leak "✗" 1 review-2
 }
 
-@test "8.3 경계값: num_turns=2 는 통과(>=2), 1 은 경고" {
+@test "8.3 경계값: num_turns=2 는 통과(>=2)" {
   reply dev-1 "$PROJECT" 2
   check dev-1
   [ "$status" -eq 0 ]
