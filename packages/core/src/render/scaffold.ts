@@ -12,7 +12,7 @@ export function renderGitignore(logs: boolean): string {
 }
 
 /** 그대로 복사하는 정적 스크립트(문자열 조립 금지 — project-rules) */
-export const STATIC_SCRIPTS = ["setup.sh", "run-role.sh", "check-forge.sh", "create-worktrees.sh", "run-agents.sh", "wait-and-review.sh", "integrate.sh"] as const;
+export const STATIC_SCRIPTS = ["setup.sh", "run-role.sh", "check-forge.sh", "create-worktrees.sh", "run-agents.sh", "wait-and-review.sh", "integrate.sh", "check-models.sh"] as const;
 
 export function renderRequirements(c: RenderContext): string {
   return `# 요구사항 (원문)\n\n${c.p.requirement.trim()}\n`;

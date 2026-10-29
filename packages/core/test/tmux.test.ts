@@ -95,7 +95,7 @@ describe("RUN-04 sq() 동작(왕복)", () => {
   };
   const hasShells = ok("bash") && ok("sh");
   const line = (TEMPLATES["static/run-agents.sh"] ?? "").split("\n").find((l) => l.startsWith("sq()")) ?? "";
-  const cases = ["it's", "\'", "''", "a\nb", "공백 한글 경로", "$HOME", "`id`", "a\"b", "plain"];
+  const cases = ["it's", "\\'", "''", "a\nb", "공백 한글 경로", "$HOME", "`id`", "a\"b", "plain"];
   it.skipIf(!hasShells)("sq 결과를 /bin/sh 가 실행해도 원문과 같다", () => {
     expect(line).not.toBe("");
     for (const p of cases) {

@@ -1,4 +1,4 @@
-// .vscode/tasks.json: 작업 메뉴(VSC-01). 입력과 무관한 고정 6작업.
+// .vscode/tasks.json: 작업 메뉴(VSC-01). 입력과 무관한 고정 7작업(7번째 모델 점검 PRV-03).
 
 export function renderVscodeTasks(): string {
   return `${JSON.stringify(
@@ -11,6 +11,7 @@ export function renderVscodeTasks(): string {
         { label: "AF: 붙기", type: "shell", command: "tmux attach -t ${workspaceFolderBasename}", presentation: { panel: "dedicated", focus: true } },
         { label: "AF: 구성 검사", type: "shell", command: "bash scripts/check-forge.sh" },
         { label: "AF: 통합 검증", type: "shell", command: "bash scripts/integrate.sh" },
+        { label: "AF: 모델 점검", type: "shell", command: "bash scripts/check-models.sh" },
       ],
     },
     null,

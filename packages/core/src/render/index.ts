@@ -9,6 +9,7 @@ import { renderDevAgent, renderDevPaths, renderDevSkill, renderReviewAgent, rend
 import { renderEnvExample } from "./env-example.js";
 import { renderLitellm } from "./litellm.js";
 import { renderReadme } from "./readme.js";
+import { renderDevcontainer } from "./devcontainer.js";
 import { renderGitignore, renderPrdTemplate, renderRequirements, STATIC_SCRIPTS, staticScript } from "./scaffold.js";
 import { renderSettings } from "./settings.js";
 import { renderCoreSkill, renderImportedSkill } from "./skills.js";
@@ -55,6 +56,7 @@ export function renderProject(p: Project): RenderedFile[] {
   for (const name of STATIC_SCRIPTS.filter((s) => s !== "setup.sh")) add(`scripts/${name}`, staticScript(name), { exec: true });
   if (c.usesVia("litellm")) add("scripts/start-gateway.sh", staticScript("start-gateway.sh"), { exec: true });
   add(".vscode/tasks.json", renderVscodeTasks());
+  if (p.devcontainer === true) add(".devcontainer/devcontainer.json", renderDevcontainer(c));
   const keep = ["docs/design/detail/.gitkeep", "docs/review/.gitkeep", "docs/report/.gitkeep", "docs/adr/.gitkeep"];
   for (const k of p.uiDesign ? [...keep, "docs/design/ui/.gitkeep"] : keep) add(k, "");
   return F;
