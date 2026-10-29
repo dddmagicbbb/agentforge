@@ -103,7 +103,7 @@
     "IMPORT_NAME_MISMATCH": "{{id}}: the name in SKILL.md differs from the skill ID.",
     "IMPORT_DUP_PATH": "{{id}}: duplicate file paths.",
     "IMPORT_TOO_LARGE": "{{id}}: total skill size exceeds 512,000 characters.",
-    "SKILL_FILE_PATH": "Invalid skill file path.",
+    "SKILL_FILE_PATH": "Invalid skill file path (relative, depth 5 or less, no . or ..).",
     "SKILL_REF": "The source commit must be 7-40 lowercase hex characters.",
     "GIT_BRANCH": "Invalid branch name."
   },
@@ -289,7 +289,7 @@
   "market": {
     "region": "Marketplace",
     "checking": "Checking server…",
-    "unavailable": "The marketplace server was not found. The marketplace is available when the optional server (packages/server) is running.",
+    "unavailable": "The marketplace server was not found. The marketplace is available when the optional server (packages/server) is running. Everything else works without it.",
     "sources": "Sources",
     "addTitle": "Add source",
     "searchTitle": "Search skills",
@@ -302,7 +302,14 @@
       "id": "Source ID",
       "trust": "Trust level",
       "q": "Query",
-      "trustFilter": "Trust filter"
+      "trustFilter": "Trust filter",
+      "url": "Repository URL",
+      "owner": "Owner",
+      "repo": "Repository",
+      "baseUrl": "GHES API URL",
+      "ref": "Ref (branch or tag)",
+      "path": "Subpath",
+      "tokenEnv": "Token env var name"
     },
     "tokenEnvHint": "tokenEnv is the \"name of a server environment variable\" that holds the token for a private repository. Token values are never entered, stored or sent from this screen.",
     "trust": {
@@ -335,7 +342,7 @@
       "dev": "Developers (dev)",
       "review": "Reviewers (review)"
     },
-    "ack": "I have checked the risk items and include them",
+    "ack": "I have checked the risk items and include them ({{id}})",
     "removeImported": "Remove",
     "error": {
       "UNKNOWN": "Marketplace request failed ({{code}}).",
@@ -344,18 +351,20 @@
       "SOURCE_INVALID": "The source input is not valid.",
       "SOURCE_FETCH_FAILED": "Could not fetch skills from the source.",
       "SOURCE_TIMEOUT": "The source timed out.",
-      "SKILL_BLOCKED": "This skill cannot be imported.",
+      "SKILL_BLOCKED": "This skill cannot be imported (too large or contains non-text files).",
       "NOT_FOUND": "The requested item was not found.",
       "INTERNAL": "An internal server error occurred.",
       "ADMIN_DISABLED": "Sources can only be changed in admin mode."
     },
-    "adminOnly": "Sources can only be changed in admin mode."
+    "adminOnly": "Sources can only be changed in admin mode.",
+    "crashed": "The marketplace view failed. Everything else still works."
   },
   "risk": {
-    "SCRIPTS": "Contains script files.",
+    "SCRIPTS": "Contains script files (scripts/ or executable extensions).",
     "BANG_COMMAND": "SKILL.md has load-time dynamic commands (! syntax).",
     "BROAD_TOOLS": "allowed-tools permits all of Bash.",
     "BYPASS_PERMISSIONS": "Contains a setting that skips permission checks (bypassPermissions).",
-    "REMOTE_DOWNLOAD": "Contains a command that downloads from outside and runs it (curl, wget, ...)."
+    "REMOTE_DOWNLOAD": "Contains a command that downloads from outside and runs it (curl, wget, ...).",
+    "UNKNOWN": "Unknown risk item"
   }
 }

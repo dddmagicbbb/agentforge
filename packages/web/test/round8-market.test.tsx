@@ -120,10 +120,10 @@ describe("MKT-01 T-721: 소스", () => {
     expect(screen.getByText(/서버 환경 변수 이름/)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("소스 ID"), { target: { value: "mine" } });
     fireEvent.change(screen.getByLabelText("종류"), { target: { value: "github" } });
-    fireEvent.change(screen.getByLabelText("owner"), { target: { value: "acme" } });
-    fireEvent.change(screen.getByLabelText("repo"), { target: { value: "skills" } });
+    fireEvent.change(screen.getByLabelText("소유자(owner)"), { target: { value: "acme" } });
+    fireEvent.change(screen.getByLabelText("저장소(repo)"), { target: { value: "skills" } });
     fireEvent.change(screen.getByLabelText("신뢰 등급"), { target: { value: "org" } });
-    fireEvent.change(screen.getByLabelText("tokenEnv"), { target: { value: "ACME_TOKEN" } });
+    fireEvent.change(screen.getByLabelText("토큰 환경 변수 이름"), { target: { value: "ACME_TOKEN" } });
     fireEvent.click(screen.getByRole("button", { name: "소스 등록" }));
     await waitFor(() => expect(s.calls.some((c) => c.method === "POST" && c.path === "/api/market/sources")).toBe(true));
     const post = s.calls.find((c) => c.method === "POST")!;
@@ -138,7 +138,7 @@ describe("MKT-01 T-721: 소스", () => {
     await screen.findByText("anthropics/skills");
     fireEvent.change(screen.getByLabelText("종류"), { target: { value: "git" } });
     fireEvent.change(screen.getByLabelText("소스 ID"), { target: { value: "g1" } });
-    fireEvent.change(screen.getByLabelText("url"), { target: { value: "https://example.com/a.git" } });
+    fireEvent.change(screen.getByLabelText("저장소 URL"), { target: { value: "https://example.com/a.git" } });
     fireEvent.click(screen.getByRole("button", { name: "소스 등록" }));
     await waitFor(() => expect(s.calls.some((c) => c.method === "POST")).toBe(true));
     expect(s.calls.find((c) => c.method === "POST")!.body).toEqual({ kind: "git", id: "g1", trust: "unverified", url: "https://example.com/a.git" });
@@ -149,8 +149,8 @@ describe("MKT-01 T-721: 소스", () => {
     await open(s.fn);
     await screen.findByText("anthropics/skills");
     fireEvent.change(screen.getByLabelText("소스 ID"), { target: { value: "official" } });
-    fireEvent.change(screen.getByLabelText("owner"), { target: { value: "a" } });
-    fireEvent.change(screen.getByLabelText("repo"), { target: { value: "b" } });
+    fireEvent.change(screen.getByLabelText("소유자(owner)"), { target: { value: "a" } });
+    fireEvent.change(screen.getByLabelText("저장소(repo)"), { target: { value: "b" } });
     fireEvent.click(screen.getByRole("button", { name: "소스 등록" }));
     expect(await screen.findByText(/이미 등록된 소스 ID/)).toBeInTheDocument();
   });
@@ -236,12 +236,12 @@ describe("MKT-02 T-721: 가져오기와 위험 확인", () => {
     await open(s.fn);
     const item = await importOne("deploy-kit");
     expect(within(item).getByRole("alert")).toHaveTextContent(/위험 항목을 확인하지 않았습니다/);
-    expect(within(item).getByLabelText("위험 항목을 확인했고 포함합니다")).not.toBeChecked();
+    expect(within(item).getByLabelText("위험 항목을 확인했고 포함합니다 (deploy-kit)")).not.toBeChecked();
     goto(6);
     expect(screen.getByRole("button", { name: /오류 \d+건을 먼저 해결하세요/ })).toBeDisabled();
     expect(within(screen.getByTestId("check-list")).getByText(/deploy-kit.*확인하지 않았습니다/)).toBeInTheDocument();
     goto(4);
-    fireEvent.click(within(screen.getByTestId("imp-deploy-kit")).getByLabelText("위험 항목을 확인했고 포함합니다"));
+    fireEvent.click(within(screen.getByTestId("imp-deploy-kit")).getByLabelText("위험 항목을 확인했고 포함합니다 (deploy-kit)"));
     expect(within(screen.getByTestId("imp-deploy-kit")).queryByRole("alert")).toBeNull();
     goto(6);
     expect(screen.getByRole("button", { name: "ZIP 다운로드" })).toBeEnabled();
@@ -284,5 +284,88 @@ describe("T-721 i18n", () => {
     }
     for (const c of ["SCRIPTS", "BANG_COMMAND", "BROAD_TOOLS", "BYPASS_PERMISSIONS", "REMOTE_DOWNLOAD"]) expect(flat(ko)).toContain(`risk.${c}`);
     for (const c of ["SOURCE_EXISTS", "SOURCE_INVALID", "SOURCE_FETCH_FAILED", "SOURCE_TIMEOUT", "SKILL_BLOCKED"]) expect(flat(ko)).toContain(`market.error.${c}`);
+  });
+});
+
+describe("T-721 반려 수정(review-3)", () => {
+  it("비 JSON 500 은 UNKNOWN 문구로 보이고 {{code}} 가 노출되지 않는다", async () => {
+    const base = server();
+    const f = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).startsWith("/api/market/search") ? new Response("<html>boom", { status: 500 }) : base.fn(input, init)) as unknown as typeof fetch;
+    await open(f);
+    fireEvent.click(screen.getByRole("button", { name: "검색" }));
+    expect(await screen.findByText(/마켓 요청에 실패했습니다\(UNKNOWN\)/)).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain("{{");
+  });
+
+  it("서버가 준 code 가 형식에 맞지 않으면 UNKNOWN 으로 본다", async () => {
+    const base = server();
+    const f = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).startsWith("/api/market/search") ? json({ code: "a.b.c", params: {} }, 400) : base.fn(input, init)) as unknown as typeof fetch;
+    await open(f);
+    fireEvent.click(screen.getByRole("button", { name: "검색" }));
+    expect(await screen.findByText(/\(UNKNOWN\)/)).toBeInTheDocument();
+  });
+
+  it("연달아 두 스킬을 가져와도 둘 다 남고, 같은 스킬을 두 번 눌러도 한 번만 추가된다", async () => {
+    const base = server();
+    const spy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).startsWith("/api/market/skills/")) await new Promise((r) => setTimeout(r, 30));
+      return base.fn(input, init);
+    });
+    const f = spy as unknown as typeof fetch;
+    await open(f);
+    fireEvent.click(screen.getByRole("button", { name: "검색" }));
+    const a = within(await screen.findByTestId("hit-pdf-notes")).getByRole("button", { name: "가져오기" });
+    const b = within(screen.getByTestId("hit-deploy-kit")).getByRole("button", { name: "가져오기" });
+    fireEvent.click(a);
+    expect(a).toBeDisabled();
+    fireEvent.click(a);
+    fireEvent.click(b);
+    await screen.findByTestId("imp-pdf-notes");
+    await screen.findByTestId("imp-deploy-kit");
+    expect(screen.getAllByTestId("imp-pdf-notes")).toHaveLength(1);
+    expect(spy.mock.calls.filter((c) => String(c[0]).endsWith("/pdf-notes"))).toHaveLength(1);
+  });
+
+  it("체크를 해제하면 다시 막힌다", async () => {
+    const s = server();
+    await open(s.fn);
+    fireEvent.click(screen.getByRole("button", { name: "검색" }));
+    fireEvent.click(within(await screen.findByTestId("hit-deploy-kit")).getByRole("button", { name: "가져오기" }));
+    const box = await screen.findByLabelText("위험 항목을 확인했고 포함합니다 (deploy-kit)");
+    fireEvent.click(box);
+    expect(within(screen.getByTestId("imp-deploy-kit")).queryByRole("alert")).toBeNull();
+    fireEvent.click(box);
+    expect(within(screen.getByTestId("imp-deploy-kit")).getByRole("alert")).toBeInTheDocument();
+  });
+
+  it("서버 flags 가 비어 있어도 core IMPORT_UNACKED 가 있으면 확인 체크박스를 보인다", async () => {
+    const { StepSkills } = await import("../src/steps/StepSkills");
+    const { defaultDraft } = await import("@agentforge/core");
+    const d = defaultDraft();
+    const imp = { id: "sneaky", src: "x", trust: "unverified" as const, desc: "", flags: [], target: "all" as const, acknowledged: false };
+    mount(<StepSkills draft={{ ...d, imported: [imp] }} patch={() => {}} marketFetch={server().fn}
+      issues={[{ level: "error", code: "IMPORT_UNACKED", path: ["imported", 0], params: { id: "sneaky" } }]} />);
+    expect(screen.getByLabelText("위험 항목을 확인했고 포함합니다 (sneaky)")).toBeInTheDocument();
+  });
+
+  it("형식이 깨진 응답 항목은 걸러내고 앱이 깨지지 않는다", async () => {
+    const base = server();
+    const f = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).startsWith("/api/market/search")
+        ? json({ skills: [null, { id: 5 }, { sourceId: "o", id: "ok-one", description: "d", trust: "evil/../x", src: "s", flags: [], fileCount: 1 }, HITS[0]] })
+        : base.fn(input, init)) as unknown as typeof fetch;
+    await open(f);
+    fireEvent.click(screen.getByRole("button", { name: "검색" }));
+    expect(await screen.findByTestId("hit-pdf-notes")).toBeInTheDocument();
+    expect(screen.queryByTestId("hit-ok-one")).toBeNull();
+  });
+
+  it("라벨이 i18n 이다(en 에서 한글 라벨이 없다)", async () => {
+    const s = server();
+    await open(s.fn);
+    await act(async () => { await i18n.changeLanguage("en"); });
+    for (const l of ["Source ID", "Owner", "Repository", "GHES API URL", "Ref (branch or tag)", "Subpath", "Token env var name"]) expect(screen.getByLabelText(l)).toBeInTheDocument();
   });
 });

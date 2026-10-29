@@ -197,7 +197,6 @@ T-721: 4단계 마켓 영역(서버 감지, 소스 CRUD·갱신, 검색, 미리�
 | 경로 | 책임 |
 | --- | --- |
 | `src/market/market-api.ts` | `createMarketApi(fetch)`: health·sources·add·remove·refresh·search·skill. 오류 응답 `{code,params}` 를 `MarketError(code)` 로 변환 |
-| `src/market/to-imported.ts` | 서버 응답 -> `ImportedSkill`(target all, acknowledged false) |
 | `src/components/MarketPanel.tsx` | 마켓 UI 전체(서버 없으면 비활성 안내) |
 | `src/steps/StepSkills.tsx` | issues·marketFetch props, 가져온 스킬 목록(대상·확인 체크·제거·issue) |
 | `src/App.tsx` | `marketFetch?` prop 을 StepSkills 로 전달, issues 전달 |

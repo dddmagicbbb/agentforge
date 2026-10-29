@@ -52,3 +52,11 @@
 - health `{ok,version,admin}`: admin=false 면 등록·삭제·갱신 UI 숨기고 "관리자 모드에서만 소스를 바꿀 수 있습니다" 표시.
 - sources `{sources}`(`lastIndexedAt`·`lastSha`·`lastError`), refresh `{results:[{id,ok,code,params}]}`(실패도 200), search `{skills}`(`blocked`: tooLarge|binary|badPath). `list()` 는 정확한 키 하나만 읽는다.
 - 문구 추가: NOT_FOUND·INTERNAL·ADMIN_DISABLED, badPath. web 127개 통과, 메인 번들 499.89 kB(여유 0.1 kB — T-722 는 지연 로딩 필수).
+
+### T-721 review-3 반려 수정
+- 오류 문구에 항상 `code` 전달(비 JSON 500 -> "(UNKNOWN)", `{{code}}` 노출 없음). 서버 code·trust·flags 는 `/^[A-Za-z_]+$/`/허용 목록 검사 후 i18n 키에 사용.
+- 가져오기: `patch` 가 함수형 갱신을 받도록 확장(App), 진행 중 id 버튼 비활성·ref 로 중복 요청 차단, 이미 있는 id 추가 금지.
+- 라벨 `market.f.*` i18n, 확인 체크박스 이름에 스킬 id, 오류 `aria-invalid`·`aria-describedby`.
+- R1: 확인 체크박스·표시는 서버 flags 가 비어도 해당 항목에 core `IMPORT_UNACKED` 가 있으면 보인다. 현재 브랜치에 `scanSkillRisk` 가 없어 위험 목록은 flags 기반(TODO: 통합 후 core 재계산 결과 사용).
+- R2: 서버 응답 항목 런타임 검증 + `ErrorBoundary`. R6 설계 문서 정리. 시험 추가(비 JSON 500, 동시 가져오기, 해제 재차단, flags 빈 값, 깨진 항목, en 라벨).
+- 번들: 줄였던 문구 원복. vite `rolldownOptions.output.codeSplitting` 으로 core·react 계열 분리. 청크(kB): index 57.61, vendor-core 174.68, vendor-react 268.43, src(exporter, 지연) 96.61, MarketPanel 9.66 — 500 kB 경고 없음. web 134개 통과.

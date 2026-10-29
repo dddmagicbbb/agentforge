@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImportedSkillT } from "@agentforge/core";
+import { riskText } from "../market/risk";
 import { createMarketApi, MarketError, toImported, type MarketSource, type NewSource, type SearchHit, type SkillDetail, type Trust } from "../market/market-api";
 
 interface Props {
@@ -31,6 +32,13 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
   const [preview, setPreview] = useState<SkillDetail | null>(null);
   const [actErr, setActErr] = useState<string | null>(null);
   const importedIds = useMemo(() => new Set(imported.map((m) => m.id)), [imported]);
+  // 가져오기 진행 중 id(같은 버튼 연타·중복 요청 방지)
+  const inflight = useRef(new Set<string>());
+  const [pending, setPending] = useState<ReadonlySet<string>>(new Set());
+  const errText = (raw: string) => {
+    const code = /^[A-Za-z_]+$/.test(raw) ? raw : "UNKNOWN";
+    return t(`market.error.${code}`, { code, defaultValue: t("market.error.UNKNOWN", { code }) });
+  };
 
   const loadSources = async () => {
     try {
@@ -56,7 +64,7 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
   if (!avail) return <p className="sub">{t("market.unavailable")}</p>;
 
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
-  const err = (code: string | null) => (code ? <p className="issues" role="alert">{t(`market.error.${code}`, { defaultValue: t("market.error.UNKNOWN", { code }) })}</p> : null);
+  const err = (code: string | null, id?: string) => (code ? <p className="issues" role="alert" id={id}>{errText(code)}</p> : null);
 
   const register = async () => {
     const opt = (k: "ref" | "path" | "baseUrl" | "tokenEnv") => (form[k].trim() ? { [k]: form[k].trim() } : {});
@@ -114,11 +122,17 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
   };
 
   const doImport = async (h: SearchHit) => {
+    if (inflight.current.has(h.id) || importedIds.has(h.id)) return;
+    inflight.current.add(h.id);
+    setPending(new Set(inflight.current));
     try {
       onImport(toImported(await api.skill(h.sourceId, h.id)));
       setActErr(null);
     } catch (e) {
       setActErr(codeOf(e));
+    } finally {
+      inflight.current.delete(h.id);
+      setPending(new Set(inflight.current));
     }
   };
 
@@ -136,7 +150,7 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
               <strong>{s.id}</strong> <span className="chip">{t(`market.trust.${s.trust}`)}</span>{" "}
               <code>{s.kind === "git" ? s.url : `${s.owner}/${s.repo}`}</code>
               {s.lastSha ? <span className="sub"> · {s.lastSha.slice(0, 7)}</span> : null}
-              {code ? <span className="issues"> {t(`market.error.${code}`, { defaultValue: t("market.error.UNKNOWN", { code }) })}</span> : null}{" "}
+              {code ? <span className="issues"> {errText(code)}</span> : null}{" "}
               {admin ? <button type="button" aria-label={t("market.removeSource", { id: s.id })} onClick={() => void remove(s.id)}>{t("market.remove")}</button> : null}
             </li>
           );
@@ -151,25 +165,25 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
         <label>{t("market.f.kind")}
           <select value={form.kind} onChange={set("kind")}><option value="github">github</option><option value="git">git</option></select>
         </label>
-        <label>{t("market.f.id")}<input value={form.id} onChange={set("id")} /></label>
+        <label>{t("market.f.id")}<input value={form.id} onChange={set("id")} aria-invalid={formErr ? true : undefined} aria-describedby={formErr ? "market-form-err" : undefined} /></label>
         <label>{t("market.f.trust")}
           <select value={form.trust} onChange={set("trust")}>{TRUSTS.map((x) => <option key={x} value={x}>{t(`market.trust.${x}`)}</option>)}</select>
         </label>
         {form.kind === "git" ? (
-          <label>url<input value={form.url} onChange={set("url")} placeholder="https://" /></label>
+          <label>{t("market.f.url")}<input value={form.url} onChange={set("url")} placeholder="https://" /></label>
         ) : (
           <>
-            <label>owner<input value={form.owner} onChange={set("owner")} /></label>
-            <label>repo<input value={form.repo} onChange={set("repo")} /></label>
-            <label>baseUrl<input value={form.baseUrl} onChange={set("baseUrl")} placeholder="https://ghe.example.com/api/v3" /></label>
+            <label>{t("market.f.owner")}<input value={form.owner} onChange={set("owner")} /></label>
+            <label>{t("market.f.repo")}<input value={form.repo} onChange={set("repo")} /></label>
+            <label>{t("market.f.baseUrl")}<input value={form.baseUrl} onChange={set("baseUrl")} placeholder="https://ghe.example.com/api/v3" /></label>
           </>
         )}
-        <label>ref<input value={form.ref} onChange={set("ref")} /></label>
-        <label>path<input value={form.path} onChange={set("path")} /></label>
-        <label>tokenEnv<input value={form.tokenEnv} onChange={set("tokenEnv")} autoComplete="off" /></label>
+        <label>{t("market.f.ref")}<input value={form.ref} onChange={set("ref")} /></label>
+        <label>{t("market.f.path")}<input value={form.path} onChange={set("path")} /></label>
+        <label>{t("market.f.tokenEnv")}<input value={form.tokenEnv} onChange={set("tokenEnv")} autoComplete="off" /></label>
       </div>
       <p className="sub">{t("market.tokenEnvHint")}</p>
-      {err(formErr)}
+      {err(formErr, "market-form-err")}
       <div className="row"><button type="button" onClick={() => void register()}>{t("market.register")}</button></div>
         </>
 ) : <p className="sub">{t("market.adminOnly")}</p>}
@@ -198,7 +212,7 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
               {h.flags.length > 0 ? <span className="chip warn">{t("market.flagCount", { count: h.flags.length })}</span> : null}
               {blocked ? <span className="issues"> {t("market.blocked")}{typeof h.blocked === "string" ? ` (${t(`market.blockedReason.${h.blocked}`, { defaultValue: h.blocked })})` : ""}</span> : null}{" "}
               <button type="button" onClick={() => void showPreview(h)}>{t("market.preview")}</button>{" "}
-              <button type="button" disabled={blocked || importedIds.has(h.id)} onClick={() => void doImport(h)}>{t("market.import")}</button>
+              <button type="button" disabled={blocked || importedIds.has(h.id) || pending.has(h.id)} onClick={() => void doImport(h)}>{t("market.import")}</button>
             </li>
           );
         })}
@@ -208,7 +222,7 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
         <div className="mpreview" data-testid="market-preview">
           <h4>{t("market.previewTitle", { id: preview.id })}</h4>
           {preview.flags.length > 0 ? (
-            <ul className="issues">{preview.flags.map((c) => <li key={c}>{t(`risk.${c}`, { defaultValue: c })}</li>)}</ul>
+            <ul className="issues">{preview.flags.map((c) => <li key={c}>{riskText(t, c)}</li>)}</ul>
           ) : <p className="sub">{t("market.noRisk")}</p>}
           <p className="sub">{t("market.fileList")}</p>
           <ul>{preview.files.map((f) => <li key={f.path}><code>{f.path}</code></li>)}</ul>

@@ -73,6 +73,18 @@ export interface RefreshResult {
   readonly params?: Record<string, unknown>;
 }
 
+const TRUSTS = ["official", "org", "community", "unverified"];
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
+const isStr = (v: unknown): v is string => typeof v === "string";
+const strs = (v: unknown): v is string[] => Array.isArray(v) && v.every(isStr);
+/** 서버 응답 런타임 검증(R2): 필수 필드가 없거나 형식이 틀린 항목은 걸러낸다 */
+const okSource = (v: unknown): v is MarketSource => isObj(v) && isStr(v["id"]) && isStr(v["kind"]) && isStr(v["trust"]) && TRUSTS.includes(v["trust"]);
+const okHit = (v: unknown): v is SearchHit =>
+  isObj(v) && isStr(v["sourceId"]) && isStr(v["id"]) && isStr(v["description"]) && isStr(v["src"]) && isStr(v["trust"]) && TRUSTS.includes(v["trust"]) && strs(v["flags"]) && typeof v["fileCount"] === "number";
+const okDetail = (v: unknown): v is SkillDetail =>
+  isObj(v) && isStr(v["id"]) && isStr(v["src"]) && isStr(v["trust"]) && TRUSTS.includes(v["trust"]) && isStr(v["description"]) && strs(v["flags"]) &&
+  Array.isArray(v["files"]) && v["files"].every((f) => isObj(f) && isStr(f["path"]) && isStr(f["content"]));
+
 const BASE = "/api/market";
 
 /** 계약(design 9.7)의 정확한 키 하나만 읽는다 */
@@ -98,7 +110,7 @@ export function createMarketApi(fetchFn: typeof fetch) {
     }
     if (!res.ok) {
       const o = (data ?? {}) as { code?: unknown; params?: unknown };
-      throw new MarketError(typeof o.code === "string" ? o.code : "UNKNOWN", (o.params as Record<string, unknown>) ?? {});
+      throw new MarketError(typeof o.code === "string" && /^[A-Za-z_]+$/.test(o.code) ? o.code : "UNKNOWN", (o.params as Record<string, unknown>) ?? {});
     }
     return data;
   }
@@ -115,7 +127,7 @@ export function createMarketApi(fetchFn: typeof fetch) {
       }
     },
     async sources(): Promise<MarketSource[]> {
-      return list<MarketSource>(await call("/sources"), "sources");
+      return list<unknown>(await call("/sources"), "sources").filter(okSource);
     },
     async addSource(s: NewSource): Promise<void> {
       await call("/sources", jsonInit("POST", s));
@@ -124,16 +136,18 @@ export function createMarketApi(fetchFn: typeof fetch) {
       await call(`/sources/${encodeURIComponent(id)}`, { method: "DELETE" });
     },
     async refresh(id?: string): Promise<RefreshResult[]> {
-      return list<RefreshResult>(await call("/refresh", jsonInit("POST", id ? { id } : {})), "results");
+      return list<unknown>(await call("/refresh", jsonInit("POST", id ? { id } : {})), "results").filter((r): r is RefreshResult => isObj(r) && isStr(r["id"]) && typeof r["ok"] === "boolean");
     },
     async search(q: string, trust: string): Promise<SearchHit[]> {
       const p = new URLSearchParams();
       p.set("q", q);
       if (trust) p.set("trust", trust);
-      return list<SearchHit>(await call(`/search?${p.toString()}`), "skills");
+      return list<unknown>(await call(`/search?${p.toString()}`), "skills").filter(okHit);
     },
     async skill(sourceId: string, skillId: string): Promise<SkillDetail> {
-      return (await call(`/skills/${encodeURIComponent(sourceId)}/${encodeURIComponent(skillId)}`)) as SkillDetail;
+      const d = await call(`/skills/${encodeURIComponent(sourceId)}/${encodeURIComponent(skillId)}`);
+      if (!okDetail(d)) throw new MarketError("UNKNOWN");
+      return d;
     },
   };
 }

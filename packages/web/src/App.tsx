@@ -26,7 +26,8 @@ export function App({ marketFetch }: { readonly marketFetch?: typeof fetch } = {
   const files = merged.files;
   const issues = useMemo(() => [...base.issues, ...merged.issues], [base.issues, merged.issues]);
   const exportable = base.exportable && merged.issues.length === 0;
-  const patch = (p: Partial<ProjectInput>) => setDraft((d) => ({ ...d, ...p }));
+  // 함수형 갱신도 받는다(비동기 가져오기 결과가 서로 덮어쓰지 않도록)
+  const patch = (p: Partial<ProjectInput> | ((d: ProjectInput) => Partial<ProjectInput>)) => setDraft((d) => ({ ...d, ...(typeof p === "function" ? p(d) : p) }));
 
   const key = STEP_KEYS[step];
   return (
