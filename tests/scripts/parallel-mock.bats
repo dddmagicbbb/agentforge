@@ -41,6 +41,14 @@ run_integrate() {
   run bash scripts/integrate.sh < /dev/null
 }
 
+# 8.6 S-4: 각 feature 브랜치에 검토 파일(docs/review/dev-N.md)을 커밋한다: add_reviews [번호...] (기본 1 2)
+add_reviews() {
+  local i wt; for i in ${*:-1 2}; do
+    wt="$BATS_TEST_TMPDIR/g3-demo-dev$i"
+    commit_in "$wt" "docs/review/dev-$i.md" "검토 결과 dev-$i" "[review-$i] 검토"
+  done
+}
+
 # ---------------------------------------------------------------- RUN-02 범위 밖 변경
 
 @test "범위 밖 변경: dev-1.done → dev-1 pane 에 경고, review-1 에는 검토 요청이 가지 않는다" {
@@ -98,6 +106,7 @@ run_integrate() {
 @test "전원 통과 → wait-and-review 종료 → integrate.sh 가 feature 브랜치를 병합하고 integrator 실행" {
   commit_in "$WT1" src/alpha/a.txt "alpha"
   commit_in "$WT2" src/beta/b.txt "beta"
+  add_reviews
   start_agents
   pass_all
 
@@ -117,6 +126,7 @@ run_integrate() {
 @test "충돌(두 dev 가 같은 파일을 다르게 수정): 병합 abort, exit 1, pre-integration 태그 유지, integrator 미실행" {
   commit_in "$WT1" README.md "dev1 version"
   commit_in "$WT2" README.md "dev2 version"
+  add_reviews
   start_agents
   pass_all
 
@@ -145,6 +155,7 @@ run_integrate() {
   git commit -qm "base change"
   commit_in "$WT1" README.md "dev1 version"
   commit_in "$WT2" src/beta/b.txt "beta"
+  add_reviews
   start_agents
   pass_all
 
@@ -207,6 +218,7 @@ run_integrate() {
   mv "$BATS_TEST_TMPDIR/fc.json" "$BATS_TEST_TMPDIR/dv/.agentforge/forge.config.json"
   git -C "$BATS_TEST_TMPDIR/dv" commit -qam "[common-dev] 테스트 명령"
   git worktree remove "$BATS_TEST_TMPDIR/dv"
+  add_reviews
   [ "$(git branch --show-current)" = "main" ]
   start_agents
   pass_all
@@ -229,4 +241,54 @@ run_integrate() {
   wait_file 10 "$SIG/dev-1.blocked"
   [ "$(grep -c "dev-1 got: 설계 반려" "$LOG")" -eq 2 ]
   not_in_file "dev-2 got:" "$LOG"
+}
+
+# ---------------------------------------------------------------- PH6 8.6 S-4 검토 파일 확인
+
+# 병합 전 상태를 기록하고 integrate 를 실행한 뒤, 실패·develop 불변·integrator 미실행을 확인한다
+expect_integrate_refused() {
+  local before; before="$(git rev-parse develop)"
+  run_integrate
+  [ "$status" -eq 1 ]
+  [ "$(git rev-parse develop)" = "$before" ]
+  [ "$(git rev-list --count "$before"..develop)" -eq 0 ]
+  [ ! -e "$(git rev-parse --git-path MERGE_HEAD)" ]
+  [ -z "$(git status --porcelain)" ]
+  not_in_file "start --agent integrator" "$LOG"
+  # 어느 개발자의 변경도 develop 에 들어가지 않는다
+  ! git cat-file -e develop:src/alpha/a.txt 2>/dev/null
+  ! git cat-file -e develop:src/beta/b.txt 2>/dev/null
+}
+
+@test "8.6 S-4: 통과 신호가 있어도 dev-2 검토 파일이 커밋되지 않았으면 integrate 는 exit 1, develop 불변" {
+  commit_in "$WT1" src/alpha/a.txt "alpha"
+  commit_in "$WT2" src/beta/b.txt "beta"
+  add_reviews 1
+  start_agents
+  pass_all
+
+  expect_integrate_refused
+  # 실패 안내에 누락된 개발자가 드러난다
+  [[ "$output" == *"dev-2"* ]]
+}
+
+@test "8.6 S-4: 검토 파일이 작업 트리에만 있고 커밋되지 않았으면 거부된다" {
+  commit_in "$WT1" src/alpha/a.txt "alpha"
+  commit_in "$WT2" src/beta/b.txt "beta"
+  add_reviews 2
+  # dev-1 검토 파일은 만들었지만 커밋하지 않음
+  mkdir -p "$WT1/docs/review"; echo "검토" > "$WT1/docs/review/dev-1.md"
+  start_agents
+  pass_all
+
+  expect_integrate_refused
+  [[ "$output" == *"dev-1"* ]]
+}
+
+@test "8.6 S-4: 검토 요청에 결과 파일 경로 docs/review/dev-1.md 가 들어간다" {
+  commit_in "$WT1" src/alpha/a.ts "export const a = 1;"
+  start_agents
+  touch "$SIG/dev-1.done"
+  wait_for 30 "review-1 got: 코드 검토:" "$LOG"
+  grep "review-1 got: 코드 검토:" "$LOG" | grep -q "docs/review/dev-1.md"
 }
