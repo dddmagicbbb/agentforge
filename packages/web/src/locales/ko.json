@@ -28,7 +28,8 @@
   },
   "lang": {
     "ko": "한국어",
-    "en": "English"
+    "en": "English",
+    "switch": "화면 언어"
   },
   "preview": {
     "title": "생성 파일",

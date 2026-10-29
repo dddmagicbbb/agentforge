@@ -28,9 +28,9 @@ describe("RUN-03 integrate.sh 렌더", () => {
 describe("VSC-01 tasks.json 렌더", () => {
   const files = build();
   const json = JSON.parse(find(files, ".vscode/tasks.json")) as { version: string; tasks: { label: string; type: string; command: string }[] };
-  it("유효 JSON, 6작업, 순서 고정", () => {
+  it("유효 JSON, 7작업, 순서 고정", () => {
     expect(json.version).toBe("2.0.0");
-    expect(json.tasks.map((t) => t.label)).toEqual(["AF: 준비(setup)", "AF: worktree 생성", "AF: 병렬 실행", "AF: 붙기", "AF: 구성 검사", "AF: 통합 검증"]);
+    expect(json.tasks.map((t) => t.label)).toEqual(["AF: 준비(setup)", "AF: worktree 생성", "AF: 병렬 실행", "AF: 붙기", "AF: 구성 검사", "AF: 통합 검증", "AF: 모델 점검"]);
   });
   it("모든 작업이 shell 이고 scripts/ 의 실제 생성 파일을 가리킨다", () => {
     const paths = new Set(files.map((x) => x.path));
