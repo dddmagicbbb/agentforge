@@ -48,7 +48,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: LiteLLM + 마켓 가�
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 4e01f16593bb scripts/run-agents.sh
+755 tp 1be0a6e7c8fb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
 755 tp b9ebd0a5c3ea scripts/start-gateway.sh
@@ -105,7 +105,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: UI 끔 1`] = `
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 4e01f16593bb scripts/run-agents.sh
+755 tp 1be0a6e7c8fb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
 644 tp 9f04d37559ad .vscode/tasks.json
@@ -151,7 +151,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = 
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 4e01f16593bb scripts/run-agents.sh
+755 tp 1be0a6e7c8fb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
 644 tp 9f04d37559ad .vscode/tasks.json
@@ -223,7 +223,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = 
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 4e01f16593bb scripts/run-agents.sh
+755 tp 1be0a6e7c8fb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
 644 tp 9f04d37559ad .vscode/tasks.json
@@ -265,7 +265,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 정보 비�
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 4e01f16593bb scripts/run-agents.sh
+755 tp 1be0a6e7c8fb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
 644 tp 9f04d37559ad .vscode/tasks.json
@@ -322,7 +322,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 기본 1`] = `
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 4e01f16593bb scripts/run-agents.sh
+755 tp 1be0a6e7c8fb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
 644 tp 9f04d37559ad .vscode/tasks.json
