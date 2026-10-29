@@ -17,3 +17,12 @@ export function renderImportedSkill(m: ImportedSkillT, lang: Lang): string {
   const t = text(lang);
   return `---\nname: ${m.id}\ndescription: ${m.desc}\n---\n# ${m.id}\n\n${t.importedBody(m.src, t.trust[m.trust])}`;
 }
+
+/** 가져온 스킬의 출력 파일 목록. files 가 있으면 원문 그대로(SKILL.md 먼저, 나머지 사전순), 없으면 안내 SKILL.md 하나. */
+export function importedSkillFiles(m: ImportedSkillT, lang: Lang): { path: string; content: string }[] {
+  if (!m.files) return [{ path: `.claude/skills/${m.id}/SKILL.md`, content: renderImportedSkill(m, lang) }];
+  const rank = (p: string) => (p === "SKILL.md" ? 0 : 1);
+  return [...m.files]
+    .sort((a, b) => rank(a.path) - rank(b.path) || (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
+    .map((f) => ({ path: `.claude/skills/${m.id}/${f.path}`, content: f.content }));
+}

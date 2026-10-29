@@ -130,7 +130,7 @@ describe("PH7 스키마 확장", () => {
   const md = "---\nname: webapp-testing\ndescription: d\n---\n# x\n";
   it("files·ref 는 선택이다(기존 입력 호환)", () => {
     expect(codes(draft((d) => (d.imported = [base])))).toEqual([]);
-    expect(codes(draft((d) => (d.imported = [{ ...base, ref: "0123abc", files: [{ path: "SKILL.md", content: md }, { path: "scripts/run.py", content: "print(1)" }] }])))).toEqual([]);
+    expect(codes(draft((d) => (d.imported = [{ ...base, acknowledged: true, ref: "0123abc", files: [{ path: "SKILL.md", content: md }, { path: "scripts/run.py", content: "print(1)" }] }])))).toEqual([]);
   });
   it("파일 경로는 스킬 폴더 안의 상대 경로만(절대·..·백슬래시 금지)", () => {
     for (const path of ["/etc/x", "../x", "a/../b", "a\b", "", "a//b"]) {
