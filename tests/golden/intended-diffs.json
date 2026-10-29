@@ -1,5 +1,5 @@
 {
-  "$comment": "PoC 와 제품의 의도적 차이(ADR-0003·0004·0005). 추가·삭제는 리드 승인. templates: { template(templates/ 상대 경로), defect, adr, reason } — check:poc-static 제외. diffs: { config, path, defect, reason } — golden 내용 비교 제외(대신 전용 시험으로 새 동작을 검증).",
+  "$comment": "PoC 와 제품의 의도적 차이(ADR-0003·0004·0005·0006). 추가·삭제는 리드 승인. templates: { template(templates/ 상대 경로), defect, adr, reason } — check:poc-static 제외. diffs: { config, path, defect, reason } — golden 내용 비교 제외(대신 전용 시험으로 새 동작을 검증). added: { config, path, defect, reason } — PoC 에 없는 새 생성 파일(목록 비교 제외, 존재만 확인).",
   "templates": [
     {
       "template": "static/setup.sh",
@@ -15,15 +15,15 @@
     },
     {
       "template": "static/integrate.sh",
-      "defect": "D-A·D-D",
-      "adr": "0004·0005",
-      "reason": "병합 충돌 시 abort 후 reset --hard pre-integration 으로 앞선 병합까지 되돌림, 테스트 명령은 병합된 develop 기준으로 읽음(D-D)"
+      "defect": "D-A·D-D·S-4",
+      "adr": "0004·0005·0006",
+      "reason": "병합 충돌 시 abort 후 reset --hard pre-integration 으로 앞선 병합까지 되돌림, 테스트 명령은 병합된 develop 기준으로 읽음(D-D), 병합 전 전원의 검토 파일(feature/devN:docs/review/dev-N.md) 확인(S-4)"
     },
     {
       "template": "static/wait-and-review.sh",
-      "defect": "D-B·D-C·D-E",
-      "adr": "0004·0005",
-      "reason": "신호 이력 파일명 충돌 시 .<초>.<n> 순번으로 덮어쓰기 방지, 짝 검토자 범위(review-N.paths) 허용(D-C), 설계 반려에도 한도 적용(D-E)"
+      "defect": "D-B·D-C·D-E·S-4",
+      "adr": "0004·0005·0006",
+      "reason": "신호 이력 파일명 충돌 시 .<초>.<n> 순번으로 덮어쓰기 방지, 짝 검토자 범위(review-N.paths) 허용(D-C), 설계 반려에도 한도 적용(D-E), 코드 검토 요청에 검토 파일 커밋 지시(S-4)"
     },
     {
       "template": "static/check-forge.sh",
@@ -36,6 +36,12 @@
       "defect": "D2",
       "adr": "0004",
       "reason": "채울 자리표시 목록을 dev/review 템플릿과 같게 하고 값의 출처 명시"
+    },
+    {
+      "template": "static/run-agents.sh",
+      "defect": "RUN-04",
+      "adr": "0006",
+      "reason": "tmux 배치(pair·grid·role)·세션 범위 접두키·마우스·pane 로그를 config 에서 읽음(기본값은 pair·C-b 로 동작 동일)"
     }
   ],
   "diffs": [
@@ -66,20 +72,46 @@
     {
       "config": "*",
       "path": "scripts/wait-and-review.sh",
-      "defect": "D-B·D-C·D-E",
-      "reason": "wait-and-review.sh 이력 순번 (ADR-0004·0005, 전 구성 공통)"
+      "defect": "D-B·D-C·D-E·S-4",
+      "reason": "wait-and-review.sh 이력 순번 (ADR-0004·0005·0006, 전 구성 공통)"
     },
     {
       "config": "*",
       "path": "scripts/integrate.sh",
-      "defect": "D-A·D-D",
-      "reason": "integrate.sh 충돌 복구 (ADR-0004·0005, 전 구성 공통)"
+      "defect": "D-A·D-D·S-4",
+      "reason": "integrate.sh 충돌 복구 (ADR-0004·0005·0006, 전 구성 공통)"
     },
     {
       "config": "*",
       "path": ".claude/settings.json",
-      "defect": "S-2",
-      "reason": "guard hook matcher 를 Edit|Write|MultiEdit|NotebookEdit 로 확장 (ADR-0005, 전 구성 공통)"
+      "defect": "S-2·S-3",
+      "reason": "guard hook matcher 를 Edit|Write|MultiEdit|NotebookEdit 로 확장 (ADR-0005, 전 구성 공통), permissions.defaultMode \"default\" (S-3, ADR-0006)"
+    },
+    {
+      "config": "*",
+      "path": "scripts/run-agents.sh",
+      "defect": "RUN-04",
+      "reason": "run-agents.sh 배치 확장 (ADR-0006, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": "README.md",
+      "defect": "S-3",
+      "reason": "기본 권한 모드로 시작하는 이유 한 줄 (ADR-0006, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": ".vscode/tasks.json",
+      "defect": "PRV-03",
+      "reason": "VS Code 7번째 작업 \"AF: 모델 점검\" (ADR-0006, 전 구성 공통)"
+    }
+  ],
+  "added": [
+    {
+      "config": "*",
+      "path": "scripts/check-models.sh",
+      "defect": "PRV-03",
+      "reason": "모델 점검 스크립트 (ADR-0006, 전 구성 공통)"
     }
   ]
 }

@@ -97,13 +97,13 @@ describe("입력 패턴", () => {
 });
 
 describe("PH2 골격", () => {
-  it("템플릿 26종이 내장된다", () => {
-    expect(Object.keys(TEMPLATES)).toHaveLength(26);
+  it("템플릿 43종(정적 11 + md 16 + md-en 16)이 내장된다", () => {
+    expect(Object.keys(TEMPLATES)).toHaveLength(43);
     expect(TEMPLATES["md/dev.tpl.md"]).toContain("{{N}}");
   });
 
-  it("미구현 API(mergeClaudeMd, P1)는 AppError(NOT_IMPLEMENTED)를 던진다", () => {
-    expect(() => mergeClaudeMd("", "")).toThrow(AppError);
+  it("mergeClaudeMd 는 마커 짝 오류에 AppError(CLAUDE_MD_MARKERS)를 던진다", () => {
+    expect(() => mergeClaudeMd("<!-- AGENTFORGE:AGENTS:BEGIN -->", "")).toThrow(AppError);
   });
 });
 

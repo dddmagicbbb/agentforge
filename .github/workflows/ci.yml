@@ -50,3 +50,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: bats tests/scripts/realdevice.bats
+      # VSC-02(T-613): 생성 devcontainer.json 의 postCreateCommand 를 이 이미지 안에서 실행해 tmux·jq·claude 동작 확인
+      - name: Dev Container 생성물 동작 확인
+        env:
+          AF_IN_DEVCONTAINER_IMAGE: "1"
+          AF_DEVCONTAINER_REQUIRED: "1"
+        run: bash tests/scripts/devcontainer-check.sh

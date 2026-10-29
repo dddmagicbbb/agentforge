@@ -11,6 +11,7 @@ export function renderSettings(c: RenderContext): string {
   return `${JSON.stringify(
     {
       permissions: {
+        defaultMode: "default", // S-3: pane 을 auto mode 가 아닌 기본 권한 모드로 시작
         allow,
         deny: ["Bash(git push:*)", "Bash(git merge:*)", "Bash(git checkout:*)", "Bash(git switch:*)", "Bash(rm -rf:*)", "Read(.agentforge/env.local)"],
       },

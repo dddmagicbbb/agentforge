@@ -65,6 +65,28 @@
 
 G4(`v0.1.0`): 점검표 12칸 통과(T-501 자동 9칸 + T-502 WSL 3칸·실제 주기), 보안 조치 완료(T-503).
 
+## PH6 확장 1 — 편집·다국어·배치 (dev 3 + review 3, 계약: design.md 8장 · ADR-0006)
+| 작업 ID | 기능 ID | 담당 | 도메인 | 담당 폴더 | 선행 | 완료 기준 |
+| --- | --- | --- | --- | --- | --- | --- |
+| T-601 | DOC-03 | dev-1 | core | `packages/core/` | — | `mergeClaudeMd` 8.1 규칙 6개·`CLAUDE_MD_MARKERS`, fast-check(마커 밖 보존·PROJECT 보존·멱등) |
+| T-602 | RUN-04 | dev-1 | core | `templates/static/run-agents.sh`, `packages/core/` | — | 8.2: config `tmux` 출력, run-agents pair·grid·role·prefix·mouse·logs, logs 시 .gitignore, 기본값이면 golden 불변 |
+| T-603 | PRV-03 | dev-1 | core | `templates/static/`, `packages/core/` | — | 8.3: check-models.sh(항상 생성·755), VS Code 7번째 작업, shellcheck 0 |
+| T-604 | VSC-02 | dev-1 | core | `packages/core/` | — | 8.4: devcontainer.json(지정 시만), README 폐쇄망 안내, `DEVCONTAINER_CLOSED_NET` info |
+| T-605 | I18N-01 | dev-1 | core | `templates/md-en/`, `packages/core/` | — | 8.5: md-en 16종(자리표시 동일), language=en 이면 CLAUDE.md·README·PRD 양식·에이전트·스킬 영어, ko 는 golden 불변 |
+| T-606 | (보안) | dev-1 | core | `templates/static/`, `packages/core/` | — | 8.6: settings `defaultMode`, integrate 검토 파일 확인, 코드 검토 요청 문구 — ADR-0006, intended-diffs 갱신(리드 승인) |
+| T-611 | PRV-03 | dev-2 | exporter | `tests/scripts/` | 계약 | bats check-models: 통과·경고(도구 미호출·값 없음)·실패(is_error·명령 실패·JSON 깨짐·agent-env 실패)·종료 코드·키 미출력 |
+| T-612 | RUN-04 | dev-2 | exporter | `tests/scripts/` | 계약 | bats run-agents: grid·role 창·pane 기록·신호 중계, prefix·mouse 세션 범위, logs 파일 생성 |
+| T-613 | VSC-02 | dev-2 | exporter | `tests/scripts/` | 계약 | `tests/scripts/devcontainer-check.sh`: 생성 devcontainer.json 의 이미지로 postCreateCommand 실행 후 tmux·claude·jq 동작 확인(CI 연결은 리드) |
+| T-614 | (보안) | dev-2 | exporter | `tests/scripts/` | 계약 | bats: 검토 파일 없는 feature 는 integrate 실패(exit 1)·develop 불변, 있으면 병합 |
+| T-615 | I18N-01, DOC-03 | dev-2 | exporter | `tests/e2e/` | T-621, T-624 | E2E: en 전환 화면, language=en ZIP 영어 README, 기존 CLAUDE.md 병합 후 ZIP 에 마커 밖 보존 |
+| T-621 | I18N-01 | dev-3 | web | `packages/web/` | — | en.json, ko/en 전환, 키·변수·빈 값 동등 시험(CI) |
+| T-622 | RUN-04 | dev-3 | web | `packages/web/` | — | 5단계: 배치·접두키·마우스·로그 입력, tmux 미리보기가 배치를 반영 |
+| T-623 | VSC-02, PRV-03 | dev-3 | web | `packages/web/` | — | Dev Container 토글·안내 issue 표시, 6단계 "받은 뒤 할 일"에 모델 점검 |
+| T-624 | DOC-03 | dev-3 | web | `packages/web/` | T-601 | 6단계: 기존 CLAUDE.md 붙여넣기(선택) → 병합 결과가 미리보기·ZIP 에 반영, 마커 오류 표시 |
+
+라운드: 1) T-601·T-602 / T-612·T-614 / T-621 → 2) T-603·T-604 / T-611·T-613 / T-622·T-623 → 3) T-605·T-606 / T-615 / T-624.
+G(`v0.2.0`): 기능 ID별 검증 통과, CI(ubuntu·macOS·Dev Container) 통과, 기본값 구성 golden 불변.
+
 ## 기능 ID 배정 확인 (P0 22개)
 REQ-01 T-302·T-421 / REQ-02 T-302·T-421 / RTN-01 T-303·T-421 / RTN-02 T-303·T-422 / DEV-01 T-401·T-421 / DEV-02 T-401·T-423 / DEV-03 T-404·T-412 / GEN-01 T-403 / GEN-02 T-403 / GEN-03 T-404·T-413 / DOC-01 T-304 / DOC-02 T-304 / SKL-01 T-402·T-424 / SKL-02 T-402·T-424 / PRV-01 T-305·T-425 / PRV-02 T-405 / PRV-04 T-405·T-425 / RUN-01 T-306 / RUN-02 T-306·T-308·T-414 / RUN-03 T-406·T-414 / VSC-01 T-406 / EXP-01 T-307·T-411·T-415·T-426
 

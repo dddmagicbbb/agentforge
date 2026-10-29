@@ -1,11 +1,11 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: LiteLLM + 마켓 가져오기 1`] = `
-"files=56
+"files=57
 644 ai 84a5dff2e1a8 CLAUDE.md
-644 tp e86b56834eeb README.md
+644 tp 7bfb422332b3 README.md
 644 tp 75e35ad2859d .gitignore
-644 tp 43822b392c58 .claude/settings.json
+644 tp dc66d67bb24a .claude/settings.json
 755 tp 82717155fe64 .claude/hooks/guard-paths.sh
 644 tp 845d13b37441 .claude/agents/planner.md
 644 tp 703e423d398c .claude/agents/analyst.md
@@ -48,11 +48,12 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: LiteLLM + 마켓 가�
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 29d2f6726422 scripts/wait-and-review.sh
-755 tp 635ebe6849ec scripts/integrate.sh
+755 tp ea54f08270cb scripts/run-agents.sh
+755 tp 7266588a5738 scripts/wait-and-review.sh
+755 tp 24467612d3bc scripts/integrate.sh
+755 tp 990237734bef scripts/check-models.sh
 755 tp b9ebd0a5c3ea scripts/start-gateway.sh
-644 tp 9f04d37559ad .vscode/tasks.json
+644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
 644 tp e3b0c44298fc docs/report/.gitkeep
@@ -61,11 +62,11 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: LiteLLM + 마켓 가�
 `;
 
 exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: UI 끔 1`] = `
-"files=51
+"files=52
 644 ai aac9f49f96e1 CLAUDE.md
-644 tp 5b5a3bafdf17 README.md
+644 tp 7be8a0104947 README.md
 644 tp 75e35ad2859d .gitignore
-644 tp 43822b392c58 .claude/settings.json
+644 tp dc66d67bb24a .claude/settings.json
 755 tp 82717155fe64 .claude/hooks/guard-paths.sh
 644 tp f8f1396ce022 .claude/agents/planner.md
 644 tp 703e423d398c .claude/agents/analyst.md
@@ -105,10 +106,11 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: UI 끔 1`] = `
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 29d2f6726422 scripts/wait-and-review.sh
-755 tp 635ebe6849ec scripts/integrate.sh
-644 tp 9f04d37559ad .vscode/tasks.json
+755 tp ea54f08270cb scripts/run-agents.sh
+755 tp 7266588a5738 scripts/wait-and-review.sh
+755 tp 24467612d3bc scripts/integrate.sh
+755 tp 990237734bef scripts/check-models.sh
+644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
 644 tp e3b0c44298fc docs/report/.gitkeep
@@ -116,11 +118,11 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: UI 끔 1`] = `
 `;
 
 exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = `
-"files=43
+"files=44
 644 ai 97834a2de2ec CLAUDE.md
-644 tp e86b56834eeb README.md
+644 tp 7bfb422332b3 README.md
 644 tp 75e35ad2859d .gitignore
-644 tp 43822b392c58 .claude/settings.json
+644 tp dc66d67bb24a .claude/settings.json
 755 tp 82717155fe64 .claude/hooks/guard-paths.sh
 644 tp f8f1396ce022 .claude/agents/planner.md
 644 tp 703e423d398c .claude/agents/analyst.md
@@ -151,10 +153,11 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = 
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 29d2f6726422 scripts/wait-and-review.sh
-755 tp 635ebe6849ec scripts/integrate.sh
-644 tp 9f04d37559ad .vscode/tasks.json
+755 tp ea54f08270cb scripts/run-agents.sh
+755 tp 7266588a5738 scripts/wait-and-review.sh
+755 tp 24467612d3bc scripts/integrate.sh
+755 tp 990237734bef scripts/check-models.sh
+644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
 644 tp e3b0c44298fc docs/report/.gitkeep
@@ -163,11 +166,11 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = 
 `;
 
 exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = `
-"files=68
+"files=69
 644 ai a9759bc931fd CLAUDE.md
-644 tp e86b56834eeb README.md
+644 tp 7bfb422332b3 README.md
 644 tp 75e35ad2859d .gitignore
-644 tp 43822b392c58 .claude/settings.json
+644 tp dc66d67bb24a .claude/settings.json
 755 tp 82717155fe64 .claude/hooks/guard-paths.sh
 644 tp f8f1396ce022 .claude/agents/planner.md
 644 tp 703e423d398c .claude/agents/analyst.md
@@ -223,10 +226,11 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = 
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 29d2f6726422 scripts/wait-and-review.sh
-755 tp 635ebe6849ec scripts/integrate.sh
-644 tp 9f04d37559ad .vscode/tasks.json
+755 tp ea54f08270cb scripts/run-agents.sh
+755 tp 7266588a5738 scripts/wait-and-review.sh
+755 tp 24467612d3bc scripts/integrate.sh
+755 tp 990237734bef scripts/check-models.sh
+644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
 644 tp e3b0c44298fc docs/report/.gitkeep
@@ -235,11 +239,11 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = 
 `;
 
 exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 정보 비움 1`] = `
-"files=38
+"files=39
 644 ai f3fcfdcf38b9 CLAUDE.md
-644 tp e86b56834eeb README.md
+644 tp 7bfb422332b3 README.md
 644 tp 75e35ad2859d .gitignore
-644 tp 43822b392c58 .claude/settings.json
+644 tp dc66d67bb24a .claude/settings.json
 755 tp 82717155fe64 .claude/hooks/guard-paths.sh
 644 tp f8f1396ce022 .claude/agents/planner.md
 644 tp 703e423d398c .claude/agents/analyst.md
@@ -265,10 +269,11 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 정보 비�
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 29d2f6726422 scripts/wait-and-review.sh
-755 tp 635ebe6849ec scripts/integrate.sh
-644 tp 9f04d37559ad .vscode/tasks.json
+755 tp ea54f08270cb scripts/run-agents.sh
+755 tp 7266588a5738 scripts/wait-and-review.sh
+755 tp 24467612d3bc scripts/integrate.sh
+755 tp 990237734bef scripts/check-models.sh
+644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
 644 tp e3b0c44298fc docs/report/.gitkeep
@@ -277,11 +282,11 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 정보 비�
 `;
 
 exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 기본 1`] = `
-"files=53
+"files=54
 644 ai 277ce1b1964e CLAUDE.md
-644 tp e86b56834eeb README.md
+644 tp 7bfb422332b3 README.md
 644 tp 75e35ad2859d .gitignore
-644 tp 43822b392c58 .claude/settings.json
+644 tp dc66d67bb24a .claude/settings.json
 755 tp 82717155fe64 .claude/hooks/guard-paths.sh
 644 tp f8f1396ce022 .claude/agents/planner.md
 644 tp 703e423d398c .claude/agents/analyst.md
@@ -322,10 +327,11 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 기본 1`] = `
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
-755 tp 5a41cd4a9ba7 scripts/run-agents.sh
-755 tp 29d2f6726422 scripts/wait-and-review.sh
-755 tp 635ebe6849ec scripts/integrate.sh
-644 tp 9f04d37559ad .vscode/tasks.json
+755 tp ea54f08270cb scripts/run-agents.sh
+755 tp 7266588a5738 scripts/wait-and-review.sh
+755 tp 24467612d3bc scripts/integrate.sh
+755 tp 990237734bef scripts/check-models.sh
+644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
 644 tp e3b0c44298fc docs/report/.gitkeep

@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { provider, type Issue, type ProjectInput } from "@agentforge/core";
 import { countByProvider } from "../agents";
 import { IssueList } from "../components/IssueList";
+import { TmuxSettings } from "../components/TmuxSettings";
 import { TmuxPreview } from "../components/TmuxPreview";
 import { PROVIDER_IDS } from "../catalog";
 
@@ -11,7 +12,7 @@ interface Props {
   readonly issues: readonly Issue[];
 }
 
-const WARN_CODES = ["GATEWAY_REQUIRED", "VLLM_TOOL_PARSER", "OPENROUTER_FREE_LIMIT", "MODEL_MISSING"];
+const WARN_CODES = ["GATEWAY_REQUIRED", "VLLM_TOOL_PARSER", "OPENROUTER_FREE_LIMIT", "MODEL_MISSING", "DEVCONTAINER_CLOSED_NET"];
 
 /** 5단계: 사용 제공자·주소, tmux 배치, 경고(PRV-01, PRV-04). 키는 입력받지 않는다. */
 export function StepConnection({ draft, patch, issues }: Props) {
@@ -59,6 +60,12 @@ export function StepConnection({ draft, patch, issues }: Props) {
           </tbody>
         </table>
       </div>
+      <TmuxSettings draft={draft} patch={patch} issues={issues} />
+      <label className="chk">
+        <input type="checkbox" aria-describedby="devcontainer-hint" checked={draft.devcontainer === true} onChange={(e) => patch({ devcontainer: e.target.checked ? true : undefined })} />
+        {t("devcontainer.label")}
+      </label>
+      <small id="devcontainer-hint">{t("devcontainer.hint")}</small>
       <h3>{t("tmux.title")}</h3>
       <TmuxPreview draft={draft} />
       <IssueList issues={issues} filter={(i) => WARN_CODES.includes(i.code)} />

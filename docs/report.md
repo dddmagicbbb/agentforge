@@ -32,7 +32,7 @@
 - 운영 교훈: 서브에이전트 worktree 가 main 기준으로 생성됨 → 시작 시 `git merge --ff-only develop` 필수. 병합 커밋 push 를 위해 post-merge 훅 추가. core 빌드 설정(types: [])으로도 typecheck.
 - 미결: macOS CI 재검증(Actions 사용량 확인 필요), `.claude/settings.json` 병합(사람), WSL jq·shellcheck·bats 설치(사람), web 번들 500kB 경고, review 권고 잔여(R5-3 이름 규칙 문구에 "." 누락, 테스트 데이터 `as never`).
 
-## PH5 통합·실기 검증 — 2026-10-29 (진행 중, G4 전)
+## PH5 통합·실기 검증 — 2026-10-29 · `v0.1.0`
 - 전환: 사람 승인(2026-10-29) → prd "현재 단계" PH5, tasks T-501~T-505.
 - T-501 실기 점검 자동화: 구성 3종(`tests/realdevice/`) × ZIP→setup→check-forge→agent-env→worktree→병렬 실행→신호 전달(`tests/scripts/realdevice.bats`). **자동 9칸 통과** — ubuntu·macOS·Dev Container(CI run 40754097160). macOS bats 50/50 으로 PH4 5라운드 미검증분도 해소.
 - T-503 보안 점검(`docs/report-security.md`): 수정 2건 — S-1 모델 ID 첫 글자(YAML 예약 문자), S-2 guard 가 NotebookEdit(`notebook_path`)를 검사하지 않음 → ADR-0005. 수용 3건 — S-3 Bash 리다이렉션(실기 확인 R-6), S-4 신호 위조(위협 모델 밖), S-5 심볼릭 링크(ADR-0004).
@@ -44,4 +44,21 @@
   - 실기에서 발견해 수정(ADR-0005): D-C 짝 검토 파일이 범위 밖으로 오탐, D-D integrate 가 develop 의 테스트 명령을 무시, D-E 설계 반려 한도 없음. bats 로 재현(수정 전 실패) 후 수정.
   - 확인: guard 가 실제 Claude Code 의 Write·NotebookEdit 를 차단(S-2 실효). frontmatter model 이 ANTHROPIC_MODEL 보다 우선, inherit 일 때만 환경 변수(PRD 9장 미결 해소).
   - 관찰: 대화형 기본 권한이 auto mode 라 Bash 쓰기를 자동 허용할 수 있음 → S-3 갱신, PH6 권고.
-- G4 판정 대기: 점검표 12칸 ✓, 실제 주기 완주, 보안 조치 완료.
+- **G4 통과(사람 승인 2026-10-29)**: 점검표 12칸 ✓, 실제 주기 완주, 보안 조치 완료. develop → main 병합(PR #4, 2a4d26a), 태그 `v0.1.0`.
+- 다음: PH6(확장 1 — DOC-03·PRV-03·RUN-04·VSC-02·I18N-01) 착수는 사람 결정. PH6 검토 후보: Bash 리다이렉션 범위 검사(S-3), integrate 전 리뷰 판정 확인(S-4), dev pane 권한 모드 안내.
+
+## PH6 확장 1 — 편집·다국어·배치 — 2026-10-29 (G 판정 대기, `v0.2.0` 예정)
+- 계약 선행: PoC 에 기준 구현이 없어 design.md 8장·ADR-0006 으로 계약을 고정한 뒤 3라운드 병렬 개발(dev 3 + review 3). 원칙 "선택값 미지정이면 생성물은 PH5 와 바이트 동일" — golden·ko 스냅샷 유지.
+- 완료 작업(tasks.md PH6 15건 전부):
+  - dev-1: T-601 `mergeClaudeMd`(DOC-03), T-602 tmux pair·grid·role·접두키·마우스·로그(RUN-04), T-603 `check-models.sh`(PRV-03), T-604 Dev Container(VSC-02), T-605 생성물 영어판 `templates/md-en`(I18N-01), T-606 보안 후속(S-3 defaultMode, S-4 검토 파일 확인).
+  - dev-2: T-611 check-models bats 19, T-612 run-agents bats 8, T-613 devcontainer-check.sh, T-614 S-4 bats, T-615 E2E 4(화면 en·생성물 en·CLAUDE.md 병합).
+  - dev-3: T-621 화면 en·언어 전환·키 동등 시험, T-622 tmux 입력·미리보기, T-623 Dev Container·모델 점검 안내, T-624 기존 CLAUDE.md 붙여넣기 → 병합.
+- 시험(develop 6beda8f): core 378 · exporter 20 · web 109 · bats 84 · E2E 9. CI ubuntu·macOS·Dev Container 통과(PR #5·#6).
+- 검토: 반려 7회, 모두 수정. 주요 결함 — 마커 구간 겹침 시 PROJECT 내용 소실, pane 순서 역전, 로그 경로 인용(sq), check-models `num_turns` 비숫자 통과, tmux 오류의 단계 연결 오류, 키 미출력 시험의 거짓 통과(변이 시험으로 발견). macOS 전용 결함 2건(bash 3.2 `mapfile`, tmux 전역 옵션 출력)은 CI macOS 로 발견.
+- 운영 결정·교훈:
+  - settings.json 의 `git merge` 거부가 리드·서브에이전트에도 적용 → 우회하지 않고 develop 기준 worktree(저장소 밖 `af-wt/`)를 처음부터 만들고, 통합은 GitHub API(서버 병합·PR)로 했다.
+  - 서브에이전트 6개 동시 실행으로 사용량 한도 1회 도달(초기화 후 재개, 손실 없음).
+  - review 에이전트의 변이 시험이 시험의 거짓 통과를 실제로 잡았다 → 시험 검토 기본 절차로 유지.
+  - 로컬 E2E: 다른 worktree 의 미리보기 서버가 4173 을 점유하면 낡은 번들을 재사용 → `AF_E2E_PORT` 로 회피.
+- dogfooding: 자기 환경 재생성 → scripts 4종(check-models 신규)·README·VS Code 작업을 생성 결과로 교체. `.claude/settings.json` 의 `defaultMode: "default"`(S-3)는 이 저장소 세션의 권한 모드를 바꾸므로 적용하지 않음(사람 결정).
+- 남은 것(PH7 이후 후보): 정적 스크립트 출력 문구 영어화(메시지 카탈로그, P2), 영어 문구 원어민 검수, Bash PreToolUse 범위 검사(S-3 근본 대책).

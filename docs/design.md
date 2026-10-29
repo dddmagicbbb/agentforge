@@ -222,3 +222,95 @@ D3~D6·D8은 입력 검증 강화와 `shWord`로 처리하므로 **PoC 기본 �
 | 속성 | fast-check: devCount 3→5→2, uiDesign 토글 시 에이전트·agent-env case·CLAUDE.md 표·config 일관 | PH4 |
 | 스크립트 | `pnpm test:scripts` = bash -n + shellcheck + bats + 모의 병렬(가짜 claude, tmux) | PH2 틀, PH3~4 사례 |
 | E2E | Playwright: 6단계 → ZIP → 풀기 → setup.sh → check-forge.sh | PH4 |
+
+## 8. PH6 설계 — 편집·다국어·배치 (ADR-0006)
+PoC에 기준 구현이 없는 기능이라, 병렬 개발 전에 계약을 여기서 고정한다. 스키마는 G2에 이미 `tmux`·`devcontainer`·`language`가 있으므로 바꾸지 않는다.
+공통 원칙: 선택값이 비어 있으면(`tmux`·`devcontainer` 미지정, `language: "ko"`) **생성물은 PH5와 바이트 단위로 같다**(golden·스냅샷 불변). 새 출력은 선택했을 때만 생긴다.
+
+### 8.1 DOC-03 `mergeClaudeMd(oldMd, nextMd): string`
+- 구간: `<!-- AGENTFORGE:<ID>:BEGIN -->` … `<!-- AGENTFORGE:<ID>:END -->`, ID = PROJECT·AGENTS·DEVS·SKILLS.
+- 규칙:
+  1. 결과의 뼈대는 **old**다. 마커 밖 텍스트(사용자 수정)는 한 글자도 바꾸지 않는다.
+  2. AGENTS·DEVS·SKILLS 구간 안쪽은 next 내용으로 바꾼다.
+  3. PROJECT 구간은 old 내용을 그대로 둔다(사용자·AI 소유).
+  4. next에는 있고 old에 없는 구간은 old 끝에 next의 해당 구간(마커 포함)을 붙인다. 붙이기 전 끝 줄바꿈은 1개로 맞춘다.
+  5. old에 마커가 하나도 없으면, 사용자 파일로 보고 위 4번 규칙대로 구간 4개를 끝에 붙인다.
+  6. 이미 같은 결과면 그대로 반환한다(멱등: `merge(merge(o,n),n) === merge(o,n)`).
+- 오류: 같은 ID의 BEGIN·END 짝이 맞지 않거나 중복이거나 순서가 뒤집히면 `AppError("CLAUDE_MD_MARKERS", { id })`.
+- 시험(fast-check): 마커 밖 임의 텍스트 보존, PROJECT 보존, 멱등, next 구간 반영.
+
+### 8.2 RUN-04 tmux 배치·접두키·마우스·로그
+- config(`forge.config.json`):
+  - `tmux` 미지정이면 지금처럼 `"tmuxLayout": "pair"`만 쓴다.
+  - 지정하면 `"tmuxLayout": <layout>`과 `"tmux": { "prefix", "mouse", "logs" }`를 함께 쓴다(키 순서: tmuxLayout 바로 뒤).
+- `run-agents.sh`가 config를 읽어 배치한다. 값이 없으면 기본값은 pair, `C-b`, mouse false, logs false.
+  | layout | 창 구성 |
+  | --- | --- |
+  | pair | 지금과 같음: `watch` + 개발자마다 `dev<i>` 창(왼쪽 dev-i, 오른쪽 review-i) |
+  | grid | `watch` + 한 창 `agents`에 dev-1, review-1, dev-2, … 순서로 pane을 만들고 `select-layout tiled` |
+  | role | `watch` + 창 `dev`(dev-1..N) + 창 `review`(review-1..N), 각 `tiled` |
+- 모든 배치에서 `.agentforge/panes/<에이전트>`에 pane id를 기록한다. 따라서 `wait-and-review.sh`는 바꾸지 않는다.
+- `prefix`가 `C-b`가 아니면 `tmux set -t <세션> prefix <키>`를, `mouse`가 true면 `set -t <세션> mouse on`을 실행한다. 둘 다 세션 범위이고 전역은 바꾸지 않는다.
+- `logs`가 true면 pane마다 `pipe-pane -o 'cat >> .agentforge/logs/<에이전트>.log'`를 걸고, `.gitignore`에 `.agentforge/logs/`를 추가한다(tmux 지정 시에만).
+- 안내 문구의 "Ctrl-b"는 실제 접두키로 출력한다.
+
+### 8.3 PRV-03 `scripts/check-models.sh`
+- 정적 템플릿이며 항상 생성한다(mode 755). VS Code 작업 "AF: 모델 점검"을 7번째로 추가한다(VSC-01 확장).
+- 사용법:
+  - `bash scripts/check-models.sh [에이전트...]`: 인자가 없으면 config의 `agents` 키 전부를 점검한다.
+  - 시간 제한은 에이전트당 `AF_CHECK_TIMEOUT`(기본 120초)이고, `timeout` 명령이 없으면 시간 제한 없이 실행한다.
+- 동작: 에이전트마다 `source scripts/agent-env.sh <a>`를 한 뒤 다음을 실행한다.
+  `claude --agent <a> -p "<프롬프트>" --output-format json --max-turns 3 < /dev/null`
+  - 프롬프트: "Read 도구로 .agentforge/forge.config.json 을 읽고 project 값만 한 단어로 답하세요."
+- 판정(JSON은 jq로 읽음):
+  | 판정 | 조건 |
+  | --- | --- |
+  | 실패 | agent-env 실패, 명령 실패·시간 초과, JSON 해석 실패, `.is_error == true` |
+  | 경고 | 응답은 있으나 `.result`에 project 값이 없거나 `.num_turns < 2`(도구 호출 미확인) |
+  | 통과 | `.result`에 project 값이 있고 `.num_turns >= 2` |
+- 출력: 에이전트마다 `✓ <a> 통과 (<model>)` / `! <a> 경고: <사유>` / `✗ <a> 실패: <사유>` 한 줄, 끝에 `모델 점검: 통과 N · 경고 N · 실패 N`.
+- 종료 코드: 실패가 하나라도 있으면 1, 아니면 0(경고만 있으면 0).
+- 키·응답 원문은 출력하지 않는다(사유는 고정 문구).
+
+### 8.4 VSC-02 Dev Container
+- `devcontainer: true`일 때만 `.devcontainer/devcontainer.json`을 생성한다(644).
+  ```json
+  {
+    "name": "<slug>",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+    "postCreateCommand": "sudo apt-get update && sudo apt-get install -y tmux jq && npm install -g @anthropic-ai/claude-code",
+    "remoteEnv": { "AF_IN_CONTAINER": "1" }
+  }
+  ```
+- 컨테이너 이미지는 사용자 환경이 내려받는 것이고, 앱 자체는 외부를 호출하지 않는다(폐쇄망 원칙 유지). README에 폐쇄망이면 사내 레지스트리 이미지로 바꾸라는 안내를 추가한다(devcontainer일 때만).
+- `env.local`은 컨테이너 안에서도 사용자가 직접 넣는다(마운트·복사 금지).
+
+### 8.5 I18N-01 화면·생성물 언어
+- 화면:
+  - `locales/en.json`을 추가하고 상단에 ko/en 전환을 둔다.
+  - 선택값은 저장하지 않는다(새로 열면 ko). 생성물 언어는 1단계의 `language` 입력이 따로 정한다.
+- CI(web 시험):
+  - ko·en 키 집합이 같아야 한다.
+  - 같은 키의 `{{변수}}` 집합이 같아야 한다.
+  - 값이 빈 문자열이면 안 된다.
+- 생성물: `language: "en"`이면 사람이 읽는 생성물을 영어로 만든다.
+  - 대상: `templates/md/*` 대신 `templates/md-en/*`(같은 파일명·같은 자리표시), CLAUDE.md 고정 규칙, README, PRD 양식, 에이전트·스킬 본문.
+  - 정적 스크립트의 출력 문구는 PH6 범위 밖이다(한국어 유지, ADR-0006에 기록).
+- `md-en`은 `check:poc-static` 대상이 아니다(PoC에 없음). `gen:templates`가 함께 내장한다.
+
+### 8.6 보안 후속 (report-security S-3·S-4)
+- S-3:
+  - 생성 `settings.json`에 `"permissions": { "defaultMode": "default", … }`를 넣는다. dev·review pane이 auto mode 대신 기본 권한 모드로 시작해 Bash 쓰기가 승인을 거친다.
+  - README에 이유를 한 줄 적는다.
+- S-4:
+  - `integrate.sh`가 병합 전에 `docs/review/dev-<i>.md`가 develop 기준 feature 브랜치에 있는지 확인한다(`git cat-file -e feature/dev<i>:docs/review/dev-<i>.md`).
+  - 없으면 그 개발자는 병합하지 않고 실패한다(exit 1, 안내).
+  - 통과 신호 위조만으로는 통합되지 않게 하는 확인이다.
+  - 이를 위해 `wait-and-review.sh`가 review-N에게 보내는 코드 검토 요청 문구에 "결과를 docs/review/dev-N.md 에 쓰고 커밋한 뒤"를 넣는다.
+
+### 8.7 새 issue·오류 코드
+| 코드 | level | 조건 |
+| --- | --- | --- |
+| `CLAUDE_MD_MARKERS` | AppError | 8.1 마커 짝 오류 |
+| `TMUX_PREFIX` | error(스키마) | 이미 존재 |
+| `DEVCONTAINER_CLOSED_NET` | info | `devcontainer: true`: 이미지·패키지를 내려받는다는 안내 |

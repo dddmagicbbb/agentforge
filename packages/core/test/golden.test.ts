@@ -8,7 +8,10 @@ import { render, validate } from "../src/index.js";
 
 const GOLDEN = fileURLToPath(new URL("../../../tests/golden/", import.meta.url));
 const configs = fs.readdirSync(GOLDEN, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
-const intended: { config: string; path: string }[] = JSON.parse(fs.readFileSync(path.join(GOLDEN, "intended-diffs.json"), "utf8")).diffs;
+const intendedJson = JSON.parse(fs.readFileSync(path.join(GOLDEN, "intended-diffs.json"), "utf8"));
+const intended: { config: string; path: string }[] = intendedJson.diffs;
+// PoC 에 없는 새 생성 파일(ADR-0006 이후). 이 경로는 목록 비교에서 빼고, 존재만 따로 확인한다.
+const added: { config: string; path: string }[] = intendedJson.added ?? [];
 
 describe.each(configs)("golden: %s", (name) => {
   const dir = path.join(GOLDEN, name);
@@ -22,8 +25,15 @@ describe.each(configs)("golden: %s", (name) => {
 
   const files = v.project ? render(v.project) : [];
 
-  it("파일 목록·순서·권한·작성 주체가 PoC 와 같다", () => {
-    expect(files.map((f) => ({ path: f.path, mode: f.mode.toString(8), author: f.author }))).toEqual(manifest.files);
+  const isAdded = (p: string) => added.some((d) => (d.config === name || d.config === "*") && d.path === p);
+
+  it("파일 목록·순서·권한·작성 주체가 PoC 와 같다(의도적 추가 파일 제외)", () => {
+    const listed = files.filter((f) => !isAdded(f.path));
+    expect(listed.map((f) => ({ path: f.path, mode: f.mode.toString(8), author: f.author }))).toEqual(manifest.files);
+  });
+
+  it.each(added.filter((d) => d.config === name || d.config === "*").map((d) => d.path))("의도적 추가 파일 %s 가 생성된다", (p) => {
+    expect(files.some((f) => f.path === p)).toBe(true);
   });
 
   it.each(manifest.files.map((f) => f.path))("%s 내용이 PoC 와 같다", (p) => {

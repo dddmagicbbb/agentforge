@@ -17,3 +17,4 @@
 9. `bash scripts/integrate.sh                 # 전원 통과 후`
 
 단계가 끝날 때마다 사람이 관문을 확인하고 커밋한다. 단계 전환은 사람이 한다.
+권한: .claude/settings.json 은 기본 권한 모드(defaultMode: default)로 시작해 allow 목록 밖의 Bash 명령은 승인을 거친다.
