@@ -137,9 +137,10 @@ wait-and-review.sh 의 이력 이름이 `date +%s` 라 같은 초에 두 번 소
 | 계약 | 사례 |
 |---|---|
 | 8.2 pair(기본) | tmux 미지정: config 에 `tmuxLayout: pair` 만, 창 watch·dev1·dev2, 창당 2 pane, panes 파일 유효 |
-| 8.2 grid | 창 watch·agents, agents 4 pane, panes 파일이 모두 agents 창의 pane, design-1.done → review-1 전달 |
-| 8.2 role | 창 watch·dev·review, dev·review 각 2 pane, dev-i 는 dev 창·review-i 는 review 창, 신호 전달 |
-| 8.2 prefix·mouse | 세션 범위(`show-options -t`)에 prefix C-a·mouse on, 전역(`-g`)은 C-b·off 유지 |
+| 8.2 grid | 창 watch·agents, agents 4 pane, panes 파일이 모두 agents 창의 pane, pane 순서 = dev-1, review-1, dev-2, review-2, design-1.done → review-1 전달 |
+| 8.2 role | 창 watch·dev·review, dev·review 각 2 pane, 창 안 순서 dev-1·dev-2 / review-1·review-2, dev-i 는 dev 창·review-i 는 review 창, 신호 전달 |
+| 8.2 prefix·mouse | 세션 범위(`show-options -t`)에 prefix C-a·mouse on, 전역(`-g`)은 C-b·off 유지, 안내 출력에 `C-a` 포함·`Ctrl-b` 없음 |
+| 8.2 pair + prefix·mouse | 배치는 pair(dev1·dev2 창)이고 옵션만 세션 범위로 적용(배치·옵션 분기 독립) |
 | 8.2 기본값 | tmux 지정이나 C-b·mouse false·logs false: 세션 옵션 없음, logs 폴더·gitignore 항목 없음 |
 | 8.2 logs | logs=true: `.agentforge/logs/<에이전트>.log` 4개 생성, `.gitignore` 에 `.agentforge/logs/` |
 | 8.6 S-4 누락 | dev-2 검토 파일 없음: integrate exit 1, develop 불변, integrator 미실행 |

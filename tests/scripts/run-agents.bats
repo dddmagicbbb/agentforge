@@ -61,6 +61,15 @@ pane_in() {
   [ "$w" = "$2" ] || { echo "$1 의 창이 '$w' ($2 기대)"; return 1; }
 }
 
+# 창의 pane 순서가 주어진 에이전트 순서와 같은지(panes 파일의 id 와 list-panes 순서 대조): pane_order <창> <에이전트...>
+pane_order() {
+  local w="$1"; shift
+  local want="" a; for a in "$@"; do want+="$(cat "$PANES/$a") "; done
+  local got; got="$(tmux list-panes -t "$SESSION:$w" -F '#{pane_id}' | tr '
+' ' ')"
+  [ "$got" = "$want" ] || { echo "pane 순서 불일치($w): 실제 [$got] 기대 [$want]"; return 1; }
+}
+
 # 설계 완료 신호가 review-1 pane 으로만 전달되는지(panes 파일이 유효하다는 동작 증명)
 design_signal_reaches_review_1() {
   touch "$SIG/design-1.done"
@@ -98,6 +107,7 @@ design_signal_reaches_review_1() {
   local a; for a in dev-1 review-1 dev-2 review-2; do pane_in "$a" agents; done
   # 서로 다른 pane 4개
   [ "$(cat "$PANES"/dev-1 "$PANES"/review-1 "$PANES"/dev-2 "$PANES"/review-2 | sort -u | wc -l | tr -d ' ')" -eq 4 ]
+  pane_order agents dev-1 review-1 dev-2 review-2
   design_signal_reaches_review_1
 }
 
@@ -112,6 +122,8 @@ design_signal_reaches_review_1() {
   pane_in dev-2 dev
   pane_in review-1 review
   pane_in review-2 review
+  pane_order dev dev-1 dev-2
+  pane_order review review-1 review-2
   design_signal_reaches_review_1
 }
 
@@ -127,6 +139,7 @@ design_signal_reaches_review_1() {
   [ "$(tmux show-options -g mouse)" = "mouse off" ]
   # 안내 문구에 실제 접두키가 쓰이고 기본 접두키 표기는 남지 않는다
   [[ "$output" != *"Ctrl-b"* ]]
+  [[ "$output" == *"C-a"* ]]
 }
 
 @test "8.2 기본값(C-b·mouse false·logs false): 세션 옵션을 건드리지 않고 로그 관련 산출물이 없다" {
@@ -148,4 +161,22 @@ design_signal_reaches_review_1() {
   grep -qx ".agentforge/logs/" .gitignore
   # 로그 폴더는 git 추적 대상에서 제외된다
   git check-ignore -q .agentforge/logs/dev-1.log
+}
+
+@test "8.2 pair + prefix·mouse: 배치는 pair 그대로이고 옵션은 세션 범위에만 적용된다(배치·옵션 분기 독립)" {
+  prepare pair C-a true false
+  [ "$(jq -r '.tmuxLayout' .agentforge/forge.config.json)" = "pair" ]
+  start_all
+  [ "$(window_names)" = "dev1 dev2 watch" ]
+  [ "$(pane_count dev1)" -eq 2 ]
+  [ "$(pane_count dev2)" -eq 2 ]
+  pane_in dev-1 dev1
+  pane_in review-1 dev1
+  pane_in dev-2 dev2
+  pane_in review-2 dev2
+  [ "$(tmux show-options -t "$SESSION" prefix)" = "prefix C-a" ]
+  [ "$(tmux show-options -t "$SESSION" mouse)" = "mouse on" ]
+  [ "$(tmux show-options -g prefix)" = "prefix C-b" ]
+  [ "$(tmux show-options -g mouse)" = "mouse off" ]
+  design_signal_reaches_review_1
 }
