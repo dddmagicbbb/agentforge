@@ -87,3 +87,8 @@ GPL 계열 신규 의존성 없음(전이 의존성도 확인: 기존 jszip 의 
 - 시험: server 62건 통과(연속 2회, 병렬 시험 간 임시 폴더 간섭은 `workDir` 옵션으로 제거). typecheck·lint 통과, 임시 폴더 누적 없음.
 - 한계: `--` 구분자·GIT_ALLOW_PROTOCOL 은 실제 공격 재현이 어려워 `cloneArgs`·`gitEnv` 단위 시험으로 고정했다. clone 크기 상한은 없고(파일 수 상한만), 시간 제한 60초에 의존한다.
 - 리드: `src/main.ts` 는 core 에 `scanSkillRisk` 가 병합돼야 기동된다(없으면 오류로 종료). 기본 소스·`createServer` 의 `scan` 필수 주입은 그대로.
+
+## PH7 2라운드
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+|---|---|---|---|---|
+| T-712 | 완료. `pushToGithub` create(커밋 1건·force ref)/pr(base_tree·브랜치·PR), 오류 코드 매핑, 토큰 미노출 | `packages/exporter/src/github.ts`, `src/index.ts`, `package.json`(`./github` 진입점, `@octokit/core` ^7.0.8 MIT), `test/github.test.ts`, `pnpm-lock.yaml`, 상세 설계 | exporter 39 통과(신규 20 이상 포함), typecheck·lint 통과 | 1) 내부 `planTree` 를 core `planGithubTree` 로 교체(TODO 주석). 2) 기존 스텁 `pushToGitHub`(대문자 H) 제거, web 사용처 없음. 3) auto_init 직후 ref PATCH 가 일시적으로 실패할 수 있어 재시도 미구현. 4) exporter 단독 build 는 core dist 가 없으면 실패(기존 상태) |

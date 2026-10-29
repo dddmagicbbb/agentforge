@@ -262,3 +262,12 @@ T-711: MKT-01. 계약: design.md 9.4·9.6, ADR-0007.
   7. `workDir` 옵션: clone 임시 폴더 위치(시험은 전용 폴더로 정리 확인).
 - 비차단 반영: BOM 이 있는 SKILL.md 의 description 인식, `path` 가 스킬 폴더 자체이면 루트 SKILL.md 인식(id = path 마지막 폴더명).
 - 시험: `hardening.test.ts`(위 1~6, 경계값 50개·200,000자·512,000자, badPath, INTERNAL 비노출, `cloneArgs` 의 `--` 구분자, `gitEnv` 의 GIT_ALLOW_PROTOCOL). 임시 폴더는 `test/setup.ts` 의 afterAll 에서 삭제한다.
+
+## PH7 2라운드: T-712 (EXP-02 GitHub·GHES push)
+- 파일: `packages/exporter/src/github.ts`(pushToGithub, 내부 planTree), `packages/exporter/test/github.test.ts`(가짜 GitHub API fetch), package.json(`@octokit/core` ^7, exports `./github` 진입점 추가), `src/index.ts`(재export, 기존 스텁 `pushToGitHub` 제거).
+- 시그니처: `pushToGithub(files, target, token, { fetch?, language }): Promise<{ url, commitSha, prUrl? }>`. baseUrl 기본 `https://api.github.com`, `request.fetch` 주입.
+- tree 계획: core `planGithubTree` 가 이 브랜치에 없어 내부 함수로 같은 규칙(.sh 100755, 그 외 100644, env.local 경로 EXPORT_SECRET_PATH)을 두고 통합 때 교체(TODO).
+- create: GET /user → POST /user/repos 또는 /orgs/{owner}/repos(auto_init) → 기본 브랜치 → blobs → trees(base_tree 없음) → commits(parents []) → PATCH refs/heads/{default} force. pr: 저장소 조회 → ref → commit → tree → blobs → trees(base_tree) → commits(parents [sha]) → POST refs(422 GITHUB_BRANCH_EXISTS) → POST pulls.
+- 오류: 401/403 GITHUB_AUTH(rate limit 헤더면 GITHUB_RATE_LIMIT), 404 GITHUB_NOT_FOUND, create 422 GITHUB_REPO_EXISTS, 네트워크 GITHUB_NETWORK, 그 외 GITHUB_FAILED. params 는 status 만. 본문·토큰 미포함.
+- 시험: create 순서·부모 없음·force·mode·env.local 차단·org/user·visibility, pr 순서·base_tree·브랜치 존재, 오류 매핑, 토큰 미노출, GHES baseUrl, toZip 동등.
+- 계약 변경 없음(core planGithubTree 는 dev-1 라운드, 통합 교체).
