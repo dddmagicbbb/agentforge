@@ -1,5 +1,5 @@
 {
-  "$comment": "PoC 와 제품의 의도적 차이(ADR-0003·0004·0005). 추가·삭제는 리드 승인. templates: { template(templates/ 상대 경로), defect, adr, reason } — check:poc-static 제외. diffs: { config, path, defect, reason } — golden 내용 비교 제외(대신 전용 시험으로 새 동작을 검증).",
+  "$comment": "PoC 와 제품의 의도적 차이(ADR-0003·0004·0005·0006). 추가·삭제는 리드 승인. templates: { template(templates/ 상대 경로), defect, adr, reason } — check:poc-static 제외. diffs: { config, path, defect, reason } — golden 내용 비교 제외(대신 전용 시험으로 새 동작을 검증).",
   "templates": [
     {
       "template": "static/setup.sh",
@@ -36,6 +36,12 @@
       "defect": "D2",
       "adr": "0004",
       "reason": "채울 자리표시 목록을 dev/review 템플릿과 같게 하고 값의 출처 명시"
+    },
+    {
+      "template": "static/run-agents.sh",
+      "defect": "RUN-04",
+      "adr": "0006",
+      "reason": "tmux 배치(pair·grid·role)·세션 범위 접두키·마우스·pane 로그를 config 에서 읽음(기본값은 pair·C-b 로 동작 동일)"
     }
   ],
   "diffs": [
@@ -80,6 +86,12 @@
       "path": ".claude/settings.json",
       "defect": "S-2",
       "reason": "guard hook matcher 를 Edit|Write|MultiEdit|NotebookEdit 로 확장 (ADR-0005, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": "scripts/run-agents.sh",
+      "defect": "RUN-04",
+      "reason": "run-agents.sh 배치 확장 (ADR-0006, 전 구성 공통)"
     }
   ]
 }
