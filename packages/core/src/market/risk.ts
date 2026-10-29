@@ -1,4 +1,5 @@
-// 가져온 스킬의 위험 검사(MKT-02, design.md 9.2). 순수 함수 — I/O 없음.
+// 가져온 스킬의 위험 검사(MKT-02, design.md 9.2·9.7). 순수 함수 — I/O 없음.
+// 우회 방지를 위해 보수적으로 판정한다(오탐은 사용자 확인으로 해소, 미탐은 보안 사고).
 
 export type RiskCode = "SCRIPTS" | "BANG_COMMAND" | "BROAD_TOOLS" | "BYPASS_PERMISSIONS" | "REMOTE_DOWNLOAD";
 
@@ -7,25 +8,39 @@ export interface SkillFileLike {
   content: string;
 }
 
-const SCRIPT_EXT = /\.(sh|bash|py|js|mjs|cjs|ts|ps1|bat|cmd|exe)$/i;
+export interface SkillMd {
+  /** 키별 첫 값(이어지는 들여쓰기·`- 항목` 줄은 공백으로 합침). frontmatter 가 없으면 null */
+  fm: Record<string, string> | null;
+  /** 같은 키가 여러 번 나오면 모든 값을 공백으로 합친 것 */
+  fmAll: Record<string, string>;
+  body: string;
+}
 
-/** 첫 `---` 블록을 파싱한다(`key: value` 줄, 이어지는 `- 항목` 줄은 값에 공백으로 합침). 없으면 fm 이 null. */
-export function parseSkillMd(content: string): { fm: Record<string, string> | null; body: string } {
+const SCRIPT_EXT = /\.(sh|bash|zsh|py|rb|pl|js|mjs|cjs|ts|ps1|bat|cmd|exe)$/i;
+const isSkillMd = (path: string): boolean => /(^|\/)SKILL\.md$/.test(path);
+
+/** 첫 `---` 블록을 파싱한다(`key : value`, CRLF, 들여쓰기 없는 `- 항목` 허용). */
+export function parseSkillMd(content: string): SkillMd {
   const src = content.replace(/^\uFEFF/, "");
   const m = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/.exec(src);
-  if (!m) return { fm: null, body: src };
+  if (!m) return { fm: null, fmAll: {}, body: src };
   const fm: Record<string, string> = {};
+  const fmAll: Record<string, string> = {};
   let last = "";
+  let first = false;
   for (const line of m[1]!.split(/\r?\n/)) {
-    const kv = /^([A-Za-z][A-Za-z0-9_-]*):[ \t]*(.*)$/.exec(line);
+    const kv = /^([A-Za-z][\w-]*)[ \t]*:[ \t]*(.*)$/.exec(line);
     if (kv) {
       last = kv[1]!;
-      fm[last] = kv[2]!.trim();
-    } else if (last !== "" && /^[ \t]+\S/.test(line)) {
-      fm[last] = `${fm[last]} ${line.trim()}`.trim();
+      first = !(last in fm);
+      if (first) fm[last] = kv[2]!.trim();
+      fmAll[last] = `${fmAll[last] ?? ""} ${kv[2]!.trim()}`.trim();
+    } else if (last !== "" && /\S/.test(line)) {
+      if (first) fm[last] = `${fm[last]} ${line.trim()}`.trim();
+      fmAll[last] = `${fmAll[last]} ${line.trim()}`.trim();
     }
   }
-  return { fm, body: src.slice(m[0].length) };
+  return { fm, fmAll, body: src.slice(m[0].length) };
 }
 
 /** frontmatter 값의 따옴표를 벗긴다. */
@@ -33,26 +48,37 @@ export function unquote(v: string): string {
   return v.replace(/^(["'])(.*)\1$/, "$2");
 }
 
-// Bash(*)·Bash 단독·* 만 광범위로 본다. Bash(git:*) 처럼 범위를 좁힌 항목은 제외.
-const BROAD = /(^|[\s,[\]'"-])(Bash\(\*(?::\*)?\)|Bash|\*)(?=$|[\s,\]'"])/;
-const DOWNLOAD = /\b(curl|wget|Invoke-WebRequest|iwr)\b[^\n]*https?:\/\//i;
-const PIPE_SHELL = /\|\s*(?:sudo\s+)?(?:ba)?sh\b/;
-// 백틱 앞 `!`(동적 명령) 또는 줄 머리 `!`(이미지 `![`·`!=` 제외)
+// Bash(*)·Bash 단독·* 만 광범위로 본다. Bash(git:*)·Bash(npm run *) 처럼 범위를 좁힌 항목은 제외.
+const BROAD = /(^|[\s,[\]'"-])(Bash\(\s*\*(?::\*)?\s*\)|Bash|\*)(?=$|[\s,\]'"])/;
+const DOWNLOAD = /\b(?:curl|wget|Invoke-WebRequest|iwr|Invoke-RestMethod|irm)\b[^\n]*https?:\/\//i;
+const SHELLS = "(?:sh|bash|zsh|dash|ksh)";
+const PIPE_SHELL = new RegExp(
+  String.raw`\|\s*(?:(?:sudo|env|command|exec|nohup|time)\s+(?:-\S+\s+|\w+=\S+\s+)*)*(?:\S*/)?${SHELLS}\b(?![-.\w])|\|\s*(?:iex|Invoke-Expression)\b`,
+  "i",
+);
+const BYPASS = /bypassPermissions|dangerously-skip-permissions/i;
+// 백틱 앞 `!`(동적 명령) 또는 줄 머리 `!`+비공백(이미지 `![`·`!=` 제외)
 const BANG_INLINE = /!`/;
 const BANG_LINE = /^[ \t]*!(?![[=\s])/m;
+
+/** 줄 이어쓰기(`\`, PowerShell 백틱, 줄 끝 `|`)를 합쳐 한 줄로 만든다. */
+function joinContinuations(s: string): string {
+  return s.replace(/\[ \t]*\r?\n/g, " ").replace(/`[ \t]*\r?\n/g, " ").replace(/\|[ \t]*\r?\n[ \t]*/g, "| ");
+}
 
 /** 위험 코드의 정렬된 고유 목록. */
 export function scanSkillRisk(files: readonly SkillFileLike[]): RiskCode[] {
   const out = new Set<RiskCode>();
   for (const f of files) {
-    const segs = f.path.split("/");
-    if (segs.slice(0, -1).includes("scripts") || SCRIPT_EXT.test(f.path)) out.add("SCRIPTS");
-    if (/permissionMode:\s*["']?bypassPermissions/.test(f.content) || f.content.includes("dangerously-skip-permissions")) out.add("BYPASS_PERMISSIONS");
-    if (DOWNLOAD.test(f.content) || PIPE_SHELL.test(f.content)) out.add("REMOTE_DOWNLOAD");
-    if (f.path === "SKILL.md") {
-      const { fm, body } = parseSkillMd(f.content);
+    const dirs = f.path.split("/").slice(0, -1).map((s) => s.toLowerCase());
+    if (dirs.includes("scripts") || SCRIPT_EXT.test(f.path) || f.content.replace(/^\uFEFF/, "").startsWith("#!")) out.add("SCRIPTS");
+    if (BYPASS.test(f.content)) out.add("BYPASS_PERMISSIONS");
+    const joined = joinContinuations(f.content);
+    if (DOWNLOAD.test(joined) || PIPE_SHELL.test(joined)) out.add("REMOTE_DOWNLOAD");
+    if (isSkillMd(f.path)) {
+      const { fmAll, body } = parseSkillMd(f.content);
       if (BANG_INLINE.test(body) || BANG_LINE.test(body)) out.add("BANG_COMMAND");
-      const tools = fm?.["allowed-tools"];
+      const tools = fmAll["allowed-tools"];
       if (tools !== undefined && BROAD.test(tools)) out.add("BROAD_TOOLS");
     }
   }

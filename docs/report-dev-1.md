@@ -67,3 +67,12 @@
 - `checks()`(화면 경고)는 IMPORT_UNACKED 만 files 기준으로 맞췄다. 나머지 4종(NO_SKILL_MD 등)은 validate 에서만 보고되며 web i18n 키가 필요하다 — dev-3/서버가 가져오기 단계에서 처리하거나 추후 checks 확장 필요.
 - 기본값(imported 없음) golden·스냅샷 불변.
 - 위험: BANG_LINE 은 줄 머리 `!`(공백·`[`·`=` 제외)를 모두 본다. 마크다운 본문의 `!중요` 같은 문구는 오탐 가능(보수적 방향).
+
+## PH7 1라운드 반려 대응 (review-1, design.md 9.7)
+- 새 사례 18건을 먼저 추가해 실패를 확인한 뒤 `market/risk.ts` 를 고쳤다. core 439 통과·3 건너뜀, web 109, typecheck·lint 0.
+- B1 `key : value`, B2 들여쓰기 없는 `- 항목`(CRLF), 같은 키 반복 병합, 경로가 `SKILL.md` 로 끝나는 모든 파일(BROAD_TOOLS·BANG_COMMAND).
+- B3 줄 이어쓰기(`\`, 백틱, 줄 끝 `|`) 합친 뒤 검사. B4 파이프 대상 `sh|bash|zsh|dash|ksh`(sudo/env 접두·옵션·경로·대소문자) + `iex`·`Invoke-Expression`. `irm`·`Invoke-RestMethod` 추가.
+- B5·B6 어느 파일이든 `bypassPermissions`(대소문자 무시)·`dangerously-skip-permissions` 문자열이면 위험.
+- SCRIPTS: `scripts/` 대소문자 무시, `.zsh .rb .pl`, 첫 줄 `#!`. 
+- 보강 시험: iwr/Invoke-WebRequest, 따옴표 name, 크기 경계 512,000/512,001, README·LICENSE 앞 SKILL.md 순서, `reference/a.md` 의 `` !`id` `` 는 BANG 아님. 오탐 유지: `Bash(git:*)`, `Bash(npm run *)`, `| shasum`.
+- `invariants.ts` CRLF 를 LF 로 정리.
