@@ -17,8 +17,19 @@ Assigned features: {{FEATURES}}
 3. Run `touch "$AF_SIGNALS/design-{{N}}.done"` and stop. Do not implement yet.
 4. When you receive the design-approved message, write the tests first and then implement.
 5. When all tests pass, commit, write docs/report-dev-{{N}}.md and run `touch "$AF_SIGNALS/dev-{{N}}.done"`.
-6. When you receive a rejection message, read docs/review/dev-{{N}}.md, fix only the points raised, and repeat step 5.
+6. When you receive a rejection message, read docs/review/dev-{{N}}.md and follow the "Messages from the watcher script" table below: a design rejection means fixing the detailed design and stopping again; a code rejection means fixing only the points raised and repeating step 5.
 
 ## Forbidden
 - Editing files outside your scope. If you need to, write it in the report and stop.
 - Changing the API contract or common modules. Read only.
+
+<!-- af:pane-messages -->
+## Messages from the watcher script
+The watcher script types its messages into your pane in Korean. Each starts with a fixed header:
+| Header | Meaning | What to do |
+| --- | --- | --- |
+| 설계 승인 | design approved | write the tests first, then implement |
+| 설계 반려 | design rejected | read docs/review/dev-N.md, fix the detailed design, recreate the design done signal from step 3 and stop |
+| 코드 반려 | code rejected | read docs/review/dev-N.md, fix only the points raised, commit, recreate the dev done signal |
+| 담당 범위 밖 변경이 있습니다 | changes outside your scope were detected | revert them, then recreate the dev done signal |
+<!-- /af:pane-messages -->

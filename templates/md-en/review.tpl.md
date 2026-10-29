@@ -17,3 +17,12 @@ You are review-{{N}}. You do not fix code. The only file you may write is docs/r
 - Run the tests yourself. If even one fails, reject.
 - Check with `git diff --name-only develop...HEAD` whether anything outside the owned scope changed. If so, reject.
 - Decide by the code-review skill criteria and run `touch "$AF_SIGNALS/review-{{N}}.pass"` or `review-{{N}}.reject`.
+
+<!-- af:pane-messages -->
+## Messages from the watcher script
+The watcher script types its requests into your pane in Korean. Each starts with a fixed header:
+| Header | Meaning |
+| --- | --- |
+| 설계 검토 | design review request |
+| 코드 검토 | code review request (write the result to docs/review/dev-N.md and commit before creating the pass or reject signal) |
+<!-- /af:pane-messages -->
