@@ -20,7 +20,7 @@ teardown() {
 #   layout 이 '-' 이면 tmux 키를 넣지 않는다(미지정 = 기본 구성)
 prepare() {
   local layout="$1" prefix="${2:-C-b}" mouse="${3:-false}" logs="${4:-false}"
-  cd "$BATS_TEST_TMPDIR" || return 1
+  mkdir -p "${BASE:-$BATS_TEST_TMPDIR}" && cd "${BASE:-$BATS_TEST_TMPDIR}" || return 1
   if [ "$layout" = "-" ]; then
     cp "$REPO/tests/golden/g3-claude-only/input.json" in.json
   else
@@ -179,4 +179,13 @@ design_signal_reaches_review_1() {
   [ "$(tmux show-options -g prefix)" = "prefix C-b" ]
   [ "$(tmux show-options -g mouse)" = "mouse off" ]
   design_signal_reaches_review_1
+}
+
+@test "8.2 logs=true + 상위 폴더에 한글·공백, LC_ALL=C: 모든 에이전트의 로그 파일이 생긴다(경로 인용)" {
+  BASE="$BATS_TEST_TMPDIR/프로 젝트"
+  prepare grid C-b false true
+  export LC_ALL=C
+  start_all
+  local a; for a in dev-1 review-1 dev-2 review-2; do wait_file 20 "$P/.agentforge/logs/$a.log"; done
+  grep -qx ".agentforge/logs/" .gitignore
 }
