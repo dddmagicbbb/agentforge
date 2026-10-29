@@ -6,12 +6,14 @@
 #   4) 둘 다 아니면 "건너뜀" 으로 끝낸다(exit 0)
 # 사용: bash tests/scripts/devcontainer-check.sh   (사전 조건: pnpm build)
 set -euo pipefail
+# AF_DEVCONTAINER_REQUIRED=1 이면 건너뛰는 대신 실패(exit 1)한다(CI 에서 조용히 건너뛰는 것을 막는 용도)
+skip() { echo "건너뜀: $1"; [ "${AF_DEVCONTAINER_REQUIRED:-}" = "1" ] && { echo "실패: AF_DEVCONTAINER_REQUIRED=1 인데 확인을 수행하지 못했습니다"; exit 1; }; exit 0; }
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 VERIFY='tmux -V && jq --version && claude --version'
 
-for t in node jq unzip; do command -v "$t" >/dev/null || { echo "건너뜀: $t 없음"; exit 0; }; done
+for t in node jq unzip; do command -v "$t" >/dev/null || skip "$t 없음"; done
 [ -f "$REPO/packages/core/dist/index.js" ] && [ -f "$REPO/packages/exporter/dist/index.js" ] \
-  || { echo "건너뜀: pnpm build 먼저"; exit 0; }
+  || skip "pnpm build 먼저"
 
 work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT
 jq '.devcontainer = true' "$REPO/tests/golden/g3-claude-only/input.json" > "$work/in.json"
@@ -26,6 +28,9 @@ post="$(jq -r '.postCreateCommand // empty' "$cfg")"
 [ -n "$image" ] || { echo "실패: image 가 비었습니다"; exit 1; }
 [ -n "$post" ] || { echo "실패: postCreateCommand 가 비었습니다"; exit 1; }
 [ "$(jq -r '.remoteEnv.AF_IN_CONTAINER // empty' "$cfg")" = "1" ] || { echo "실패: remoteEnv.AF_IN_CONTAINER 가 1 이 아닙니다"; exit 1; }
+[ "$(jq -r '.name // empty' "$cfg")" = "$(jq -r .name "$work/in.json")" ] || { echo "실패: name 이 프로젝트 slug 와 다릅니다"; exit 1; }
+perm="$(ls -l "$cfg" | cut -c1-10)"
+[ "$perm" = "-rw-r--r--" ] || { echo "실패: devcontainer.json 권한이 644 가 아닙니다($perm)"; exit 1; }
 echo "구조 확인 통과: image=$image"
 
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
@@ -35,7 +40,7 @@ elif [ "${AF_IN_DEVCONTAINER_IMAGE:-}" = "1" ]; then
   echo "현재 환경(이미지 안)에서 확인"
   (cd "$proj" && bash -lc "set -e; $post; $VERIFY")
 else
-  echo "건너뜀: docker 가 없고 AF_IN_DEVCONTAINER_IMAGE=1 도 아닙니다(구조 확인만 수행)"
-  exit 0
+  echo "구조 확인 통과 후 실동작 확인은 생략합니다"
+  skip "docker 가 없고 AF_IN_DEVCONTAINER_IMAGE=1 도 아닙니다"
 fi
 echo "통과: postCreateCommand 실행 후 tmux·jq·claude 확인"

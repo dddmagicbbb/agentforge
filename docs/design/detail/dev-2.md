@@ -150,3 +150,34 @@ wait-and-review.sh 의 이력 이름이 `date +%s` 라 같은 초에 두 번 소
 
 ### P6-3. 계약 변경
 없음. `templates/` 수정 없음.
+
+## PH6 2라운드: T-611·T-613
+
+### P6R2-1. 파일
+| 파일 | 책임 |
+|---|---|
+| `tests/scripts/check-models.bats` (신규) | design.md 8.3 `scripts/check-models.sh` 판정·대상·요약·호출 형태·비밀 |
+| `tests/scripts/devcontainer-check.sh` (신규) | design.md 8.4 생성 devcontainer.json 의 구조 확인과 postCreateCommand 실동작 확인 |
+
+### P6R2-2. 시험 데이터
+- golden `ui-off-dev2-litellm`(project=batch-hub, agents 9개: litellm 경유 planner·dev-1·review-2, ollama dev-2, claude 나머지). check-models.sh 는 현재 정적 템플릿을 복사해 쓴다.
+- 가짜 claude: `--agent <a>` 로 에이전트를 알아내 `$FAKE_DIR/<a>.out|rc|sleep` 대로 출력·종료·지연하고, 받은 인자와 표준입력 EOF 여부(`stdin-rc=1`)를 기록한다.
+- 키 값은 시험 전용 문자열(`SECRET`)을 `env.local` 의 `LITELLM_MASTER_KEY` 로 넣는다.
+
+### P6R2-3. 사례 표
+| 계약 | 사례 |
+|---|---|
+| 8.3 통과 | 값 있음 + num_turns 3 → ✓, exit 0 |
+| 8.3 경계 | num_turns=2 통과(`>=2` 변이 검출), num_turns=1 경고 |
+| 8.3 경고 | 값 없음 / num_turns<2 → !, exit 0 |
+| 8.3 실패 | is_error / claude exit 3 / JSON 깨짐 / agent-env 키 누락(claude 미호출) / AF_CHECK_TIMEOUT 초과 → ✗, exit 1 |
+| 8.3 대상·요약 | 인자 지정 에이전트만, 인자 없으면 agents 전부, 혼합 요약 `통과 1 · 경고 1 · 실패 1` + exit 1 |
+| 8.3 호출 형태 | `--agent <a>`·`--output-format json`·`--max-turns 3`·`-p`, 표준입력 /dev/null |
+| 8.3 비밀 | litellm 에이전트로 통과·경고(값 없음)·경고(num_turns=1)·is_error·JSON 깨짐·claude exit≠0 각각 실행해 출력에 키 값·응답 원문이 없음 |
+| 8.4 구조 | devcontainer: true 입력 → `.devcontainer/devcontainer.json` 의 name=slug·image·postCreateCommand·remoteEnv.AF_IN_CONTAINER=1·mode 644 |
+| 8.4 docker | docker 가 있으면 이미지로 컨테이너를 띄워 postCreateCommand 후 tmux·jq·claude 버전 확인 |
+| 8.4 이미지 안 | docker 없이 `AF_IN_DEVCONTAINER_IMAGE=1` 이면 현재 환경에서 같은 확인 |
+| 8.4 건너뜀 | 둘 다 아니면 구조 확인만 하고 exit 0. `AF_DEVCONTAINER_REQUIRED=1` 이면 exit 1 |
+
+### P6R2-4. 계약 변경
+없음.

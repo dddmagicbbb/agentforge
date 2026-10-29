@@ -24,3 +24,8 @@
 1. `pnpm build` 이후 단계로 `bash tests/scripts/devcontainer-check.sh` 를 ubuntu 잡에 추가(docker 가 있는 러너에서는 컨테이너 방식으로 자동 실행).
 2. docker 없이 이미지 안에서 돌리려면 잡에 `container: mcr.microsoft.com/devcontainers/javascript-node:22` 를 지정하고 `AF_IN_DEVCONTAINER_IMAGE=1` 을 설정(이 경우 postCreateCommand 의 `sudo apt-get`·`npm install -g` 가 외부 네트워크를 쓴다).
 3. 폐쇄망·네트워크 제한 러너에서는 건너뜀(exit 0)이므로 필수 단계가 아니라 별도 선택 잡으로 두는 것을 권장.
+
+## 2라운드 반려 반영 (review-2)
+- T-611: 비밀 미출력 사례를 판정 경로별로 분리(통과·경고 값 없음·경고 num_turns=1·is_error·JSON 깨짐·claude exit≠0, 모두 litellm 에이전트로 `ANTHROPIC_AUTH_TOKEN` 에 키가 실린 상태에서 출력에 키·응답 원문이 없음을 단언). 경계값 num_turns=2 통과 사례 추가. 설계 문서에 "PH6 2라운드: T-611·T-613" 절 추가.
+- T-613: `AF_DEVCONTAINER_REQUIRED=1` 이면 건너뛰는 대신 exit 1. 구조 확인에 name=slug·mode 644 추가.
+- 참고: `run-agents.bats` 의 작은따옴표 경로 사례는 bash 5.3(WSL)에서 현재 `sq` 가 올바르므로 회귀 검출력은 인용이 달라지는 환경, 특히 macOS 기본 bash 3.2 CI 에서 의미가 있다(`sq` 를 따옴표 미처리로 바꾸면 실패하는 것은 WSL 에서 변이로 확인).
