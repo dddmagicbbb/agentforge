@@ -13,7 +13,7 @@ import { renderDevcontainer } from "./devcontainer.js";
 import { renderGitignore, renderPrdTemplate, renderRequirements, STATIC_SCRIPTS, staticScript } from "./scaffold.js";
 import { renderSettings } from "./settings.js";
 import { renderCoreSkill, renderImportedSkill } from "./skills.js";
-import { tpl } from "./tpl-source.js";
+import { mdTpl } from "./tpl-source.js";
 import { renderVscodeTasks } from "./vscode.js";
 
 /**
@@ -36,26 +36,26 @@ export function renderProject(p: Project): RenderedFile[] {
   for (const { d, n } of c.readyDevs()) {
     add(`.claude/agents/dev-${n}.md`, renderDevAgent(c, d, n), { ai: true });
     add(`.claude/agents/review-${n}.md`, renderReviewAgent(c, d, n), { ai: true });
-    add(`.claude/devs/dev-${n}.paths`, renderDevPaths(d, n), { ai: true });
+    add(`.claude/devs/dev-${n}.paths`, renderDevPaths(d, n, p.language), { ai: true });
     add(`.claude/devs/review-${n}.paths`, renderReviewPaths(n));
-    add(`.claude/skills/${devSkill(d, n)}/SKILL.md`, renderDevSkill(d, n), { ai: true });
+    add(`.claude/skills/${devSkill(d, n)}/SKILL.md`, renderDevSkill(d, n, p.language), { ai: true });
   }
   for (const k of CORE_SKILLS) if (c.enabledSkill(k.id)) add(`.claude/skills/${k.id}/SKILL.md`, renderCoreSkill(c, k.id));
-  for (const m of p.imported) add(`.claude/skills/${m.id}/SKILL.md`, renderImportedSkill(m));
+  for (const m of p.imported) add(`.claude/skills/${m.id}/SKILL.md`, renderImportedSkill(m, p.language));
   add(".agentforge/forge.config.json", renderConfig(c));
   add(".agentforge/requirements.md", renderRequirements(c));
   add(".agentforge/env.local.example", renderEnvExample(c));
   add(".agentforge/templates/prd.md", renderPrdTemplate(c));
   // /forge-agents 가 채우는 템플릿은 치환하지 않은 원문 그대로(ADR-0002)
-  add(".agentforge/templates/dev.md", tpl("md/dev.tpl.md"));
-  add(".agentforge/templates/review.md", tpl("md/review.tpl.md"));
-  add(".agentforge/templates/dev-skill.md", tpl("md/devskill.tpl.md"));
+  add(".agentforge/templates/dev.md", mdTpl("dev.tpl.md", p.language));
+  add(".agentforge/templates/review.md", mdTpl("review.tpl.md", p.language));
+  add(".agentforge/templates/dev-skill.md", mdTpl("devskill.tpl.md", p.language));
   if (c.usesVia("litellm")) add(".agentforge/litellm.yaml", renderLitellm(c));
   add("scripts/setup.sh", staticScript("setup.sh"), { exec: true });
   add("scripts/agent-env.sh", renderAgentEnv(c), { exec: true });
   for (const name of STATIC_SCRIPTS.filter((s) => s !== "setup.sh")) add(`scripts/${name}`, staticScript(name), { exec: true });
   if (c.usesVia("litellm")) add("scripts/start-gateway.sh", staticScript("start-gateway.sh"), { exec: true });
-  add(".vscode/tasks.json", renderVscodeTasks());
+  add(".vscode/tasks.json", renderVscodeTasks(p.language));
   if (p.devcontainer === true) add(".devcontainer/devcontainer.json", renderDevcontainer(c));
   const keep = ["docs/design/detail/.gitkeep", "docs/review/.gitkeep", "docs/report/.gitkeep", "docs/adr/.gitkeep"];
   for (const k of p.uiDesign ? [...keep, "docs/design/ui/.gitkeep"] : keep) add(k, "");

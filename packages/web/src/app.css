@@ -79,3 +79,5 @@ pre { white-space: pre-wrap; border: 1px solid var(--line); border-radius: 6px; 
 .tmux-settings { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; border: 1px solid var(--line); border-radius: 6px; margin: 8px 0; }
 .tmux-settings .issues { flex-basis: 100%; }
 .chk { display: inline-flex; gap: 6px; align-items: center; }
+.block { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+.block textarea { font-family: ui-monospace, monospace; font-size: 12px; }

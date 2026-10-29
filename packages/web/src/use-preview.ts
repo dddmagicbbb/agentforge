@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { canExport, checks, render, validate, type Issue, type ProjectInput, type RenderedFile } from "@agentforge/core";
+import { AppError, canExport, checks, mergeClaudeMd, render, validate, type Issue, type ProjectInput, type RenderedFile } from "@agentforge/core";
 
 export interface Preview {
   /** validate 오류 + checks 경고를 합친 목록(중복 제거) */
@@ -37,4 +37,20 @@ export function buildPreview(draft: ProjectInput): Preview {
 
 export function usePreview(draft: ProjectInput): Preview {
   return useMemo(() => buildPreview(draft), [draft]);
+}
+
+/**
+ * 기존 CLAUDE.md(DOC-03): 값이 있으면 생성된 CLAUDE.md 를 mergeClaudeMd(old, next) 결과로 바꾼다.
+ * 비어 있으면 같은 배열을 돌려준다. 마커 오류는 error issue 로 바꾸고 파일은 원본 그대로 둔다.
+ */
+export function applyExistingClaudeMd(files: readonly RenderedFile[], oldMd: string): { files: readonly RenderedFile[]; issues: readonly Issue[] } {
+  const target = files.find((f) => f.path === "CLAUDE.md");
+  if (oldMd.trim() === "" || !target) return { files, issues: [] };
+  try {
+    const content = mergeClaudeMd(oldMd, target.content);
+    return { files: files.map((f) => (f === target ? { ...f, content } : f)), issues: [] };
+  } catch (e) {
+    if (!(e instanceof AppError) || e.code !== "CLAUDE_MD_MARKERS") throw e;
+    return { files, issues: [{ level: "error", code: e.code, path: ["existingClaudeMd"], params: { ...e.params } }] };
+  }
 }

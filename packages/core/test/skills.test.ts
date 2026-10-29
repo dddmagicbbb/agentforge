@@ -119,7 +119,7 @@ describe("core 공개 export", () => {
     });
     expect(core.IMPORT_TARGET_LABEL.all).toContain("review-*");
     expect(core.fmModel({ provider: "vllm", model: "m" })).toBe("inherit");
-    expect(core.label({ provider: "claude", model: "opus" })).toBe("Claude opus");
+    expect(core.label({ provider: "claude", model: "opus" }, "ko")).toBe("Claude opus");
   });
   it("seqI18nKey 는 문장이 아닌 키만 돌려준다", () => {
     expect(core.seqI18nKey("planner", "out")).toBe("seq.planner.out");

@@ -178,3 +178,12 @@ core/exporter 변경 없음.
 
 ## 시험
 `test/round6-tmux.test.tsx`, review-3 권고 반영으로 `test/i18n-parity.test.tsx` 강화(en.steps 값 기대, 미리보기 파일 목록·README 동일 비교).
+
+# PH6 3라운드 — T-624 (DOC-03 화면)
+- `use-preview.ts` `applyExistingClaudeMd(files, oldMd)`: 비어 있으면 같은 배열, 있으면 CLAUDE.md 만 `mergeClaudeMd(old, next)` 결과로 교체. `CLAUDE_MD_MARKERS` 는 error issue(path `["existingClaudeMd"]`, params.id)로 바꾸고 파일은 원본 유지.
+- `App.tsx`: 기존 CLAUDE.md 는 저장하지 않는 상태(useState). 병합 결과를 미리보기·ZIP·단계 바 오류에 공통 적용. 오류면 `exportable=false`.
+- `StepGenerate.tsx`: textarea(`doc.label`), 안내 2줄(`doc.hint`, `doc.note`: 코드블록 안 마커도 셈, 저장 안 함).
+- `issue-step.ts`: `existingClaudeMd` -> 6단계(인덱스 5).
+- 시험: `test/round7-doc.test.tsx`.
+- 공백만 있는 입력은 빈 값으로 본다(`oldMd.trim() === ""` -> 생성본 그대로). 사용자가 실수로 남긴 공백이 병합을 일으키지 않게 하려는 의도다.
+- 마커 오류 시 textarea 는 `aria-invalid` + `aria-describedby="doc-hint doc-note doc-error"`. 6단계 검사 목록은 `current={5}` 로 현재 단계 이동 버튼을 숨긴다.
