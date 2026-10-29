@@ -9,6 +9,12 @@ sig="$root/.agentforge/signals"; log="$root/docs/report"; mkdir -p "$log"
 for i in $(seq 1 "$n"); do
   [ -f "$sig/review-$i.passed" ] || { echo "dev-$i 가 아직 검증을 통과하지 않았습니다." >&2; exit 1; }
 done
+# 검토 파일 확인(S-4): 병합 전에 전원의 docs/review/dev-i.md 가 feature 브랜치에 커밋돼 있어야 한다
+missing=""
+for i in $(seq 1 "$n"); do
+  git cat-file -e "feature/dev$i:docs/review/dev-$i.md" 2>/dev/null || missing+=" dev-$i"
+done
+[ -z "$missing" ] || { echo "검토 파일(docs/review/dev-N.md)이 feature 브랜치에 없습니다:$missing. 병합하지 않습니다." >&2; exit 1; }
 [ -z "$(git status --porcelain)" ] || { echo "메인 폴더에 커밋하지 않은 변경이 있습니다." >&2; exit 1; }
 
 git checkout develop
