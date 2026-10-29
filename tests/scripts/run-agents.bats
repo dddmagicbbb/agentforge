@@ -189,5 +189,10 @@ design_signal_reaches_review_1() {
   tmux_sandbox
   start_all
   local a; for a in dev-1 review-1 dev-2 review-2; do wait_file 20 "$P/.agentforge/logs/$a.log"; done
+  # 정확한 경로에 파일이 있고, 따옴표가 빠진 경로(결함 인용의 결과)에는 아무것도 생기지 않아야 한다
+  for a in dev-1 review-1 dev-2 review-2; do [ -f "$P/.agentforge/logs/$a.log" ]; done
+  [ "$P" = "$BASE/g3-demo" ]
+  [ ! -e "${BASE//\'/}" ]
+  [ "$(find "$BATS_TEST_TMPDIR" -maxdepth 1 -name "*its*" | wc -l | tr -d ' ')" -eq 0 ]
   grep -qx ".agentforge/logs/" .gitignore
 }
