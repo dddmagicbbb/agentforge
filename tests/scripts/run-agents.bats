@@ -65,8 +65,7 @@ pane_in() {
 pane_order() {
   local w="$1"; shift
   local want="" a; for a in "$@"; do want+="$(cat "$PANES/$a") "; done
-  local got; got="$(tmux list-panes -t "$SESSION:$w" -F '#{pane_id}' | tr '
-' ' ')"
+  local got; got="$(tmux list-panes -t "$SESSION:$w" -F '#{pane_id}' | tr '\n' ' ')"
   [ "$got" = "$want" ] || { echo "pane 순서 불일치($w): 실제 [$got] 기대 [$want]"; return 1; }
 }
 
@@ -181,10 +180,13 @@ design_signal_reaches_review_1() {
   design_signal_reaches_review_1
 }
 
-@test "8.2 logs=true + 상위 폴더에 한글·공백, LC_ALL=C: 모든 에이전트의 로그 파일이 생긴다(경로 인용)" {
-  BASE="$BATS_TEST_TMPDIR/프로 젝트"
+@test "8.2 logs=true + 상위 폴더에 한글·공백·작은따옴표, LC_ALL=C(tmux 서버도 C 로 재기동): 모든 에이전트의 로그 파일이 생긴다(경로 인용)" {
+  BASE="$BATS_TEST_TMPDIR/프로 젝트 it's"
   prepare grid C-b false true
+  # tmux 서버(pane 셸의 환경)도 LC_ALL=C 로 새로 띄운다
   export LC_ALL=C
+  tmux kill-server
+  tmux_sandbox
   start_all
   local a; for a in dev-1 review-1 dev-2 review-2; do wait_file 20 "$P/.agentforge/logs/$a.log"; done
   grep -qx ".agentforge/logs/" .gitignore

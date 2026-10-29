@@ -9,5 +9,5 @@
 
 | 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
 |---|---|---|---|---|
-| T-612 | 작성 완료(계약 기준 TDD). review-2 반려 반영: prefix 긍정 단언(`C-a`), grid·role pane 순서 단언(`pane_order`), pair+prefix·mouse 사례 추가 | `tests/scripts/run-agents.bats`(신규, 사례 7개), `docs/design/detail/dev-2.md` | WSL btb: pair 기본 사례 통과, 나머지는 dev-1 구현(T-60x) 전이라 실패가 정상. 리드 통합 브랜치에서는 전 사례 통과 확인(리드 보고) | 없음 |
-| T-614 | 작성 완료. 기존 통합 사례 4건 준비 단계에 검토 파일 커밋(`add_reviews`) 추가, S-4 사례 3건 추가(누락·미커밋·요청 문구) | `tests/scripts/parallel-mock.bats` | 기존 사례 통과, S-4 3건은 dev-1 T-606 구현 전까지 실패가 정상 | 가정: 병합 전에 전원의 검토 파일을 먼저 확인해 develop 이 하나도 바뀌지 않음(시험이 단언). 실패 안내에 누락 개발자 `dev-N` 포함 |
+| T-612 | 작성 완료(계약 기준 TDD). review-2 반려 반영: prefix 긍정 단언(`C-a`), grid·role pane 순서 단언(`pane_order`), pair+prefix·mouse 사례 추가 | `tests/scripts/run-agents.bats`(신규, 사례 8개), `docs/design/detail/dev-2.md` | int-r1b(dev-1 구현 포함) bats 22/22 통과(리드 보고). 2라운드에서 한글·공백·작은따옴표 경로 + LC_ALL=C tmux 재기동 사례로 보강(dev-1 sq 인용 수정 전이면 실패가 정상) | 없음 |
+| T-614 | 작성 완료. 기존 통합 사례 4건 준비 단계에 검토 파일 커밋(`add_reviews`) 추가, S-4 사례 3건 추가(누락·미커밋·요청 문구) | `tests/scripts/parallel-mock.bats` | 기존 사례 통과, S-4 3건 포함 int-r1b 통과(리드 보고) | 가정: 병합 전에 전원의 검토 파일을 먼저 확인해 develop 이 하나도 바뀌지 않음(시험이 단언). 실패 안내에 누락 개발자 `dev-N` 포함 |

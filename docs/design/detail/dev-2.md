@@ -143,6 +143,7 @@ wait-and-review.sh 의 이력 이름이 `date +%s` 라 같은 초에 두 번 소
 | 8.2 pair + prefix·mouse | 배치는 pair(dev1·dev2 창)이고 옵션만 세션 범위로 적용(배치·옵션 분기 독립) |
 | 8.2 기본값 | tmux 지정이나 C-b·mouse false·logs false: 세션 옵션 없음, logs 폴더·gitignore 항목 없음 |
 | 8.2 logs | logs=true: `.agentforge/logs/<에이전트>.log` 4개 생성, `.gitignore` 에 `.agentforge/logs/` |
+| 8.2 logs + 경로 인용 | 상위 폴더에 한글·공백·작은따옴표(`프로 젝트 it's`), 시험 중 `LC_ALL=C` 로 tmux 서버를 재기동하고 run-agents 실행: 4개 로그 파일 모두 생성 |
 | 8.6 S-4 누락 | dev-2 검토 파일 없음: integrate exit 1, develop 불변, integrator 미실행 |
 | 8.6 S-4 미커밋 | 작업 트리에만 있고 커밋 안 됨: 위와 동일 |
 | 8.6 S-4 요청 문구 | review-1 코드 검토 요청에 `docs/review/dev-1.md` 가 포함 |
