@@ -37,3 +37,18 @@
 
 ## 설계 메모
 - check-models.sh: 에이전트별 서브셸(`( check_one )`)로 agent-env 환경 격리, 종료 코드 0/1/2 를 집계. 사유 문구는 고정(키·응답 원문 미출력). `timeout` 없으면 제한 없이 실행.
+
+---
+
+# PH6 3라운드 (ph6/dev1-r3): T-605
+
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+| --- | --- | --- | --- | --- |
+| T-605 I18N-01 | 완료 | `templates/md-en/*`(16종), `render/text.ts`(신규), `render/tpl-source.ts`, `render/{claude-md,readme,agents,dev-agents,skills,scaffold,index,env-example,litellm,vscode,context}.ts`, `test/i18n-en.test.ts`(신규), `test/schema.test.ts`(템플릿 43종) | core 375 통과·3 건너뜀, lint·typecheck 0, `check:poc-static` 통과 | 아래 |
+
+## 리드 조치·참고
+- 기본값(ko) 출력은 불변이라 golden·기존 스냅샷·intended-diffs 변경 없음. en 스냅샷은 신규 파일(`i18n-en.test.ts.snap`).
+- `tools/gen-templates.mjs` 는 변경하지 않았다(md-en 을 이미 내장).
+- en 에서 정적 스크립트가 보내는 한국어 메시지("설계 승인" 등)는 영어 에이전트 본문이 의미로 가리킨다. 실제 en 프로젝트에서 에이전트가 이를 이해하는지는 실기 확인 필요.
+- VS Code 작업 이름은 en 에서 영어("AF: Setup" 등). 한국어 작업 이름을 가정하는 e2e·bats 는 ko 구성만 대상이어야 한다.
+- 영어 `README.md`, `.paths` 주석, env.local.example, litellm.yaml 주석도 영어. `scripts/agent-env.sh` 의 한국어 오류 문구는 정적 스크립트 범위로 유지.

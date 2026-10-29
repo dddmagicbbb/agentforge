@@ -8,6 +8,11 @@ export function tpl(key: string): string {
   return t;
 }
 
+/** 사람이 읽는 md 템플릿. language: en 이면 templates/md-en/ 의 같은 파일명(I18N-01). */
+export function mdTpl(name: string, lang: "ko" | "en"): string {
+  return tpl(`${lang === "en" ? "md-en" : "md"}/${name}`);
+}
+
 /** PoC 방식의 조건부 스킬 줄 제거(`  - tdd\n`) */
 export function dropSkillLine(s: string, id: string, enabled: boolean): string {
   return enabled ? s : s.replace(`  - ${id}\n`, "");
