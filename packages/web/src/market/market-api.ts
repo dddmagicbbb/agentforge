@@ -21,9 +21,10 @@ export interface MarketSource {
   readonly path?: string;
   readonly baseUrl?: string;
   readonly tokenEnv?: string;
-  readonly sha?: string;
-  readonly indexedAt?: string;
-  readonly error?: string;
+  readonly lastSha?: string;
+  readonly lastIndexedAt?: string;
+  /** 마지막 색인 오류 코드 */
+  readonly lastError?: string;
 }
 
 /** 등록 요청 본문. 토큰 값 필드는 없다(tokenEnv 는 서버 환경 변수 "이름"). */
@@ -49,7 +50,7 @@ export interface SearchHit {
   readonly ref?: string | null;
   readonly flags: readonly string[];
   readonly fileCount: number;
-  readonly blocked?: string | boolean;
+  readonly blocked?: "tooLarge" | "binary" | "badPath";
 }
 
 export interface SkillDetail {
@@ -62,16 +63,20 @@ export interface SkillDetail {
   readonly files: readonly { readonly path: string; readonly content: string }[];
 }
 
+/** 갱신 결과. 실패도 HTTP 200 이며 code 로 구분한다 */
 export interface RefreshResult {
   readonly id: string;
-  readonly ok?: boolean;
-  readonly error?: string;
+  readonly ok: boolean;
+  readonly sha?: string;
+  readonly skillCount?: number;
+  readonly code?: string;
+  readonly params?: Record<string, unknown>;
 }
 
 const BASE = "/api/market";
 
+/** 계약(design 9.7)의 정확한 키 하나만 읽는다 */
 const list = <T,>(data: unknown, key: string): T[] => {
-  if (Array.isArray(data)) return data as T[];
   const inner = (data as Record<string, unknown> | null)?.[key];
   return Array.isArray(inner) ? (inner as T[]) : [];
 };
@@ -100,13 +105,13 @@ export function createMarketApi(fetchFn: typeof fetch) {
   const jsonInit = (method: string, body: unknown): RequestInit => ({ method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
   return {
-    /** 서버 존재 감지. 어떤 실패든 false */
-    async health(): Promise<boolean> {
+    /** 서버 존재 감지. 어떤 실패든 null, 성공이면 admin 여부 */
+    async health(): Promise<{ admin: boolean } | null> {
       try {
-        const d = (await call("/health")) as { ok?: unknown } | null;
-        return d?.ok === true;
+        const d = (await call("/health")) as { ok?: unknown; admin?: unknown } | null;
+        return d?.ok === true ? { admin: d.admin === true } : null;
       } catch {
-        return false;
+        return null;
       }
     },
     async sources(): Promise<MarketSource[]> {
@@ -125,7 +130,7 @@ export function createMarketApi(fetchFn: typeof fetch) {
       const p = new URLSearchParams();
       p.set("q", q);
       if (trust) p.set("trust", trust);
-      return list<SearchHit>(await call(`/search?${p.toString()}`), "items");
+      return list<SearchHit>(await call(`/search?${p.toString()}`), "skills");
     },
     async skill(sourceId: string, skillId: string): Promise<SkillDetail> {
       return (await call(`/skills/${encodeURIComponent(sourceId)}/${encodeURIComponent(skillId)}`)) as SkillDetail;

@@ -47,3 +47,8 @@
 - i18n: `market.*`, `risk.*`(5종), `issue.IMPORT_NO_SKILL_MD·NAME_MISMATCH·DUP_PATH·TOO_LARGE`, `SKILL_FILE_PATH`, `SKILL_REF`, `GIT_BRANCH` ko·en 추가, 옛 `skills.market` 삭제.
 - 가정(서버 응답 형태, dev-2 구현과 대조 필요): sources/search/refresh 응답은 배열 또는 `{sources|items|results: []}`; 소스 항목 필드 `id,kind,trust,owner,repo,url,sha,indexedAt,error`; refresh 항목 `{id, ok, error}`; 검색 `blocked` 는 문자열(tooLarge·binary)이거나 true.
 - 남은 위험: core 의 새 issue 코드 문구는 키만 추가(발생 시 path 표시). 번들 여유가 작아 다음 라운드(T-722 GitHub 폼) 추가 시 경고 가능 -> 지연 로딩 필요.
+
+### T-721 계약 보충 반영(design 9.7)
+- health `{ok,version,admin}`: admin=false 면 등록·삭제·갱신 UI 숨기고 "관리자 모드에서만 소스를 바꿀 수 있습니다" 표시.
+- sources `{sources}`(`lastIndexedAt`·`lastSha`·`lastError`), refresh `{results:[{id,ok,code,params}]}`(실패도 200), search `{skills}`(`blocked`: tooLarge|binary|badPath). `list()` 는 정확한 키 하나만 읽는다.
+- 문구 추가: NOT_FOUND·INTERNAL·ADMIN_DISABLED, badPath. web 127개 통과, 메인 번들 499.89 kB(여유 0.1 kB — T-722 는 지연 로딩 필수).

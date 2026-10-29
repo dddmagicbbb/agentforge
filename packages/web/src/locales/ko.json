@@ -103,7 +103,7 @@
     "IMPORT_NAME_MISMATCH": "{{id}}: SKILL.md 의 name 이 스킬 ID 와 다릅니다.",
     "IMPORT_DUP_PATH": "{{id}}: 같은 경로의 파일이 중복되었습니다.",
     "IMPORT_TOO_LARGE": "{{id}}: 스킬 전체 크기가 512,000자를 넘습니다.",
-    "SKILL_FILE_PATH": "스킬 파일 경로가 올바르지 않습니다(상대 경로, 깊이 5 이하, . 과 .. 금지).",
+    "SKILL_FILE_PATH": "스킬 파일 경로가 올바르지 않습니다.",
     "SKILL_REF": "출처 커밋은 7~40자리 소문자 16진수여야 합니다.",
     "GIT_BRANCH": "브랜치 이름이 올바르지 않습니다."
   },
@@ -289,7 +289,7 @@
   "market": {
     "region": "마켓",
     "checking": "서버 확인 중…",
-    "unavailable": "마켓 서버를 찾지 못했습니다. 마켓은 선택 배포 서버를 실행하면 사용할 수 있습니다(packages/server). 서버 없이도 나머지 기능은 그대로 동작합니다.",
+    "unavailable": "마켓 서버를 찾지 못했습니다. 마켓은 선택 배포 서버를 실행하면 사용할 수 있습니다(packages/server).",
     "sources": "소스",
     "addTitle": "소스 등록",
     "searchTitle": "스킬 검색",
@@ -319,7 +319,8 @@
     "blocked": "가져올 수 없음",
     "blockedReason": {
       "tooLarge": "크기 초과",
-      "binary": "텍스트가 아닌 파일 포함"
+      "binary": "텍스트가 아닌 파일 포함",
+      "badPath": "경로가 올바르지 않음"
     },
     "preview": "미리보기",
     "import": "가져오기",
@@ -343,11 +344,15 @@
       "SOURCE_INVALID": "소스 입력값이 올바르지 않습니다.",
       "SOURCE_FETCH_FAILED": "소스에서 스킬을 가져오지 못했습니다.",
       "SOURCE_TIMEOUT": "소스 응답 시간이 초과되었습니다.",
-      "SKILL_BLOCKED": "이 스킬은 가져올 수 없습니다(크기 초과 또는 텍스트가 아닌 파일)."
-    }
+      "SKILL_BLOCKED": "이 스킬은 가져올 수 없습니다.",
+      "NOT_FOUND": "요청한 항목을 찾을 수 없습니다.",
+      "INTERNAL": "서버 내부 오류가 발생했습니다.",
+      "ADMIN_DISABLED": "관리자 모드에서만 소스를 바꿀 수 있습니다."
+    },
+    "adminOnly": "관리자 모드에서만 소스를 바꿀 수 있습니다."
   },
   "risk": {
-    "SCRIPTS": "스크립트 파일이 포함되어 있습니다(scripts/ 또는 실행 가능한 확장자).",
+    "SCRIPTS": "스크립트 파일이 포함되어 있습니다.",
     "BANG_COMMAND": "SKILL.md 에 로드 시 실행되는 동적 명령(! 문법)이 있습니다.",
     "BROAD_TOOLS": "allowed-tools 가 Bash 전체를 허용합니다.",
     "BYPASS_PERMISSIONS": "권한 확인을 건너뛰는 설정(bypassPermissions)이 있습니다.",

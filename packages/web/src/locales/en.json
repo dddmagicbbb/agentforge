@@ -103,7 +103,7 @@
     "IMPORT_NAME_MISMATCH": "{{id}}: the name in SKILL.md differs from the skill ID.",
     "IMPORT_DUP_PATH": "{{id}}: duplicate file paths.",
     "IMPORT_TOO_LARGE": "{{id}}: total skill size exceeds 512,000 characters.",
-    "SKILL_FILE_PATH": "Invalid skill file path (relative, depth 5 or less, no . or ..).",
+    "SKILL_FILE_PATH": "Invalid skill file path.",
     "SKILL_REF": "The source commit must be 7-40 lowercase hex characters.",
     "GIT_BRANCH": "Invalid branch name."
   },
@@ -289,7 +289,7 @@
   "market": {
     "region": "Marketplace",
     "checking": "Checking server…",
-    "unavailable": "The marketplace server was not found. The marketplace is available when the optional server (packages/server) is running. Everything else works without it.",
+    "unavailable": "The marketplace server was not found. The marketplace is available when the optional server (packages/server) is running.",
     "sources": "Sources",
     "addTitle": "Add source",
     "searchTitle": "Search skills",
@@ -319,7 +319,8 @@
     "blocked": "Cannot import",
     "blockedReason": {
       "tooLarge": "too large",
-      "binary": "contains non-text file"
+      "binary": "contains non-text file",
+      "badPath": "invalid file path"
     },
     "preview": "Preview",
     "import": "Import",
@@ -343,11 +344,15 @@
       "SOURCE_INVALID": "The source input is not valid.",
       "SOURCE_FETCH_FAILED": "Could not fetch skills from the source.",
       "SOURCE_TIMEOUT": "The source timed out.",
-      "SKILL_BLOCKED": "This skill cannot be imported (too large or contains non-text files)."
-    }
+      "SKILL_BLOCKED": "This skill cannot be imported.",
+      "NOT_FOUND": "The requested item was not found.",
+      "INTERNAL": "An internal server error occurred.",
+      "ADMIN_DISABLED": "Sources can only be changed in admin mode."
+    },
+    "adminOnly": "Sources can only be changed in admin mode."
   },
   "risk": {
-    "SCRIPTS": "Contains script files (scripts/ or executable extensions).",
+    "SCRIPTS": "Contains script files.",
     "BANG_COMMAND": "SKILL.md has load-time dynamic commands (! syntax).",
     "BROAD_TOOLS": "allowed-tools permits all of Bash.",
     "BYPASS_PERMISSIONS": "Contains a setting that skips permission checks (bypassPermissions).",

@@ -18,6 +18,7 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
   const { t } = useTranslation();
   const api = useMemo(() => createMarketApi(fetchFn ?? ((...a) => globalThis.fetch(...a))), [fetchFn]);
   const [avail, setAvail] = useState<boolean | null>(null);
+  const [admin, setAdmin] = useState(false);
   const [sources, setSources] = useState<readonly MarketSource[]>([]);
   const [srcErr, setSrcErr] = useState<string | null>(null);
   const [refreshErr, setRefreshErr] = useState<Readonly<Record<string, string>>>({});
@@ -42,10 +43,11 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
 
   useEffect(() => {
     let alive = true;
-    void api.health().then((ok) => {
+    void api.health().then((h) => {
       if (!alive) return;
-      setAvail(ok);
-      if (ok) void loadSources();
+      setAvail(h !== null);
+      setAdmin(h?.admin === true);
+      if (h) void loadSources();
     });
     return () => { alive = false; };
   }, [api]);
@@ -84,7 +86,7 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
   const refresh = async (id?: string) => {
     try {
       const res = await api.refresh(id);
-      setRefreshErr(Object.fromEntries(res.filter((r) => r.error).map((r) => [r.id, r.error!])));
+      setRefreshErr(Object.fromEntries(res.filter((r) => !r.ok && r.code).map((r) => [r.id, r.code!])));
       setSrcErr(null);
       await loadSources();
     } catch (e) {
@@ -128,18 +130,20 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
       {err(srcErr)}
       <ul className="msrc">
         {sources.map((s) => {
-          const code = refreshErr[s.id] ?? s.error;
+          const code = refreshErr[s.id] ?? s.lastError;
           return (
             <li key={s.id}>
               <strong>{s.id}</strong> <span className="chip">{t(`market.trust.${s.trust}`)}</span>{" "}
               <code>{s.kind === "git" ? s.url : `${s.owner}/${s.repo}`}</code>
-              {s.sha ? <span className="sub"> · {s.sha.slice(0, 7)}</span> : null}
+              {s.lastSha ? <span className="sub"> · {s.lastSha.slice(0, 7)}</span> : null}
               {code ? <span className="issues"> {t(`market.error.${code}`, { defaultValue: t("market.error.UNKNOWN", { code }) })}</span> : null}{" "}
-              <button type="button" aria-label={t("market.removeSource", { id: s.id })} onClick={() => void remove(s.id)}>{t("market.remove")}</button>
+              {admin ? <button type="button" aria-label={t("market.removeSource", { id: s.id })} onClick={() => void remove(s.id)}>{t("market.remove")}</button> : null}
             </li>
           );
         })}
       </ul>
+      {admin ? (
+        <>
       <div className="row"><button type="button" onClick={() => void refresh()}>{t("market.refreshAll")}</button></div>
 
       <h4>{t("market.addTitle")}</h4>
@@ -167,6 +171,8 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
       <p className="sub">{t("market.tokenEnvHint")}</p>
       {err(formErr)}
       <div className="row"><button type="button" onClick={() => void register()}>{t("market.register")}</button></div>
+        </>
+) : <p className="sub">{t("market.adminOnly")}</p>}
 
       <h4>{t("market.searchTitle")}</h4>
       <div className="row">
