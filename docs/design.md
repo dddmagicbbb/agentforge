@@ -430,3 +430,17 @@ PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙�
 - 위험 코드 5종(9.2): 화면에서 사람이 읽는 문구로 표시
 - AppError: `EXPORT_SECRET_PATH`, `GITHUB_*`
 - 서버: `SOURCE_EXISTS` `SOURCE_INVALID` `SOURCE_FETCH_FAILED` `SOURCE_TIMEOUT` `SKILL_BLOCKED`
+
+### 9.7 PH7 1라운드 보충 계약 (리드 확정)
+- **응답 형태**(서버 구현 기준으로 확정):
+  - `GET /api/market/health` → `{ ok: true, version, admin: boolean }`
+  - `GET /api/market/sources` → `{ sources: SourceRecord[] }`. SourceRecord는 등록 필드에 상태 `lastIndexedAt?`(ISO), `lastSha?`, `lastError?`(오류 코드)를 더한 것이다.
+  - `POST /api/market/refresh` → `{ results: [{ id, ok: true, sha, skillCount } | { id, ok: false, code, params }] }`. 갱신 실패도 HTTP 200이다.
+  - `GET /api/market/search` → `{ skills: [{ sourceId, id, description, trust, src, ref, flags, fileCount, blocked? }] }`. `blocked`는 `"tooLarge" | "binary" | "badPath"`(badPath = 스킬 안 파일 경로가 SkillFilePath 위반, 스킬 전체 차단).
+  - 오류는 `{ code, params }`이고, 추가 코드는 `NOT_FOUND`·`INTERNAL`·`ADMIN_DISABLED`다.
+- **관리 API 보호(SSRF 대책)**:
+  - 등록·삭제·갱신(`POST/DELETE /api/market/sources`, `POST /api/market/refresh`)은 서버 환경 변수 `AF_MARKET_ADMIN=1`일 때만 허용한다. 아니면 403 `ADMIN_DISABLED`.
+  - 읽기(health·sources·search·skills)는 항상 허용한다.
+  - 서버 기본 바인드 주소는 `127.0.0.1`이다.
+  - 화면은 `health.admin`이 false이면 소스 관리 버튼을 숨기고 "관리자 모드에서만 소스를 바꿀 수 있습니다"를 보인다.
+- **위험 판정 연결**: `createServer`의 `scan` 기본값은 core `scanSkillRisk`다(통합 시 연결, 주입은 시험용으로 유지).
