@@ -99,19 +99,23 @@ describe("VSC-02·PRV-03 T-623", () => {
     expect(patch).toHaveBeenLastCalledWith({ devcontainer: undefined });
   });
 
-  it("DEVCONTAINER_CLOSED_NET info 를 5단계에 표시한다", () => {
-    mount(<StepConnection draft={{ ...defaultDraft(), devcontainer: true }} patch={() => undefined} issues={[info]} />);
+  it("DEVCONTAINER_CLOSED_NET info 를 실제 render 결과(devcontainer: true)로 5단계에 표시한다", () => {
+    const draft = { ...defaultDraft(), devcontainer: true };
+    const real = buildPreview(draft).issues;
+    expect(real.some((i) => i.code === "DEVCONTAINER_CLOSED_NET" && i.level === "info")).toBe(true);
+    expect(buildPreview(defaultDraft()).issues.some((i) => i.code === "DEVCONTAINER_CLOSED_NET")).toBe(false);
+    mount(<StepConnection draft={draft} patch={() => undefined} issues={real} />);
     expect(screen.getByRole("status")).toHaveTextContent(/내려받/);
   });
 
   it("6단계 검사 목록에도 표시되고 코드 원문(default)으로 떨어지지 않는다", () => {
-    mount(<StepGenerate draft={defaultDraft()} issues={[info]} files={[]} exportable onStep={() => undefined} />);
+    mount(<StepGenerate existingMd="" onExistingMd={() => undefined} draft={defaultDraft()} issues={[info]} files={[]} exportable onStep={() => undefined} />);
     expect(screen.getByTestId("check-list")).toHaveTextContent(/내려받/);
     expect(screen.getByTestId("check-list")).not.toHaveTextContent("DEVCONTAINER_CLOSED_NET");
   });
 
   it("6단계 '받은 뒤 할 일' 에 모델 점검(토큰 사용 안내)이 있다", () => {
-    mount(<StepGenerate draft={defaultDraft()} issues={[]} files={[]} exportable onStep={() => undefined} />);
+    mount(<StepGenerate existingMd="" onExistingMd={() => undefined} draft={defaultDraft()} issues={[]} files={[]} exportable onStep={() => undefined} />);
     const items = within(screen.getByTestId("next-steps")).getAllByRole("listitem").map((l) => l.textContent);
     const i = items.findIndex((x) => x?.includes("bash scripts/check-models.sh"));
     expect(i).toBeGreaterThan(-1);
@@ -163,7 +167,8 @@ describe("review-3 반려: tmux·devcontainer 오류 단계", () => {
     fireEvent.change(input, { target: { value: "C-1" } });
     expect(input).toHaveAttribute("aria-invalid", "true");
     const ids = input.getAttribute("aria-describedby")!.split(" ");
-    expect(ids.map((id) => document.getElementById(id)?.textContent).join(" ")).toMatch(/C-a/);
+    expect(ids).toContain("tmux-prefix-error");
+    expect(document.getElementById("tmux-prefix-error")).toHaveTextContent("tmux 접두키는 C-a ~ C-z 형식으로 적습니다");
     const dc = screen.getByLabelText("Dev Container 생성");
     expect(document.getElementById(dc.getAttribute("aria-describedby")!)).toHaveTextContent(/devcontainer\.json/);
   });
