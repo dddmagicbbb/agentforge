@@ -37,8 +37,7 @@
 | T-615 | 작성 완료. I18N-01 (a) 화면 en 전환 + ZIP 내용은 화면 언어와 무관, (b) language=en 생성물(README·CLAUDE.md 한글 없음, core 렌더와 동일), DOC-03 (c) 기존 CLAUDE.md 붙여넣기 병합(마커 밖·PROJECT 보존, core `mergeClaudeMd` 결과와 동일) + 마커 오류 시 ZIP 버튼 비활성 | `tests/e2e/i18n-doc.spec.ts`(신규, 4건) | 로컬 Windows 에서 `tsc -p tests/e2e` 통과, (a) 는 Playwright 실행 통과. (b) 는 T-605(생성물 영어, README 에 한글 남음)·(c) 2건은 T-624(입력 UI 없음) 구현 전이라 실패가 정상. 셸 단계는 없음 | 아래 가정 참조. 리드 통합 브랜치에서 4건 모두 확인 필요 |
 | 정리 | `check-models.bats` 19번 제목을 본문(num_turns=2 통과)에 맞춤, `devcontainer-check.sh` SC2012 사유 주석 | `tests/scripts/check-models.bats`, `tests/scripts/devcontainer-check.sh` | `bash -n` 통과 | 없음 |
 
-## 가정(T-624 입력 접근명 미정)
-- 6단계 붙여넣기 입력은 `getByLabel(/CLAUDE\.md/)` 로 찾는다(라벨에 CLAUDE.md 포함 가정). 구현 접근명이 다르면 `pasteBox` 한 곳만 고친다.
-- 마커 오류 시 "ZIP 다운로드" 버튼 또는 "오류 N건을 먼저 해결하세요" 차단 버튼이 모두 disabled 이면 통과로 본다(오류 표시 방식은 단정하지 않음).
+## T-624 접근명 확정
+- 6단계 붙여넣기 입력: 라벨 "기존 CLAUDE.md 붙여넣기(선택)". 마커 오류 시 textarea aria-invalid="true" 와 #doc-error 표시, ZIP 버튼 비활성(정상 "ZIP 다운로드" 또는 차단 "오류 N건을 먼저 해결하세요" 모두 disabled 이면 통과로 봄).
 - (b) 는 요구사항을 영어로 입력하고, 기대값은 `{...defaultDraft(), language: "en", requirement}` 의 core render 와 README·CLAUDE.md 동등 + 한글 정규식 `[가-힣]` 없음으로 단언한다.
 - 로컬 주의: 포트 4173 에 다른 worktree 의 vite preview 가 떠 있으면 `reuseExistingServer` 로 그 오래된 번들을 쓰게 된다(이번에 (a) 가 그 때문에 처음엔 실패). CI 는 `CI` 변수로 재사용하지 않는다.
