@@ -47,11 +47,16 @@ test("I18N-01 (a) 화면 영어 전환: 단계 이름·버튼이 영어이고 ZI
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Download ZIP" }).click()]);
   const buf = await saveDownload(download);
 
-  // 화면 언어는 생성물에 영향이 없다: language=ko 의 README 가 core 기대값과 같다
+  // 화면 언어는 생성물에 영향이 없다: 생성 파일 전체(경로·내용)가 language=ko 의 core 렌더와 같다
   const { name, files } = expectedFiles(defaultDraft());
-  const readme = files.find((f) => f.path === "README.md");
-  expect(readme, "core 가 README.md 를 렌더해야 한다").toBeDefined();
-  expect(await zipText(buf, name, "README.md")).toBe(readme!.content);
+  const { zip, entries } = await readZip(buf);
+  expect(entries.filter((e) => !e.dir).map((e) => e.name).sort()).toEqual(files.map((f) => `${name}/${f.path}`).sort());
+  for (const f of files) expect(await zip.file(`${name}/${f.path}`)!.async("string"), f.path).toBe(f.content);
+
+  // 선택은 저장하지 않는다: 새로 열면 ko
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 2, name: "요구사항", exact: true })).toBeVisible();
+  await expect(page.getByRole("group", { name: "화면 언어" })).toBeVisible();
 });
 
 // ---------------------------------------------------------------- I18N-01 (b) 생성물 언어 en
@@ -83,11 +88,14 @@ const OLD_MD = [
   "USER-PROJECT-NOTE keep inside project section",
   "<!-- AGENTFORGE:PROJECT:END -->",
   "USER-LINE-AFTER keep this too",
+  "<!-- AGENTFORGE:AGENTS:BEGIN -->",
+  "STALE-AGENTS must be replaced",
+  "<!-- AGENTFORGE:AGENTS:END -->",
   "",
 ].join("\n");
 
-// 6단계에서 "기존 CLAUDE.md 붙여넣기" 입력을 찾는다. 접근명은 T-624 구현에서 정해지므로 CLAUDE.md 를 포함하는 라벨로 느슨하게 잡는다.
-const pasteBox = (page: Page) => page.getByLabel(/CLAUDE\.md/);
+// 6단계 "기존 CLAUDE.md 붙여넣기(선택)" 입력(T-624 접근명 확정). 마커 오류는 aria-invalid="true" 와 #doc-error 로 표시된다.
+const pasteBox = (page: Page) => page.getByLabel("기존 CLAUDE.md 붙여넣기(선택)");
 
 test("DOC-03 (c) 기존 CLAUDE.md 를 붙여넣으면 ZIP 의 CLAUDE.md 에 마커 밖 사용자 텍스트·PROJECT 구간이 보존된다", async ({ page }) => {
   await page.goto("/");
@@ -106,6 +114,8 @@ test("DOC-03 (c) 기존 CLAUDE.md 를 붙여넣으면 ZIP 의 CLAUDE.md 에 마�
   // 나머지 자동 구간은 새로 생성한 내용으로 채워진다(core 병합 결과와 동일)
   expect(text).toBe(mergeClaudeMd(OLD_MD, next));
   expect(text).toContain("AGENTFORGE:AGENTS:BEGIN");
+  // 교체 규칙 2: AGENTS 구간 안쪽은 next 내용으로 바뀌어 옛 내용이 남지 않는다
+  expect(text).not.toContain("STALE-AGENTS");
 });
 
 test("DOC-03 (c) 마커 짝이 맞지 않으면 ZIP 버튼이 비활성이다", async ({ page }) => {
@@ -113,6 +123,8 @@ test("DOC-03 (c) 마커 짝이 맞지 않으면 ZIP 버튼이 비활성이다", 
   await goToLastStep(page, "다음");
   // AGENTS 구간에 BEGIN 만 있고 END 가 없다
   await pasteBox(page).fill("# rules\n<!-- AGENTFORGE:AGENTS:BEGIN -->\nbroken\n");
+  await expect(pasteBox(page)).toHaveAttribute("aria-invalid", "true");
+  await expect(page.locator("#doc-error")).toBeVisible();
   // 정상 버튼(ZIP 다운로드) 또는 오류 차단 버튼(오류 N건을 먼저 해결하세요) 중 어느 쪽이든 활성 상태가 아니어야 한다
   const zipButtons = page.getByRole("button", { name: /ZIP 다운로드|먼저 해결/ });
   await expect(zipButtons.first()).toBeVisible();
