@@ -1,4 +1,5 @@
 import type { Issue } from "./api.js";
+import { scanSkillRisk, type SkillFileLike } from "./market/risk.js";
 import { provider } from "./providers/index.js";
 import { PROVIDER_IDS, type ProjectInput, type ProviderIdT } from "./schema/index.js";
 
@@ -21,6 +22,16 @@ type Path = (string | number)[];
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
 const str = (v: unknown): string => (typeof v === "string" ? v : "");
+
+function fileList(v: unknown): SkillFileLike[] | null {
+  if (!Array.isArray(v)) return null;
+  const out: SkillFileLike[] = [];
+  for (const f of v) {
+    if (!isObj(f) || typeof f["path"] !== "string" || typeof f["content"] !== "string") return null;
+    out.push({ path: f["path"], content: f["content"] });
+  }
+  return out;
+}
 
 function agentOf(v: unknown): Agent {
   const o = isObj(v) ? v : {};
@@ -95,7 +106,10 @@ export function checks(input: ProjectInput): Issue[] {
 
   (Array.isArray(p["imported"]) ? p["imported"] : []).forEach((m, i) => {
     const o = isObj(m) ? m : {};
-    if (Array.isArray(o["flags"]) && o["flags"].length > 0 && o["acknowledged"] !== true) {
+    // files 가 올바른 형태면 invariants 와 같이 원문에서 다시 계산, 아니면 입력 flags 기준
+    const files = fileList(o["files"]);
+    const risky = files ? scanSkillRisk(files).length > 0 : Array.isArray(o["flags"]) && o["flags"].length > 0;
+    if (risky && o["acknowledged"] !== true) {
       add("error", "IMPORT_UNACKED", ["imported", i], { id: str(o["id"]) });
     }
   });

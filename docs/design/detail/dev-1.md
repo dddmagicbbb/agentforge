@@ -237,3 +237,14 @@ Issue.params 는 임의 키 허용이라 계약 변경 없음. bats 사례(제�
 - 정적 스크립트가 보내는 한국어 메시지("설계 승인", "반려", "설계 검토", "코드 검토")는 영어 본문에서 의미("design-approved message", "rejection message", "design/code review request")로 가리킨다(본문에 한글을 남기지 않기 위함).
 - 시험: `test/i18n-en.test.ts` — 파일별 자리표시 집합 동일, en 렌더 한글 없음(스크립트·requirements 제외), check-forge 계약(스킬 참조·자리표시), 마커·200줄, en 스냅샷 4구성.
 - `tools/gen-templates.mjs` 는 templates/** 전체를 내장하므로 변경 없음.
+
+---
+
+# PH7 1라운드: T-701 (MKT-02 위험 검사·불변식·가져온 스킬 렌더)
+
+- 파일: `packages/core/src/market/risk.ts`(신규: `scanSkillRisk`, `RiskCode`, `parseSkillMd`), `schema/invariants.ts`(I6 재계산 + 4종 추가), `checks.ts`(files 기준 IMPORT_UNACKED), `render/skills.ts`(`importedSkillFiles`), `render/index.ts`, `src/index.ts`(공개 export), `test/market-risk.test.ts`.
+- 판정: design.md 9.2 표. 코드블록 안 `curl https://` 도 보수적으로 REMOTE_DOWNLOAD. `Bash(git:*)` 등 범위를 좁힌 항목은 BROAD_TOOLS 아님. BANG_COMMAND·BROAD_TOOLS 는 SKILL.md 만, 나머지는 모든 파일.
+- 불변식: files 가 있으면 flags 를 재계산(입력 flags 무시). IMPORT_NO_SKILL_MD / NAME_MISMATCH / DUP_PATH / TOO_LARGE(합계 512,000자). checks 는 files 가 올바른 형태면 같은 재계산, 아니면 입력 flags.
+- 렌더: files 있으면 `.claude/skills/<id>/<path>` 원문(644, template), SKILL.md 먼저·나머지 사전순. 없으면 기존 안내. sources.lock 은 T-702.
+- 시험: `market-risk.test.ts`(판정표 18, 정렬·고유, 불변식 9, 렌더 3), 기존 golden·스냅샷 불변.
+- 계약 변경: 없음(ADR-0007 승인 범위의 invariants 수정).

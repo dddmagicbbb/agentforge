@@ -187,3 +187,34 @@ core/exporter 변경 없음.
 - 시험: `test/round7-doc.test.tsx`.
 - 공백만 있는 입력은 빈 값으로 본다(`oldMd.trim() === ""` -> 생성본 그대로). 사용자가 실수로 남긴 공백이 병합을 일으키지 않게 하려는 의도다.
 - 마커 오류 시 textarea 는 `aria-invalid` + `aria-describedby="doc-hint doc-note doc-error"`. 6단계 검사 목록은 `current={5}` 로 현재 단계 이동 버튼을 숨긴다.
+
+# PH7 1라운드 — T-721 (MKT-01·02 4단계 마켓)
+
+## 1. 작업
+T-721: 4단계 마켓 영역(서버 감지, 소스 CRUD·갱신, 검색, 미리보기, 위험 확인 가져오기). T-722·T-723 은 2라운드.
+
+## 2. 파일
+| 경로 | 책임 |
+| --- | --- |
+| `src/market/market-api.ts` | `createMarketApi(fetch)`: health·sources·add·remove·refresh·search·skill. 오류 응답 `{code,params}` 를 `MarketError(code)` 로 변환 |
+| `src/components/MarketPanel.tsx` | 마켓 UI 전체(서버 없으면 비활성 안내) |
+| `src/steps/StepSkills.tsx` | issues·marketFetch props, 가져온 스킬 목록(대상·확인 체크·제거·issue) |
+| `src/App.tsx` | `marketFetch?` prop 을 StepSkills 로 전달, issues 전달 |
+| `src/locales/*.json` | `market.*`, `risk.*`, `issue.IMPORT_*` 등 |
+
+## 3. 함수
+- `MarketApi.health(): Promise<boolean>` — 실패·비 ok 면 false(예외 없음).
+- 나머지는 실패 시 `MarketError(code, params)`. 네트워크 오류는 `NETWORK`.
+- 요청은 모두 상대 경로 `/api/market/...`. 소스 등록 본문은 필드 화이트리스트(`kind,id,trust,tokenEnv,...`)만 보낸다. 토큰 값 입력란 없음.
+- 미리보기 원문은 `<pre>` 의 텍스트 노드로만 출력(HTML 해석 금지, dangerouslySetInnerHTML 금지).
+
+## 5. 화면 상태
+서버 확인 중 / 없음(비활성 안내) / 있음. 소스·검색·미리보기 각각 로딩·빈 값·오류 코드 표시. blocked 항목은 가져오기 버튼 비활성. 이미 가져온 id 는 중복 추가 금지(버튼 비활성).
+
+## 위험 확인
+가져온 스킬의 `flags` 는 서버 응답 그대로 채운다(core 가 files 있으면 재계산). `acknowledged` 체크 전에는 core `IMPORT_UNACKED` 로 ZIP 이 막히고, 해당 항목 옆(`path[1]` 인덱스)과 6단계 검사 목록에 표시. 저장하지 않는다.
+
+## 6. 테스트 (`test/round8-market.test.tsx`)
+서버 없음 비활성 / 소스 목록·등록 본문(토큰 값 필드 없음)·삭제·갱신·오류 코드 / 검색 / 미리보기 텍스트만 / 위험 스킬 가져오기 -> 체크 전 ZIP 차단·후 해제 / blocked 비활성 / 대상 선택·제거 / i18n 동등(기존).
+
+## 7. 계약 변경: 없음
