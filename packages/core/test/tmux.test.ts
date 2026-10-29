@@ -84,6 +84,7 @@ describe("RUN-04 review-1 반려 대응", () => {
   });
 });
 
+// 주의: Windows 에서 execFileSync("bash") 는 PATH 순서에 따라 WSL(System32) bash 일 수 있다. Git Bash(5.x) 가 앞서야 하며, 달라도 sq 의 POSIX 동작은 같아야 한다.
 describe("RUN-04 sq() 동작(왕복)", () => {
   const ok = (cmd: string) => {
     try {

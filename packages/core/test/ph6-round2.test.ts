@@ -1,3 +1,7 @@
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { checks, defaultDraft, TEMPLATES } from "../src/index.js";
 import { build, find } from "./fixtures.js";
@@ -53,5 +57,59 @@ describe("VSC-02 Dev Container", () => {
     d.devcontainer = true;
     const i = checks(d).find((x) => x.code === "DEVCONTAINER_CLOSED_NET");
     expect(i?.level).toBe("info");
+  });
+});
+
+// check-models.sh 동작 시험: 가짜 claude 가 JSON 을 내는 방식(bash·jq·git 이 있을 때만).
+// 주의: Windows 에서 execFileSync("bash") 는 PATH 순서에 따라 WSL(System32) bash 일 수 있다. Git Bash 가 앞서야 한다.
+const have = (cmd: string, arg: string) => {
+  try {
+    execFileSync(cmd, [arg], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+};
+const canRun = have("bash", "--version") && have("jq", "--version") && have("git", "--version");
+
+describe.skipIf(!canRun)("PRV-03 check-models.sh 동작", () => {
+  function run(args: string[]): { out: string; rc: number } {
+    const dir = mkdtempSync(join(tmpdir(), "af-cm-"));
+    try {
+      mkdirSync(join(dir, "scripts"));
+      mkdirSync(join(dir, ".agentforge"));
+      mkdirSync(join(dir, "bin"));
+      writeFileSync(join(dir, "scripts/check-models.sh"), TEMPLATES["static/check-models.sh"] ?? "");
+      writeFileSync(join(dir, "scripts/agent-env.sh"), 'export ANTHROPIC_MODEL="m-$1"\n');
+      writeFileSync(join(dir, ".agentforge/forge.config.json"), JSON.stringify({ project: "demo", agents: { ok: {}, str: {}, err: {} } }));
+      writeFileSync(
+        join(dir, "bin/claude"),
+        `#!/usr/bin/env bash\ncase "$2" in\n  ok) echo '{"result":"demo","num_turns":2}' ;;\n  str) echo '{"result":"demo","num_turns":"x"}' ;;\n  *) echo '{"is_error":true}' ;;\nesac\n`,
+        { mode: 0o755 },
+      );
+      const r = spawnSync("bash", ["-c", 'export PATH="$PWD/bin:$PATH"; bash scripts/check-models.sh "$@"', "bash", ...args], { cwd: dir, encoding: "utf8" });
+      return { out: r.stdout, rc: r.status ?? -1 };
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  it("통과·경고(num_turns 가 숫자 아님)·실패 집계와 종료 코드", () => {
+    const r = run([]);
+    expect(r.out).toContain("✓ ok 통과 (m-ok)");
+    expect(r.out).toContain("! str 경고: 도구 호출을 확인하지 못함");
+    expect(r.out).toContain("✗ err 실패: 모델이 오류를 반환");
+    expect(r.out).toContain("모델 점검: 통과 1 · 경고 1 · 실패 1");
+    expect(r.rc).toBe(1);
+  });
+  it("경고만 있으면 종료 코드 0", () => {
+    const r = run(["str"]);
+    expect(r.out).toContain("모델 점검: 통과 0 · 경고 1 · 실패 0");
+    expect(r.rc).toBe(0);
+  });
+  it("빈 에이전트 이름은 고정 문구의 실패 줄을 출력한다", () => {
+    const r = run([""]);
+    expect(r.out).toContain("✗ (빈 이름) 실패: 에이전트 이름 없음");
+    expect(r.rc).toBe(1);
   });
 });

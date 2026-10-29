@@ -10,7 +10,7 @@ command -v jq >/dev/null 2>&1 || { echo "jq 가 필요합니다." >&2; exit 1; }
 
 limit="${AF_CHECK_TIMEOUT:-120}"
 tcmd=()
-if command -v timeout >/dev/null 2>&1; then tcmd=(timeout "$limit"); fi
+if command -v timeout >/dev/null 2>&1; then tcmd=(timeout -k 5 "$limit"); fi
 project="$(jq -r '.project' "$cfg")"
 prompt="Read 도구로 .agentforge/forge.config.json 을 읽고 project 값만 한 단어로 답하세요."
 
@@ -18,18 +18,19 @@ prompt="Read 도구로 .agentforge/forge.config.json 을 읽고 project 값만 �
 # (서브셸에서 실행하므로 agent-env.sh 의 환경 변수가 다른 에이전트로 새지 않는다. 키·응답 원문은 출력하지 않는다.)
 check_one() {
   local a="$1" out rc model result turns
+  [ -n "$a" ] || { echo "✗ (빈 이름) 실패: 에이전트 이름 없음"; return 1; }
   # shellcheck disable=SC1091
   source scripts/agent-env.sh "$a" >/dev/null 2>&1 || { echo "✗ $a 실패: agent-env 설정 오류(주소·키 확인)"; return 1; }
   model="${ANTHROPIC_MODEL:-?}"
-  out="$("${tcmd[@]}" claude --agent "$a" -p "$prompt" --output-format json --max-turns 3 < /dev/null 2>/dev/null)"; rc=$?
-  if [ "$rc" -eq 124 ] && [ "${#tcmd[@]}" -gt 0 ]; then echo "✗ $a 실패: 시간 초과"; return 1; fi
+  out="$(${tcmd[@]+"${tcmd[@]}"} claude --agent "$a" -p "$prompt" --output-format json --max-turns 3 < /dev/null 2>/dev/null)"; rc=$?
+  if { [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ]; } && [ "${#tcmd[@]}" -gt 0 ]; then echo "✗ $a 실패: 시간 초과"; return 1; fi
   if [ "$rc" -ne 0 ]; then echo "✗ $a 실패: 명령 실패"; return 1; fi
   if ! jq -e . <<<"$out" >/dev/null 2>&1; then echo "✗ $a 실패: JSON 해석 실패"; return 1; fi
   if [ "$(jq -r '.is_error // false' <<<"$out")" = "true" ]; then echo "✗ $a 실패: 모델이 오류를 반환"; return 1; fi
   result="$(jq -r '.result // ""' <<<"$out")"
   turns="$(jq -r '.num_turns // 0' <<<"$out")"
   if [[ "$result" != *"$project"* ]]; then echo "! $a 경고: 응답에 project 값이 없음"; return 2; fi
-  if [ "$turns" -lt 2 ] 2>/dev/null; then echo "! $a 경고: 도구 호출을 확인하지 못함"; return 2; fi
+  if ! { [[ "$turns" =~ ^[0-9]+$ ]] && [ "$turns" -ge 2 ]; }; then echo "! $a 경고: 도구 호출을 확인하지 못함"; return 2; fi
   echo "✓ $a 통과 ($model)"
 }
 
