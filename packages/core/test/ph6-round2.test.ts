@@ -113,3 +113,14 @@ describe.skipIf(!canRun)("PRV-03 check-models.sh 동작", () => {
     expect(r.rc).toBe(1);
   });
 });
+
+describe("PRV-03 check-models.sh bash 3.2 호환(정적 검사)", () => {
+  const s = TEMPLATES["static/check-models.sh"] ?? "";
+  it("bash 4 전용 문법을 쓰지 않는다", () => {
+    for (const re of [/\bmapfile\b/, /\breadarray\b/, /declare\s+-A/, /\$\{[A-Za-z_]+(,,|\^\^)/, /\|&/, /&>>/, /;;&/, /\[\[\s+-v\b/]) expect(s).not.toMatch(re);
+  });
+  it("빈 배열 확장은 set -u 안전 형태다", () => {
+    expect(s).not.toContain('in "${agents[@]}"');
+    expect(s).toContain('${agents[@]+"${agents[@]}"}');
+  });
+});

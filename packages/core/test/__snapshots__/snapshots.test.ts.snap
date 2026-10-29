@@ -51,7 +51,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: LiteLLM + 마켓 가�
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
-755 tp 3402262e5d87 scripts/check-models.sh
+755 tp 990237734bef scripts/check-models.sh
 755 tp b9ebd0a5c3ea scripts/start-gateway.sh
 644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
@@ -109,7 +109,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: UI 끔 1`] = `
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
-755 tp 3402262e5d87 scripts/check-models.sh
+755 tp 990237734bef scripts/check-models.sh
 644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
@@ -156,7 +156,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = 
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
-755 tp 3402262e5d87 scripts/check-models.sh
+755 tp 990237734bef scripts/check-models.sh
 644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
@@ -229,7 +229,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = 
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
-755 tp 3402262e5d87 scripts/check-models.sh
+755 tp 990237734bef scripts/check-models.sh
 644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
@@ -272,7 +272,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 정보 비�
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
-755 tp 3402262e5d87 scripts/check-models.sh
+755 tp 990237734bef scripts/check-models.sh
 644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
@@ -330,7 +330,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 기본 1`] = `
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp 7266588a5738 scripts/wait-and-review.sh
 755 tp 24467612d3bc scripts/integrate.sh
-755 tp 3402262e5d87 scripts/check-models.sh
+755 tp 990237734bef scripts/check-models.sh
 644 tp 4c0a46ab2e7d .vscode/tasks.json
 644 tp e3b0c44298fc docs/design/detail/.gitkeep
 644 tp e3b0c44298fc docs/review/.gitkeep
