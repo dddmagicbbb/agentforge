@@ -1,3 +1,4 @@
+import { text } from "./text.js";
 import { provider, type Via } from "../providers/index.js";
 import { devReady, SEQ_AGENT_IDS, type AgentModelT, type DevT, type Project, type SeqAgentIdT } from "../schema/index.js";
 
@@ -102,9 +103,11 @@ export function fmModel(a: AgentModelT): string {
 }
 
 /** CLAUDE.md 생성물용 "제공자 · 모델" 문구 — 화면 표시에 쓰지 말 것 */
-export function label(a: AgentModelT): string {
+export function label(a: AgentModelT, lang: "ko" | "en" = "ko"): string {
+  const t = text(lang);
   if (a.provider === "claude") return `Claude ${a.model}`;
-  return `${provider(a.provider).label.replace(/·LiteLLM| 로컬/, "")} · ${a.model || "모델 미입력"}`;
+  const name = a.provider === "vllm" ? t.vllmLabel : provider(a.provider).label.replace(/·LiteLLM| 로컬/, "");
+  return `${name} · ${a.model || t.modelMissing}`;
 }
 
 export const ALL_SEQ_IDS = SEQ_AGENT_IDS;

@@ -227,3 +227,13 @@ Issue.params 는 임의 키 허용이라 계약 변경 없음. bats 사례(제�
 - 끝 줄바꿈 정리는 `/(\r?\n)+$/`(CRLF 포함).
 - run-agents.sh: pipe-pane 명령은 tmux 가 /bin/sh 로 실행하므로 `printf %q` 대신 POSIX 작은따옴표 인용(`sq`). grid·role 은 창의 마지막 pane 을 나눠 dev-1, review-1, dev-2… 순서를 유지.
 - T-606: 8.6 S-3·S-4 (settings defaultMode, README 한 줄, integrate.sh 사전 검토 파일 확인, 검토 요청 문구).
+
+---
+
+# PH6 3라운드: T-605 (I18N-01 생성물 영어)
+
+- 파일: `templates/md-en/*`(16종, md 와 같은 파일명·자리표시), `render/text.ts`(언어별 문구 표), `render/tpl-source.ts`(`mdTpl(name, lang)`), `render/{claude-md,readme,agents,dev-agents,skills,scaffold,index,env-example,litellm,vscode,context}.ts`(language 분기).
+- 규칙: `language: "ko"` 는 PH5 출력과 바이트 같음(golden·스냅샷 불변). `en` 이면 CLAUDE.md 고정 규칙·표, README, PRD 양식, 에이전트·스킬 본문, env.local.example·litellm.yaml 주석, `.paths` 주석, VS Code 작업 이름을 영어로. 정적 스크립트(`scripts/*`, hook)와 requirements.md(사용자 원문)는 그대로.
+- 정적 스크립트가 보내는 한국어 메시지("설계 승인", "반려", "설계 검토", "코드 검토")는 영어 본문에서 의미("design-approved message", "rejection message", "design/code review request")로 가리킨다(본문에 한글을 남기지 않기 위함).
+- 시험: `test/i18n-en.test.ts` — 파일별 자리표시 집합 동일, en 렌더 한글 없음(스크립트·requirements 제외), check-forge 계약(스킬 참조·자리표시), 마커·200줄, en 스냅샷 4구성.
+- `tools/gen-templates.mjs` 는 templates/** 전체를 내장하므로 변경 없음.
