@@ -132,6 +132,7 @@ design_signal_reaches_review_1() {
 @test "8.2 기본값(C-b·mouse false·logs false): 세션 옵션을 건드리지 않고 로그 관련 산출물이 없다" {
   prepare role C-b false false
   start_all
+  [ "$(window_names)" = "dev review watch" ]
   [ -z "$(tmux show-options -t "$SESSION" prefix)" ]
   [ -z "$(tmux show-options -t "$SESSION" mouse)" ]
   [ ! -e .agentforge/logs ]
