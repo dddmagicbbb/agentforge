@@ -47,7 +47,7 @@
 - **G4 통과(사람 승인 2026-10-29)**: 점검표 12칸 ✓, 실제 주기 완주, 보안 조치 완료. develop → main 병합(PR #4, 2a4d26a), 태그 `v0.1.0`.
 - 다음: PH6(확장 1 — DOC-03·PRV-03·RUN-04·VSC-02·I18N-01) 착수는 사람 결정. PH6 검토 후보: Bash 리다이렉션 범위 검사(S-3), integrate 전 리뷰 판정 확인(S-4), dev pane 권한 모드 안내.
 
-## PH6 확장 1 — 편집·다국어·배치 — 2026-10-29 (G 판정 대기, `v0.2.0` 예정)
+## PH6 확장 1 — 편집·다국어·배치 — 2026-10-29 · `v0.2.0`
 - 계약 선행: PoC 에 기준 구현이 없어 design.md 8장·ADR-0006 으로 계약을 고정한 뒤 3라운드 병렬 개발(dev 3 + review 3). 원칙 "선택값 미지정이면 생성물은 PH5 와 바이트 동일" — golden·ko 스냅샷 유지.
 - 완료 작업(tasks.md PH6 15건 전부):
   - dev-1: T-601 `mergeClaudeMd`(DOC-03), T-602 tmux pair·grid·role·접두키·마우스·로그(RUN-04), T-603 `check-models.sh`(PRV-03), T-604 Dev Container(VSC-02), T-605 생성물 영어판 `templates/md-en`(I18N-01), T-606 보안 후속(S-3 defaultMode, S-4 검토 파일 확인).
@@ -62,3 +62,5 @@
   - 로컬 E2E: 다른 worktree 의 미리보기 서버가 4173 을 점유하면 낡은 번들을 재사용 → `AF_E2E_PORT` 로 회피.
 - dogfooding: 자기 환경 재생성 → scripts 4종(check-models 신규)·README·VS Code 작업을 생성 결과로 교체. `.claude/settings.json` 의 `defaultMode: "default"`(S-3)는 이 저장소 세션의 권한 모드를 바꾸므로 적용하지 않음(사람 결정).
 - 남은 것(PH7 이후 후보): 정적 스크립트 출력 문구 영어화(메시지 카탈로그, P2), 영어 문구 원어민 검수, Bash PreToolUse 범위 검사(S-3 근본 대책).
+- **게이트 통과(사람 승인 2026-10-29)**: develop → main 병합(PR #7, 84a5aef), 태그 `v0.2.0`. 최종 CI(580bde2)에서 Dev Container 생성물 postCreateCommand 실동작(tmux 3.5a·jq 1.7·Claude Code 2.1.312) 확인.
+- 다음: PH7(확장 2 — MKT-01·02, EXP-02) 착수는 사람 결정.
