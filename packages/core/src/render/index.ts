@@ -9,7 +9,7 @@ import { renderDevAgent, renderDevPaths, renderDevSkill, renderReviewAgent, rend
 import { renderEnvExample } from "./env-example.js";
 import { renderLitellm } from "./litellm.js";
 import { renderReadme } from "./readme.js";
-import { GITIGNORE, renderPrdTemplate, renderRequirements, STATIC_SCRIPTS, staticScript } from "./scaffold.js";
+import { renderGitignore, renderPrdTemplate, renderRequirements, STATIC_SCRIPTS, staticScript } from "./scaffold.js";
 import { renderSettings } from "./settings.js";
 import { renderCoreSkill, renderImportedSkill } from "./skills.js";
 import { tpl } from "./tpl-source.js";
@@ -27,7 +27,7 @@ export function renderProject(p: Project): RenderedFile[] {
 
   add("CLAUDE.md", renderClaudeMd(c), { ai: true });
   add("README.md", renderReadme(c));
-  add(".gitignore", GITIGNORE);
+  add(".gitignore", renderGitignore(p.tmux?.logs === true));
   add(".claude/settings.json", renderSettings(c));
   add(".claude/hooks/guard-paths.sh", staticScript("guard-paths.sh"), { exec: true });
   for (const s of c.seqActive()) add(`.claude/agents/${s.id}.md`, renderSeqAgent(c, s.id));

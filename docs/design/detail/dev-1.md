@@ -182,3 +182,41 @@ dev-N·review-N·paths·전용 스킬 렌더(ready 아닌 dev 생략)는 PH3에�
 
 ### 7. 계약·공통 모듈 변경
 Issue.params 는 임의 키 허용이라 계약 변경 없음. bats 사례(제어 문자·끝 `..`)는 dev-2 에 요청.
+
+---
+
+# PH6 1라운드: T-601, T-602
+
+## 1. 담당 작업·기능 ID
+| 작업 | 기능 ID | 내용 |
+| --- | --- | --- |
+| T-601 | DOC-03 | `mergeClaudeMd(oldMd, nextMd)` 구현(design.md 8.1) |
+| T-602 | RUN-04 | tmux 배치·접두키·마우스·로그(design.md 8.2) |
+
+## 2. 파일 목록
+| 경로 | 책임 |
+| --- | --- |
+| `packages/core/src/merge-claude-md.ts` (신규) | 마커 파싱·병합 순수 함수 |
+| `packages/core/src/api.ts` | `mergeClaudeMd` 를 위 모듈에 위임 |
+| `packages/core/src/render/config.ts` | `p.tmux` 지정 시 `tmuxLayout` 값 + `tmux` 객체 |
+| `packages/core/src/render/scaffold.ts`, `render/index.ts` | `p.tmux?.logs` 일 때 `.gitignore` 에 `.agentforge/logs/` 추가 |
+| `templates/static/run-agents.sh` | config 를 jq 로 읽어 pair/grid/role 배치 |
+| `packages/core/test/merge-claude-md.test.ts`, `tmux.test.ts` (신규) | 시험 |
+
+## 3. 주요 함수
+- `mergeClaudeMd(oldMd, nextMd): string`: 구간 ID PROJECT·AGENTS·DEVS·SKILLS. 각 문서의 구간을 정규식 없이 `indexOf` 로 찾고, BEGIN·END 가 1:1 이 아니거나 END 가 BEGIN 앞이면 `AppError("CLAUDE_MD_MARKERS", {id})`(old·next 모두 검사). old 에 마커가 없으면 규칙 5(구간 4개를 끝에 붙임), 있으면 AGENTS·DEVS·SKILLS 는 next 내용으로 교체, PROJECT 는 보존, old 에 없는 구간은 끝에 붙임(끝 줄바꿈 1개로 맞춘 뒤 `\n` 구분). next 에 없는 구간은 old 그대로.
+- 구간 안쪽 = BEGIN 마커 직후부터 END 마커 직전까지(줄바꿈 포함 그대로 교체).
+- 멱등: 교체 결과가 next 구간과 같아지고 이미 존재하는 구간은 재추가하지 않으므로 성립.
+
+## 4. 계약
+`mergeClaudeMd`(api.ts 시그니처 불변), forge.config.json `tmuxLayout`/`tmux`, `.gitignore`. 스키마 변경 없음.
+
+## 6. 테스트 목록
+| 수용 기준 | 테스트 |
+| --- | --- |
+| 규칙 1~6, 오류 | `merge-claude-md.test.ts` 단위 + fast-check 4종(마커 밖 보존, PROJECT 보존, 멱등, next 반영) |
+| tmux 미지정 불변, 지정 시 config 키 순서, logs 시 gitignore | `tmux.test.ts` |
+| run-agents.sh 에 jq 읽기·세 배치·세션 범위 set·pipe-pane | `tmux.test.ts` 문자열 검사 + WSL bats |
+
+## 7. 계약·공통 모듈 변경
+없음. `tests/golden/intended-diffs.json` 갱신은 리드에게 요청(보고서).
