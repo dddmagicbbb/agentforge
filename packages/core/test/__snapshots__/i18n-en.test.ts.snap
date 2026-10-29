@@ -44,7 +44,7 @@ exports[`T-605 en 구성 스냅샷 > 스냅샷: en LiteLLM + 마켓 가져오기
 644 tp d7fb3b278939 .agentforge/templates/dev-skill.md
 644 tp 945a1b1b3218 .agentforge/litellm.yaml
 755 tp 7ed367103962 scripts/setup.sh
-755 tp ccb937a0191b scripts/agent-env.sh
+755 tp ed78c44cd1ba scripts/agent-env.sh
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
@@ -103,7 +103,7 @@ exports[`T-605 en 구성 스냅샷 > 스냅샷: en UI 끔 1`] = `
 644 tp 5cc714ba9ad4 .agentforge/templates/review.md
 644 tp d7fb3b278939 .agentforge/templates/dev-skill.md
 755 tp 7ed367103962 scripts/setup.sh
-755 tp 4c57df140e0f scripts/agent-env.sh
+755 tp 80d53e30cd70 scripts/agent-env.sh
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
@@ -145,7 +145,7 @@ exports[`T-605 en 구성 스냅샷 > 스냅샷: en 개발자 정보 비움 1`] =
 644 tp 5cc714ba9ad4 .agentforge/templates/review.md
 644 tp d7fb3b278939 .agentforge/templates/dev-skill.md
 755 tp 7ed367103962 scripts/setup.sh
-755 tp 272231d739ca scripts/agent-env.sh
+755 tp 337c9c6388fd scripts/agent-env.sh
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh
@@ -203,7 +203,7 @@ exports[`T-605 en 구성 스냅샷 > 스냅샷: en 기본 1`] = `
 644 tp 5cc714ba9ad4 .agentforge/templates/review.md
 644 tp d7fb3b278939 .agentforge/templates/dev-skill.md
 755 tp 7ed367103962 scripts/setup.sh
-755 tp 272231d739ca scripts/agent-env.sh
+755 tp 337c9c6388fd scripts/agent-env.sh
 755 tp 1131ac77cc29 scripts/run-role.sh
 755 tp 1d6586f403f1 scripts/check-forge.sh
 755 tp b0df5829b321 scripts/create-worktrees.sh

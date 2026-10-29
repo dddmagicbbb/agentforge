@@ -13,7 +13,7 @@ export function renderCoreSkill(c: RenderContext, id: CoreSkill["id"]): string {
   return id === "forge-agents" ? s : assertFilled(`md/${id}.md`, s);
 }
 
-export function renderImportedSkill(m: ImportedSkillT, lang: Lang = "ko"): string {
+export function renderImportedSkill(m: ImportedSkillT, lang: Lang): string {
   const t = text(lang);
   return `---\nname: ${m.id}\ndescription: ${m.desc}\n---\n# ${m.id}\n\n${t.importedBody(m.src, t.trust[m.trust])}`;
 }

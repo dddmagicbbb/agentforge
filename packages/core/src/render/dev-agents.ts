@@ -32,7 +32,7 @@ export function renderReviewAgent(c: RenderContext, d: DevT, n: number): string 
   return assertFilled("md/review.tpl.md", s);
 }
 
-export function renderDevPaths(d: DevT, n: number, lang: Lang = "ko"): string {
+export function renderDevPaths(d: DevT, n: number, lang: Lang): string {
   return `${text(lang).pathsComment}\n${d.paths.join("\n")}\ndocs/design/detail/dev-${n}.md\ndocs/report-dev-${n}.md\n`;
 }
 
@@ -40,7 +40,7 @@ export function renderReviewPaths(n: number): string {
   return `docs/review/dev-${n}.md\n`;
 }
 
-export function renderDevSkill(d: DevT, n: number, lang: Lang = "ko"): string {
+export function renderDevSkill(d: DevT, n: number, lang: Lang): string {
   let s = mdTpl("devskill.tpl.md", lang);
   s = fillAll(s, "SKILL", devSkill(d, n));
   s = fillAll(s, "N", String(n));
