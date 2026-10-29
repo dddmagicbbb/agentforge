@@ -26,7 +26,7 @@ const normKey = (k: string): string => k.toLowerCase().replace(/_/g, "-");
 
 /** 첫 `---` 블록을 파싱한다(`key : value`, 따옴표 키, CRLF, 들여쓰기 없는 `- 항목` 허용). */
 export function parseSkillMd(content: string): SkillMd {
-  const src = content.replace(/^﻿/, "");
+  const src = stripBom(content);
   const m = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/.exec(src);
   if (!m) return { fm: null, fmAll: {}, body: src };
   const fm: Record<string, string> = {};
@@ -87,7 +87,7 @@ export function scanSkillRisk(files: readonly SkillFileLike[]): RiskCode[] {
   const out = new Set<RiskCode>();
   for (const f of files) {
     const dirs = f.path.split("/").slice(0, -1).map((s) => s.toLowerCase());
-    if (dirs.includes("scripts") || SCRIPT_EXT.test(f.path) || f.content.replace(/^﻿/, "").startsWith("#!")) out.add("SCRIPTS");
+    if (dirs.includes("scripts") || SCRIPT_EXT.test(f.path) || stripBom(f.content).startsWith("#!")) out.add("SCRIPTS");
     if (BYPASS.test(f.content)) out.add("BYPASS_PERMISSIONS");
     const joined = joinContinuations(f.content);
     if (DOWNLOAD.test(joined) || INTERP.test(joined) || PIPE_SHELL.test(joined)) out.add("REMOTE_DOWNLOAD");
@@ -99,4 +99,9 @@ export function scanSkillRisk(files: readonly SkillFileLike[]): RiskCode[] {
     }
   }
   return [...out].sort();
+}
+
+/** 맨 앞 BOM(U+FEFF) 제거 */
+function stripBom(s: string): string {
+  return s.charCodeAt(0) === 0xfeff ? s.slice(1) : s;
 }
