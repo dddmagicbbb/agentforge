@@ -468,3 +468,5 @@ PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙�
   - 모든 API는 `Host` 헤더를 허용 목록(`localhost`, `127.0.0.1`, `[::1]` + 환경 변수 `AF_MARKET_HOSTS` 쉼표 목록)으로 검사한다. 아니면 403 `HOST_DENIED`(DNS rebinding 대비).
   - git 소스의 symlink(mode 120000)는 OS와 무관하게 제외한다(`git ls-tree` 기준).
   - 기동 진입점 `listen({ host = "127.0.0.1", port })`를 코드로 고정한다.
+- **9.5 정정(리드 확정)**: `planGithubTree`의 mode는 확장자가 아니라 `RenderedFile.mode`를 따른다(0o755 → 100755, 그 외 100644). 그래서 가져온 스킬 안의 `.sh`는 ZIP과 같이 100644이고, "실행 권한 없이 넣음" 원칙과 일치한다. exporter의 임시 규칙도 같게 맞춘다.
+- **화면 문구 추가**: `IMPORT_RISK`(info, params `id`, `codes` 쉼표 목록)
