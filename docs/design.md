@@ -444,3 +444,19 @@ PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙�
   - 서버 기본 바인드 주소는 `127.0.0.1`이다.
   - 화면은 `health.admin`이 false이면 소스 관리 버튼을 숨기고 "관리자 모드에서만 소스를 바꿀 수 있습니다"를 보인다.
 - **위험 판정 연결**: `createServer`의 `scan` 기본값은 core `scanSkillRisk`다(통합 시 연결, 주입은 시험용으로 유지).
+- **위험 검사 확장(9.2 갱신, review-1 반려 반영)**: 판정은 YAML 표기 변형에 강해야 하고, 애매하면 위험으로 본다.
+  - `BROAD_TOOLS`:
+    - frontmatter 키 표기 변형(콜론 앞뒤 공백, 들여쓰지 않은 `-` 목록, 같은 키가 여러 번 나오면 모든 값)을 인식한다.
+    - 경로가 `SKILL.md`로 끝나는 모든 파일(하위 폴더 포함)을 검사한다.
+  - `BYPASS_PERMISSIONS`: 어느 파일이든 문자열 `bypassPermissions`(대소문자 무시) 또는 `dangerously-skip-permissions`가 있으면 위험이다.
+  - `REMOTE_DOWNLOAD`:
+    - 셸 `\`·PowerShell 백틱 줄 이어쓰기를 합친 뒤 검사한다.
+    - 다운로드 명령에 `irm`·`Invoke-RestMethod`를 더한다.
+    - 파이프 대상은 `sudo`·`env` 접두, 경로(`/bin/bash`), 옵션, 대소문자에 관계없이 `sh|bash|zsh|dash`와 `iex`·`Invoke-Expression`이다.
+  - `SCRIPTS`:
+    - 폴더명 `scripts/`는 대소문자를 무시한다.
+    - 확장자에 `.zsh .rb .pl`을 더한다.
+    - 첫 줄이 `#!`로 시작하는 파일도 위험으로 본다.
+  - `BANG_COMMAND`: SKILL.md(경로가 `SKILL.md`로 끝나는 파일)에서만 판정한다.
+    - 실행 문법인 백틱 앞의 `!`는 위험이다.
+    - 줄 머리 `!` 다음에 공백이 아닌 문자가 오는 경우도 보수적으로 위험이다.
