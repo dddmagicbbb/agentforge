@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/core";
-import { AppError, type GithubTargetT, type RenderedFile } from "@agentforge/core";
+import { AppError, planGithubTree, type GithubTargetT, type RenderedFile } from "@agentforge/core";
 
 export interface PushResult {
   readonly url: string;
@@ -14,21 +14,6 @@ export interface PushOptions {
   readonly language: "ko" | "en";
   /** 재시도 대기 주입(시험용). 없으면 setTimeout */
   readonly sleep?: (ms: number) => Promise<void>;
-}
-
-interface TreeItem {
-  readonly path: string;
-  readonly mode: "100755" | "100644";
-  readonly content: string;
-}
-
-// TODO: 통합 시 core 의 planGithubTree 로 교체한다(같은 규칙: mode 0o755 → 100755, 그 외 100644, env.local 차단).
-function planTree(files: readonly RenderedFile[]): TreeItem[] {
-  return files.map((f) => {
-    const base = f.path.split("/").pop() ?? "";
-    if (base === "env.local") throw new AppError("EXPORT_SECRET_PATH", { path: f.path });
-    return { path: f.path, mode: f.mode === 0o755 ? "100755" : "100644", content: f.content };
-  });
 }
 
 // 브랜치 이름의 `/` 가 %2F 로 인코딩되지 않도록 세그먼트별 자리표시로 푼다
@@ -67,7 +52,7 @@ function mapError(e: unknown, networkFailed: boolean, onUnprocessable?: string):
  * create: 부모 없는 커밋 1건으로 기본 브랜치를 교체, pr: 새 브랜치 + PR.
  */
 export async function pushToGithub(files: readonly RenderedFile[], target: GithubTargetT, token: string, opts: PushOptions): Promise<PushResult> {
-  const items = planTree(files); // 요청 전에 검사한다
+  const items = planGithubTree(files); // 요청 전에 검사한다(core 규칙: mode 기준, env.local 차단)
   let networkFailed = false;
   const baseFetch = opts.fetch ?? globalThis.fetch.bind(globalThis);
   // 네트워크 예외(응답 없음)는 octokit 이 500 으로 감싸므로 따로 표시한다

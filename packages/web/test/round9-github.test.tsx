@@ -9,6 +9,9 @@ import en from "../src/locales/en.json";
 
 const toZip = vi.hoisted(() => vi.fn(async (_files: readonly RenderedFile[], _name: string) => new Uint8Array([1])));
 vi.mock("@agentforge/exporter", () => ({ toZip }));
+// 통합본: 기본 push 는 @agentforge/exporter/github 를 지연 로딩한다(계약 9.7) — 실제 호출 대신 대역으로 위임만 확인
+const ghPush = vi.hoisted(() => vi.fn(async () => ({ url: "https://github.com/acme/repo", commitSha: "abc1234" })));
+vi.mock("@agentforge/exporter/github", () => ({ pushToGithub: ghPush }));
 
 const goto = (n: number) => fireEvent.click(within(screen.getByRole("navigation", { name: "단계" })).getAllByRole("button")[n - 1]!);
 const TOKEN = "ghp_SECRET_TOKEN_VALUE_123";
@@ -226,12 +229,19 @@ describe("EXP-02 T-722: 푸시", () => {
     expect((await screen.findByTestId("github-error")).textContent).toBe(en.github.error.GITHUB_AUTH);
   });
 
-  it("push 가 주입되지 않고 exporter 에 pushToGithub 가 없으면 GITHUB_FAILED", async () => {
+  it("push 가 주입되지 않으면 @agentforge/exporter/github 의 pushToGithub 에 ZIP 과 같은 파일·대상·토큰·언어로 위임한다", async () => {
+    ghPush.mockClear();
     await open();
     fill();
     token();
     fireEvent.click(pushBtn());
-    expect((await screen.findByTestId("github-error")).textContent).toBe(ko.github.error.GITHUB_FAILED);
+    await waitFor(() => expect(ghPush).toHaveBeenCalledTimes(1));
+    const [files, target, tok, opt] = ghPush.mock.calls[0] as unknown as [readonly RenderedFile[], { owner: string; repo: string }, string, { language: string }];
+    expect(files.length).toBeGreaterThan(10);
+    expect(target.owner).toBeTruthy();
+    expect(typeof tok).toBe("string");
+    expect(tok.length).toBeGreaterThan(0);
+    expect(opt.language).toBe("ko");
   });
 });
 
