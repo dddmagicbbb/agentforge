@@ -67,7 +67,7 @@ describe("I18N-01: 화면 전환", () => {
     mount(<App />);
     fireEvent.click(within(sw()).getByRole("button", { name: "English" }));
     const nav = screen.getByRole("navigation", { name: "Steps" });
-    expect(within(nav).getAllByRole("button").map((b) => b.textContent)).not.toContain("요구사항");
+    expect(within(nav).getAllByRole("button").map((b) => b.textContent?.trim())).toEqual(Object.values(en.steps).map((v, i) => `${i + 1} ${v}`));
     expect(screen.getByRole("button", { name: "Next" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Previous" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -81,5 +81,17 @@ describe("I18N-01: 화면 전환", () => {
     fireEvent.click(within(sw()).getByRole("button", { name: "English" }));
     const select = screen.getByLabelText(en.req.language) as HTMLSelectElement;
     expect(select.value).toBe("ko");
+    // 생성물(미리보기 파일 목록과 README 내용)은 화면 언어를 바꿔도 같다.
+    const snapshot = () => {
+      const tree = document.querySelector(".tree")!;
+      const paths = [...tree.querySelectorAll("button > span:first-child")].map((e) => e.textContent);
+      fireEvent.click(within(tree as HTMLElement).getByRole("button", { name: /^README.md/ }));
+      return { paths, readme: document.querySelector(".preview pre")!.textContent };
+    };
+    const inEn = snapshot();
+    fireEvent.click(within(screen.getByRole("group", { name: en.lang.switch })).getByRole("button", { name: "한국어" }));
+    const inKo = snapshot();
+    expect(inEn.paths.length).toBeGreaterThan(10);
+    expect(inEn).toEqual(inKo);
   });
 });

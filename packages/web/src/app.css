@@ -76,3 +76,6 @@ pre { white-space: pre-wrap; border: 1px solid var(--line); border-radius: 6px; 
 .lang-switch { margin-left: auto; display: flex; gap: 4px; }
 .lang-switch button { padding: 2px 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; }
 .lang-switch button[aria-pressed="true"] { font-weight: 600; border-color: currentColor; }
+.tmux-settings { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; border: 1px solid var(--line); border-radius: 6px; margin: 8px 0; }
+.tmux-settings .issues { flex-basis: 100%; }
+.chk { display: inline-flex; gap: 6px; align-items: center; }

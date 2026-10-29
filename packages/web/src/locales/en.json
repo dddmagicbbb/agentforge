@@ -44,7 +44,7 @@
     "blocked": "Fix {{count}} error(s) first",
     "busy": "Generating…",
     "failed": "Failed to create the ZIP: {{reason}}",
-    "goto": "Go to step {{step}}"
+    "goto": "Go to {{step}}"
   },
   "generate": {
     "title": "Generate",
@@ -61,6 +61,7 @@
       "seqUi": "Analysis, UI/UX design, system design, common development (follow the README order)",
       "seq": "Analysis, system design, common development (follow the README order)",
       "agents": "In the lead session run /forge-agents, then bash scripts/check-forge.sh",
+      "models": "bash scripts/check-models.sh checks each agent model (it calls the real models, so tokens are used)",
       "worktrees": "bash scripts/create-worktrees.sh && bash scripts/run-agents.sh",
       "integrate": "After everyone passes, run bash scripts/integrate.sh"
     },
@@ -94,7 +95,9 @@
     "DEV_COUNT_OVER_TIER": "The current tier allows up to {{tierLimit}} developers.",
     "COMMAND": "Enter the command on a single line.",
     "SCHEMA_INVALID": "Check the input: {{path}}",
-    "default": "{{code}} — {{path}}"
+    "default": "{{code}} — {{path}}",
+    "DEVCONTAINER_CLOSED_NET": "Dev Container: the image and packages are downloaded in your environment, so network access is required (the app itself calls nothing external). On a closed network, switch to an image from your internal registry.",
+    "TMUX_PREFIX": "Write the tmux prefix as C-a to C-z (for example C-a)."
   },
   "dev": {
     "title": "Agents per developer",
@@ -133,7 +136,21 @@
     "watch": "Signal watch, scope check, limit of {{max}} rejections",
     "noModel": "No model entered",
     "paneModel": "{{provider}} · {{model}}",
-    "paneModel_claude": "Claude {{model}}"
+    "paneModel_claude": "Claude {{model}}",
+    "layoutLabel": "tmux layout",
+    "prefixLabel": "tmux prefix",
+    "mouseLabel": "Enable mouse",
+    "logsLabel": "Record pane logs",
+    "reset": "Reset tmux to defaults",
+    "layout": {
+      "pair": "pair: one window per developer pair",
+      "grid": "grid: tiled in one window",
+      "role": "role: a dev window and a review window"
+    },
+    "prefixHint": "One of C-a to C-z. Default C-b",
+    "logsHint": "When on, output is appended to .agentforge/logs/<agent>.log (excluded by .gitignore).",
+    "settings": "tmux settings (optional)",
+    "unset": "If left unset, defaults apply (pair, C-b, mouse off, logs off) and no tmux entry is added to the output."
   },
   "nav": {
     "label": "Steps",
@@ -252,5 +269,9 @@
         "desc": "tasks.md to per-developer agents, skills and scope"
       }
     }
+  },
+  "devcontainer": {
+    "label": "Generate a Dev Container",
+    "hint": "When on, .devcontainer/devcontainer.json is created. Put env.local in yourself inside the container as well."
   }
 }
