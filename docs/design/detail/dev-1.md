@@ -248,3 +248,15 @@ Issue.params 는 임의 키 허용이라 계약 변경 없음. bats 사례(제�
 - 렌더: files 있으면 `.claude/skills/<id>/<path>` 원문(644, template), SKILL.md 먼저·나머지 사전순. 없으면 기존 안내. sources.lock 은 T-702.
 - 시험: `market-risk.test.ts`(판정표 18, 정렬·고유, 불변식 9, 렌더 3), 기존 golden·스냅샷 불변.
 - 계약 변경: 없음(ADR-0007 승인 범위의 invariants 수정).
+
+---
+
+# PH7 2라운드: T-702·T-703 (MKT-02·EXP-02 core)
+
+- 파일: `src/util/sha256.ts`(순수 SHA-256, UTF-8 바이트), `src/render/sources-lock.ts`(`renderSourcesLock`), `src/render/index.ts`(imported 가 있을 때만 `.agentforge/sources.lock` 추가, 644, template), `src/export-plan.ts`(`planGithubTree`), `src/checks.ts`(`IMPORT_RISK`), `render/text.ts`·`readme.ts`(가져온 스킬 안내 한 줄), `src/index.ts`(export), `test/ph7-round2.test.ts`.
+- sources.lock: `{version:1, skills:[{id,src,trust,ref|null,target,flags,files:[{path,sha256}]}]}`, 키 순서 고정, 2칸 들여쓰기 + 끝 줄바꿈. flags 는 files 가 있으면 `scanSkillRisk` 재계산, 없으면 입력값. files 없으면 `files: []`. files 순서는 렌더와 같이 SKILL.md 먼저·나머지 사전순.
+- `planGithubTree(files)`: mode 0o755 는 100755, 나머지 100644(생성 .sh 는 모두 0o755, 가져온 스킬 안의 .sh 는 644 로 넣었으므로 100644), 입력 순서 유지. 경로가 `env.local` 로 끝나면(`env.local.example` 은 제외) `AppError("EXPORT_SECRET_PATH", {path})`.
+- checks: 가져온 스킬 항목별 위험 코드가 있으면 `info IMPORT_RISK {id, codes(쉼표 연결)}`(files 올바르면 재계산, 아니면 입력 flags). 불변식 4종은 validate 가 보고하므로 중복하지 않는다. 비정상 입력에서도 throw 하지 않는다.
+- README: imported 가 비어 있지 않을 때만 안내 한 줄(ko·en) — sources.lock 위치, 실행 권한 없이 넣었으니 필요하면 직접 chmod.
+- 시험: sha256 벡터 4종(+멀티바이트), lock 내용·순서·flags 재계산, imported 없으면 lock 없음, planGithubTree 모드·순서·env.local 차단, render 결과와 mode 대응, IMPORT_RISK, README 조건부, 비정상 입력 비-throw.
+- 계약 변경: 없음.

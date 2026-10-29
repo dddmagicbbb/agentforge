@@ -1,9 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`T-605 en 구성 스냅샷 > 스냅샷: en LiteLLM + 마켓 가져오기 1`] = `
-"files=58
+"files=59
 644 ai 3d7aa8e44a45 CLAUDE.md
-644 tp 42a5c0886f09 README.md
+644 tp 1d61560ef179 README.md
 644 tp c027c6763ea1 .gitignore
 644 tp dc66d67bb24a .claude/settings.json
 755 tp 82717155fe64 .claude/hooks/guard-paths.sh
@@ -35,6 +35,7 @@ exports[`T-605 en 구성 스냅샷 > 스냅샷: en LiteLLM + 마켓 가져오기
 644 tp 81f928a97d3f .claude/skills/forge-init/SKILL.md
 644 tp e45fac395721 .claude/skills/forge-agents/SKILL.md
 644 tp 0a630d5e37e5 .claude/skills/market-lint/SKILL.md
+644 tp fdae72e0f228 .agentforge/sources.lock
 644 tp c159998271ee .agentforge/forge.config.json
 644 tp cfcc6ac15b89 .agentforge/requirements.md
 644 tp 0eeb97b82824 .agentforge/env.local.example
