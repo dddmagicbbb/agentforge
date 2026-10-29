@@ -3,7 +3,7 @@ import path from "node:path";
 import { defineConfig } from "@playwright/test";
 
 // 포트 고정. 웹 빌드 결과를 vite preview 로 서빙한다(개발 서버가 아닌 배포 번들을 시험).
-const PORT = 4173;
+const PORT = Number(process.env["AF_E2E_PORT"] ?? 4173); // 로컬에서 4173 이 점유됐을 때만 바꾼다(기본값·CI 동작 불변)
 
 export default defineConfig({
   testDir: ".",

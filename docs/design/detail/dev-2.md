@@ -181,3 +181,31 @@ wait-and-review.sh 의 이력 이름이 `date +%s` 라 같은 초에 두 번 소
 
 ### P6R2-4. 계약 변경
 없음.
+
+## PH6 3라운드: T-615
+
+### P6R3-1. 담당 작업·기능 ID
+T-615: I18N-01(화면 영어 전환·생성물 언어), DOC-03(기존 CLAUDE.md 병합). 선행: T-621(화면 en), T-605(생성물 영어), T-624(붙여넣기 UI).
+
+### P6R3-2. 파일
+| 파일 | 책임 |
+|---|---|
+| `tests/e2e/i18n-doc.spec.ts` (신규) | 시나리오 4건. 서로 독립(ZIP 을 이어 쓰지 않음) |
+| `tests/e2e/playwright.config.ts` (수정) | `AF_E2E_PORT` 로 포트 변경(기본 4173, CI 동작 불변) |
+
+### P6R3-3. 사용 계약
+- design.md 8.1(`mergeClaudeMd` 규칙: 마커 밖 보존, PROJECT 보존, AGENTS·DEVS·SKILLS 교체, 마커 오류), 8.5(화면 en 전환·선택 미저장, 생성물 `language: "en"`).
+- core: `render`, `validate`, `defaultDraft`, `mergeClaudeMd`(기대값 계산).
+- T-624 접근명: 6단계 라벨 "기존 CLAUDE.md 붙여넣기(선택)", 오류 시 textarea `aria-invalid="true"` + `#doc-error`.
+- 화면: 그룹 접근명 "화면 언어"/"Display language", 버튼 한국어/English, 영어 단계 제목·"Next"·"Download ZIP".
+
+### P6R3-4. 테스트 목록
+| 기능 ID | 사례 | 단언 |
+|---|---|---|
+| I18N-01 | (a) 화면 영어 전환 | 영어 전환 후 그룹 접근명·6단계 제목·Next·Download ZIP 이 영어, ZIP 의 파일 경로·내용 전체가 ko 기준 core 렌더와 같음, `page.reload()` 후 ko 로 복귀(저장 안 함) |
+| I18N-01 | (b) language=en | 영어 요구사항 입력 후 ZIP 의 README·CLAUDE.md 에 한글 없음, core 렌더(language=en)와 동일 |
+| DOC-03 | (c) 병합 | 붙여넣은 CLAUDE.md 의 마커 밖 텍스트·PROJECT 구간 보존, AGENTS 구간의 옛 내용(STALE-AGENTS) 제거, 결과가 `mergeClaudeMd(old, next)` 와 동일 |
+| DOC-03 | (c) 마커 오류 | AGENTS BEGIN 만 있는 입력: textarea `aria-invalid="true"`, `#doc-error` 표시, ZIP 버튼(정상·차단 모두) disabled |
+
+### P6R3-5. 계약 변경
+없음. 로컬 실행 시 4173 점유 주의(오래된 preview 재사용 가능): `AF_E2E_PORT` 사용.
