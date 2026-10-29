@@ -145,5 +145,7 @@ describe("PH7 스키마 확장", () => {
     expect(codes(draft((d) => (d.export = { github: gh })))).toEqual([]);
     expect(codes(draft((d) => (d.export = { github: { ...gh, mode: "pr", baseUrl: "https://ghe.example.com/api/v3", branch: "agentforge/setup" } })))).toEqual([]);
     expect(codes(draft((d) => (d.export = { github: { ...gh, branch: "a..b" } })))).toContain("GIT_BRANCH");
+    // 토큰이 평문으로 가지 않도록 GHES 주소는 https 만(review-2 권고, ADR-0007)
+    expect(codes(draft((d) => (d.export = { github: { ...gh, baseUrl: "http://ghe.example.com/api/v3" } })))).toContain("HTTPS_URL");
   });
 });

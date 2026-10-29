@@ -470,3 +470,14 @@ PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙�
   - 기동 진입점 `listen({ host = "127.0.0.1", port })`를 코드로 고정한다.
 - **9.5 정정(리드 확정)**: `planGithubTree`의 mode는 확장자가 아니라 `RenderedFile.mode`를 따른다(0o755 → 100755, 그 외 100644). 그래서 가져온 스킬 안의 `.sh`는 ZIP과 같이 100644이고, "실행 권한 없이 넣음" 원칙과 일치한다. exporter의 임시 규칙도 같게 맞춘다.
 - **화면 문구 추가**: `IMPORT_RISK`(info, params `id`, `codes` 쉼표 목록)
+- **EXP-02 보강(review-2 권고, 리드 확정)**:
+  - `GithubTarget.baseUrl`은 https만 허용한다(`HttpsUrl`, 오류 `HTTPS_URL` — 토큰 평문 전송 방지). 리드 반영 완료.
+  - push는 blob을 파일마다 따로 만들지 않고, `git/trees` 항목의 `content`로 한 번에 보낸다(2차 rate limit 회피, mode 유지).
+  - 2차 rate limit(403·429 + `retry-after`, 또는 응답 메시지가 secondary rate limit)은 `GITHUB_RATE_LIMIT`로 분류한다. 메시지는 분류에만 쓰고 노출하지 않는다.
+  - 부분 실패는 `AppError("GITHUB_PARTIAL", { stage, url })`로 알린다.
+    - create: 저장소 생성 후 실패하면 stage `commit`, url은 저장소 html_url.
+    - pr: 브랜치 생성 후 PR 생성이 실패하면 stage `pr`, url은 브랜치 주소.
+    - 화면은 "저장소(브랜치)는 생성됨 — 확인 후 지우거나 직접 PR" 안내와 링크(https만)를 보인다.
+  - `auto_init` 직후 git data API의 409·404는 1초 간격으로 최대 3회 재시도한다.
+  - Octokit 로거는 모두 noop이다.
+  - exporter 루트(`.`)는 `pushToGithub`를 다시 export하지 않는다. web은 `@agentforge/exporter/github`만 지연 로딩한다(ZIP 청크와 분리).

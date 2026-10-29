@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Command, Domain, GitBranch, HttpUrl, ModelId, PathPrefix, ProjectName, SkillFilePath, SkillName } from "./patterns.js";
+import { Command, Domain, GitBranch, HttpsUrl, HttpUrl, ModelId, PathPrefix, ProjectName, SkillFilePath, SkillName } from "./patterns.js";
 import { invariants } from "./invariants.js";
 
 export const PROVIDER_IDS = ["claude", "openrouter", "ollama", "vllm", "openai", "gemini"] as const;
@@ -52,7 +52,7 @@ export const GithubTarget = z.object({
   /** create: 새 저장소 + 커밋 1건, pr: 기존 저장소에 브랜치 + PR (기본 create) */
   mode: z.enum(["create", "pr"]).optional(),
   /** GHES API 주소(예: https://ghe.example.com/api/v3). 없으면 github.com */
-  baseUrl: HttpUrl.optional(),
+  baseUrl: HttpsUrl.optional(),
   /** pr 모드 브랜치 이름(기본 agentforge/setup) */
   branch: GitBranch.optional(),
 });

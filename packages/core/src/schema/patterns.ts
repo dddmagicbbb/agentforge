@@ -48,3 +48,9 @@ export const GitBranch = z
   .max(100)
   .regex(/^[A-Za-z0-9][A-Za-z0-9._/-]*$/, { error: "GIT_BRANCH" })
   .refine((b) => !b.includes("..") && !b.includes("//") && !b.endsWith("/") && !b.endsWith(".lock") && !b.endsWith("."), { error: "GIT_BRANCH" });
+
+/** https 만 허용하는 주소(토큰을 싣는 GHES API 등 — ADR-0007). 형식은 HttpUrl 과 같다. */
+export const HttpsUrl = z
+  .string()
+  .max(200)
+  .regex(/^https:\/\/[A-Za-z0-9.-]+(:\d{1,5})?(\/[A-Za-z0-9._~%/-]*)?$/, { error: "HTTPS_URL" });
