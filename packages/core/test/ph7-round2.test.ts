@@ -26,7 +26,21 @@ describe("T-702 sha256 순수 구현", () => {
   });
 });
 
+describe("T-702 sha256 경계·인코딩(Node crypto 로 미리 계산한 상수)", () => {
+  it.each([
+    ["이모지 4바이트", "😀", "f0443a342c5ef54783a111b51ba56c938e474c32324d90c3a60c9c8e3a37e2d9"],
+    ["짝 없는 서로게이트는 U+FFFD", "�", "83d544ccc223c057d2bf80d3f2a32982c32c3c0db8e2674820da5064783fb097"],
+    ["55바이트", "a".repeat(55), "9f4390f8d30c2dd92ec9f095b65e2b9ae9b0a925a5258e241c9f1e910f734318"],
+    ["56바이트", "a".repeat(56), "b35439a4ac6f0948b6d6f9e3c6af0f5f590ce20f1bde7090ef7970686ec6738a"],
+    ["64바이트", "a".repeat(64), "ffe054fe7ae0cb6dc65c3af9b61d5209f439851db43d0ba5997337df154668eb"],
+  ])("%s", (_n, s, h) => expect(sha256Hex(s)).toBe(h));
+});
+
 describe("T-702 sources.lock", () => {
+  it("입력 files 가 역순이어도 lock 은 SKILL.md 먼저", () => {
+    const j = JSON.parse(find(build(imp({ files: [...JSON_FILES].reverse() })), ".agentforge/sources.lock"));
+    expect(j.skills[0].files.map((x: { path: string }) => x.path)).toEqual(["SKILL.md", "scripts/run.sh"]);
+  });
   it("imported 가 없으면 lock 없음", () => {
     expect(build().some((f) => f.path === ".agentforge/sources.lock")).toBe(false);
   });
@@ -78,6 +92,12 @@ describe("T-702 planGithubTree", () => {
     try { planGithubTree([rf(".agentforge/env.local")]); } catch (x) { e = x; }
     expect(e).toBeInstanceOf(AppError);
     expect(e).toMatchObject({ code: "EXPORT_SECRET_PATH", params: { path: ".agentforge/env.local" } });
+  });
+  it("env.local 차단은 대소문자 무시·세그먼트 단위", () => {
+    for (const p of ["ENV.LOCAL", "a/Env.Local", ".agentforge/env.local/x"]) {
+      expect(() => planGithubTree([rf(p)])).toThrow(AppError);
+    }
+    expect(() => planGithubTree([rf("a/myenv.local"), rf("env.local.example")])).not.toThrow();
   });
   it("render 결과와 경로 집합·내용·권한 대응(ZIP 과 같은 입력)", () => {
     const files = build(imp());
