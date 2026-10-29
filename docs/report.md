@@ -89,3 +89,15 @@
   - 마켓 인터프리터 변형 추가(`require('https').get`, `deno run https://` 등)
   - GHES CORS 서버 중계(P2)
   - E2E 보강(query string 토큰, ZIP과 tree 동일성, git 설정 격리)
+- **실제 GitHub 실기(사람 승인 2026-10-30)**:
+  - 방법: `dddmagicbbb/af-push-test`(비공개)를 앱 코드 `pushToGithub` create 모드로 만들고 기본 구성 생성물 54개를 푸시했다.
+  - GitHub API로 독립 검증한 결과:
+    - 커밋은 1건이다(부모 0).
+    - `.sh` 10개만 100755다.
+    - `env.local`은 없다(`env.local.example`만 있다).
+    - 54개 모두 render 결과와 git blob sha·mode가 일치한다.
+  - EXP-02 수용 기준(커밋 1건·실행 권한 유지·env.local 미포함)을 충족한다.
+  - 삭제는 토큰에 `delete_repo` 권한이 없어 403이었다. 사람이 직접 삭제한다.
+- 실기에서 발견한 것(후속):
+  - Octokit 로거를 noop으로 지정했는데도 `@octokit/request`의 deprecation 경고(메서드·URL, 토큰 없음)가 console에 찍힌다. 요청 단위 `request.log`에도 noop을 넘겨야 한다.
+  - GitHub가 `POST /user/repos`를 2028-03-10 제거 예정으로 표시한다. API 버전 헤더(`X-GitHub-Api-Version`) 고정과 대체 엔드포인트를 확인해야 한다.
