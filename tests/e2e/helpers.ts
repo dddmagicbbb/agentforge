@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
 import { defaultDraft, render, resizeDevs, validate, type ProjectInput, type RenderedFile } from "@agentforge/core";
 
@@ -68,4 +69,40 @@ export function isolatedEnv(root: string): NodeJS.ProcessEnv {
 
 export function tmpDir(prefix: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+}
+
+/** 빈 TCP 포트 하나(바로 닫고 번호만 돌려준다) */
+export async function freePort(): Promise<number> {
+  const net = await import("node:net");
+  return new Promise((resolve, reject) => {
+    const s = net.createServer();
+    s.once("error", reject);
+    s.listen(0, "127.0.0.1", () => {
+      const a = s.address();
+      const port = typeof a === "object" && a ? a.port : 0;
+      s.close(() => resolve(port));
+    });
+  });
+}
+
+/** 저장소 루트(tests/e2e 기준 두 단계 위) */
+export function repoRoot(): string {
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+}
+
+/** 임시 git 저장소에 파일을 커밋한다(경로→내용). */
+export function makeGitRepo(dir: string, files: Record<string, string>): void {
+  fs.mkdirSync(dir, { recursive: true });
+  for (const [rel, content] of Object.entries(files)) {
+    const p = path.join(dir, rel);
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    fs.writeFileSync(p, content);
+  }
+  const git = (...a: string[]) => {
+    const r = spawnSync("git", ["-c", "user.name=af-e2e", "-c", "user.email=af-e2e@example.com", "-c", "commit.gpgsign=false", ...a], { cwd: dir, encoding: "utf8" });
+    if (r.status !== 0) throw new Error(`git ${a.join(" ")} 실패: ${r.stderr}`);
+  };
+  git("init", "-q", "-b", "main");
+  git("add", "-A");
+  git("commit", "-q", "-m", "init");
 }

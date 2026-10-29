@@ -271,3 +271,10 @@ T-711: MKT-01. 계약: design.md 9.4·9.6, ADR-0007.
 - 오류: 401/403 GITHUB_AUTH(rate limit 헤더면 GITHUB_RATE_LIMIT), 404 GITHUB_NOT_FOUND, create 422 GITHUB_REPO_EXISTS, 네트워크 GITHUB_NETWORK, 그 외 GITHUB_FAILED. params 는 status 만. 본문·토큰 미포함.
 - 시험: create 순서·부모 없음·force·mode·env.local 차단·org/user·visibility, pr 순서·base_tree·브랜치 존재, 오류 매핑, 토큰 미노출, GHES baseUrl, toZip 동등.
 - 계약 변경 없음(core planGithubTree 는 dev-1 라운드, 통합 교체).
+
+## PH7 3라운드: T-713 (MKT-01·02, EXP-02 E2E)
+- 파일: `tests/e2e/market.spec.ts`, `tests/e2e/github.spec.ts`, `tests/e2e/helpers.ts`(빈 포트·임시 git 저장소·서버 기동 보조 추가). 서버·exporter 코드는 바꾸지 않는다.
+- market: beforeAll 에서 임시 git 저장소(safe-skill, risky-skill)를 만들고 `node packages/server/dist/main.js` 를 spawn(PORT=빈 포트, AF_MARKET_DATA=임시, AF_WEB_DIST=packages/web/dist, AF_MARKET_ADMIN=1, AF_ALLOW_FILE_SOURCES=1). admin 꺼진 서버는 별도 기동. afterAll 에서 종료·삭제. 화면은 서버 출처(같은 출처)로 연다.
+- github: 실제 GitHub 대신 `page.route("https://api.github.com/**")` 가 가짜 응답(CORS 헤더 포함). baseUrl 은 https 전용이므로 화면 경로만 쓴다.
+- 시험: 마켓 전체 흐름(검색·미리보기·위험 확인 전 ZIP 차단·ZIP 원문·권한 644·sources.lock sha256·README 안내), admin 꺼짐 UI 숨김, push 성공 요청 순서·mode·토큰 지움·토큰 미노출, 401 GITHUB_AUTH, commit 500 GITHUB_PARTIAL.
+- 계약 변경 없음.
