@@ -60,3 +60,15 @@
 - R1: 확인 체크박스·표시는 서버 flags 가 비어도 해당 항목에 core `IMPORT_UNACKED` 가 있으면 보인다. 현재 브랜치에 `scanSkillRisk` 가 없어 위험 목록은 flags 기반(TODO: 통합 후 core 재계산 결과 사용).
 - R2: 서버 응답 항목 런타임 검증 + `ErrorBoundary`. R6 설계 문서 정리. 시험 추가(비 JSON 500, 동시 가져오기, 해제 재차단, flags 빈 값, 깨진 항목, en 라벨).
 - 번들: 줄였던 문구 원복. vite `rolldownOptions.output.codeSplitting` 으로 core·react 계열 분리. 청크(kB): index 57.61, vendor-core 174.68, vendor-react 268.43, src(exporter, 지연) 96.61, MarketPanel 9.66 — 500 kB 경고 없음. web 134개 통과.
+
+## PH7 2라운드 (T-722 · T-723 · R1 · IMPORT_RISK)
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+| --- | --- | --- | --- | --- |
+| T-722 | 6단계 GitHub 영역(접기·지연 로딩), 토큰은 비제어 input 만, 종료 즉시 지움, https 링크만, 코드 8종 문구 ko·en | `components/GithubPanel.tsx`, `push.ts`, `steps/StepGenerate.tsx`, `App.tsx`, `issue-step.ts`, `locales/*` | `round9-github.test.tsx` 신규 | exporter `pushToGithub` 노출 경로 확인 필요 |
+| T-723 | ZIP 파일명 시험 timeout 보강, 동시 가져오기 시험을 수동 resolve 로 | `round4-gen`, `round8-market` 시험 | 통과 | 없음 |
+| R1 | 위험 목록·확인 필요를 core `scanSkillRisk(files)` 로, blocked·위험 코드 허용 목록 검사 | `StepSkills.tsx`, `MarketPanel.tsx`, `market/risk.ts` | 서버 flags 비어도 core 결과 표시 | 없음 |
+| IMPORT_RISK | info issue 의 codes 를 5종은 문구, 모르는 값은 텍스트로 | `IssueList.tsx`, `locales/*` | issue 주입 시험 | core 통합 후 실제 표시 확인 |
+
+- 번들: 메인 index 61.4 kB, GithubPanel 4.7 kB(지연), MarketPanel 9.7 kB, vendor-core 177.7 kB, vendor-react 268.4 kB.
+- 리드 조치: exporter 가 `pushToGithub` 를 `@agentforge/exporter` 루트에서 내보내는지 확인(현재 `defaultPush` 는 루트 import 후 속성 검사, 없으면 GITHUB_FAILED). 별도 경로(`/github`)면 `src/push.ts` 한 줄 교체.
+- 기존 시험 변경: round4 "GitHub 영역은 비활성 안내" 를 "접힌 채 시작"으로, round6 StepGenerate props 에 `patch` 추가.

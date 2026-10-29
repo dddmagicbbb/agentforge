@@ -210,7 +210,7 @@ export function MarketPanel({ fetchFn, imported, onImport }: Props) {
               <code>{h.id}</code> <span className="chip">{t(`market.trust.${h.trust}`)}</span>{" "}
               <span>{h.description}</span> <span className="sub">{h.src} · {t("market.files", { count: h.fileCount })}</span>{" "}
               {h.flags.length > 0 ? <span className="chip warn">{t("market.flagCount", { count: h.flags.length })}</span> : null}
-              {blocked ? <span className="issues"> {t("market.blocked")}{typeof h.blocked === "string" ? ` (${t(`market.blockedReason.${h.blocked}`, { defaultValue: h.blocked })})` : ""}</span> : null}{" "}
+              {blocked ? <span className="issues"> {t("market.blocked")}{typeof h.blocked === "string" ? ` (${t(["tooLarge", "binary", "badPath"].includes(h.blocked) ? `market.blockedReason.${h.blocked}` : "market.blockedReason.unknown")})` : ""}</span> : null}{" "}
               <button type="button" onClick={() => void showPreview(h)}>{t("market.preview")}</button>{" "}
               <button type="button" disabled={blocked || importedIds.has(h.id) || pending.has(h.id)} onClick={() => void doImport(h)}>{t("market.import")}</button>
             </li>

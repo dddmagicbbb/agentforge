@@ -12,10 +12,11 @@ import { StepRequirement } from "./steps/StepRequirement";
 import { StepRoutine } from "./steps/StepRoutine";
 import { StepSkills } from "./steps/StepSkills";
 import { applyExistingClaudeMd, usePreview } from "./use-preview";
+import type { PushFn } from "./push";
 import "./app.css";
 
 // App 이 ProjectInput 하나를 소유한다. 키·비밀 값은 입력받지 않는다.
-export function App({ marketFetch }: { readonly marketFetch?: typeof fetch } = {}) {
+export function App({ marketFetch, push }: { readonly marketFetch?: typeof fetch; readonly push?: PushFn } = {}) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<ProjectInput>(defaultDraft);
   const [step, setStep] = useState<StepIndex>(0);
@@ -45,7 +46,7 @@ export function App({ marketFetch }: { readonly marketFetch?: typeof fetch } = {
           {key === "skills" ? <StepSkills draft={draft} patch={patch} issues={issues} marketFetch={marketFetch} /> : null}
           {key === "developers" ? <StepDevelopers draft={draft} patch={patch} issues={issues} /> : null}
           {key === "connection" ? <StepConnection draft={draft} patch={patch} issues={issues} /> : null}
-          {key === "generate" ? <StepGenerate existingMd={existingMd} onExistingMd={setExistingMd} draft={draft} issues={issues} files={files} exportable={exportable} onStep={setStep} /> : null}
+          {key === "generate" ? <StepGenerate existingMd={existingMd} onExistingMd={setExistingMd} draft={draft} issues={issues} files={files} exportable={exportable} onStep={setStep} push={push} patch={patch} /> : null}
           <StepButtons step={step} onStep={setStep} />
         </section>
         <PreviewPane files={files} />

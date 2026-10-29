@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { Issue } from "@agentforge/core";
+import { riskList } from "../market/risk";
 import { gotoStepOf } from "../issue-step";
 import { STEP_KEYS, type StepIndex } from "./StepNav";
 
@@ -28,10 +29,11 @@ export function IssueList({ issues, filter, onGoto, testId, id, current }: Props
       {shown.map((i, k) => {
         const path = i.path.join(".");
         const reason = String(i.params["reason"] ?? "");
+        const extra = i.code === "IMPORT_RISK" ? { codes: riskList(t, String(i.params["codes"] ?? "")) } : {};
         return (
           <li key={k} className={`lv-${i.level}`}>
             {onGoto ? <span className="i" aria-hidden="true">{ICON[i.level]} </span> : null}
-            {t(`issue.${i.code}`, { context: i.params["slug"] ? "withSlug" : undefined, defaultValue: t("issue.default", { code: i.code, path }), path, ...i.params, reason })}
+            {t(`issue.${i.code}`, { context: i.params["slug"] ? "withSlug" : undefined, defaultValue: t("issue.default", { code: i.code, path }), path, ...i.params, reason, ...extra })}
             {onGoto && gotoStepOf(i) !== undefined && gotoStepOf(i) !== current ? (
               <button type="button" className="goto" onClick={() => onGoto(gotoStepOf(i)!)}>
                 {t("export.goto", { step: t(`steps.${STEP_KEYS[gotoStepOf(i)!]}`) })}
