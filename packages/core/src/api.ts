@@ -1,10 +1,10 @@
 import type { z } from "zod";
-import { notImplemented } from "./errors.js";
+import { mergeClaudeMdImpl } from "./merge-claude-md.js";
 import { renderProject } from "./render/index.js";
 import { MAX_DEVELOPERS, ProjectSchema, type Project, type ProjectInput } from "./schema/index.js";
 import { shQuote as quote } from "./util/sh.js";
 
-// core 공개 API(design.md 3장). 미구현 API는 담당 작업 ID와 함께 NOT_IMPLEMENTED 를 던진다.
+// core 공개 API(design.md 3장).
 
 export type IssueLevel = "error" | "warn" | "info" | "ok";
 export interface Issue {
@@ -110,7 +110,7 @@ export function shQuote(value: string): string {
   return quote(value);
 }
 
-/** CLAUDE.md 재생성 병합: 마커 구간만 교체, PROJECT 구간은 old 보존. — DOC-03(P1) */
-export function mergeClaudeMd(_oldMd: string, _nextMd: string): string {
-  return notImplemented("mergeClaudeMd", "DOC-03");
+/** CLAUDE.md 재생성 병합: 마커 구간만 교체, PROJECT 구간은 old 보존. — DOC-03 */
+export function mergeClaudeMd(oldMd: string, nextMd: string): string {
+  return mergeClaudeMdImpl(oldMd, nextMd);
 }
