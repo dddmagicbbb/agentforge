@@ -65,7 +65,7 @@ while :; do
       if [ -n "$bad" ]; then
         say "dev-$i" "담당 범위 밖 변경이 있습니다: $(echo "$bad" | tr '\n' ' ') 되돌린 뒤 dev-$i.done 을 다시 만드세요."
       else
-        say "review-$i" "코드 검토: 테스트를 실행하고 review-$i.pass 또는 review-$i.reject 신호를 만드세요."
+        say "review-$i" "코드 검토: 테스트를 실행하고 결과를 docs/review/dev-$i.md 에 쓰고 커밋한 뒤 review-$i.pass 또는 review-$i.reject 신호를 만드세요."
       fi
     fi
     if take "review-$i.reject"; then

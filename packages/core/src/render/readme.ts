@@ -17,6 +17,9 @@ export function renderReadme(c: RenderContext): string {
     "bash scripts/integrate.sh                 # 전원 통과 후",
   ];
   const routine = p.uiDesign ? "기획 → 분석 → (UI/UX 설계: 선택) → 시스템 설계" : "기획 → 분석 → 시스템 설계";
+  const devNote = p.devcontainer === true
+    ? "\n\nDev Container: .devcontainer/devcontainer.json 으로 열 수 있다. 폐쇄망이면 image 와 postCreateCommand 의 패키지 설치를 사내 레지스트리·미러 이미지로 바꾼다. env.local 은 컨테이너 안에서 직접 넣는다."
+    : "";
   return `# ${slug} — AgentForge 개발 환경
 
 요구사항: .agentforge/requirements.md · 설정: .agentforge/forge.config.json
@@ -28,5 +31,6 @@ ${routine} → 공통 개발 → [상세 설계 + 개발](병렬) → 개발 검
 ${steps.map((s, i) => `${i + 1}. \`${s}\``).join("\n")}
 
 단계가 끝날 때마다 사람이 관문을 확인하고 커밋한다. 단계 전환은 사람이 한다.
+권한: .claude/settings.json 은 기본 권한 모드(defaultMode: default)로 시작해 allow 목록 밖의 Bash 명령은 승인을 거친다.${devNote}
 `;
 }

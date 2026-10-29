@@ -10,18 +10,19 @@ interface Props {
   /** 지정하면 수준 아이콘(✓ ! ✕ i)과 "해당 단계로 이동" 버튼을 붙인다(6단계 전체 목록) */
   readonly onGoto?: (s: StepIndex) => void;
   readonly testId?: string;
+  readonly id?: string;
 }
 
 const ICON = { ok: "✓", warn: "!", error: "✕", info: "i" } as const;
 
 /** 검사 결과 목록(i18n `issue.<CODE>`, params 보간). 오류는 alert, 나머지는 status. */
-export function IssueList({ issues, filter, onGoto, testId }: Props) {
+export function IssueList({ issues, filter, onGoto, testId, id }: Props) {
   const { t } = useTranslation();
   const shown = filter ? issues.filter(filter) : issues;
   if (!shown.length) return null;
   const hasError = shown.some((i) => i.level === "error");
   return (
-    <ul className="issues" role={hasError ? "alert" : "status"} data-testid={testId}>
+    <ul className="issues" role={hasError ? "alert" : "status"} data-testid={testId} id={id}>
       {shown.map((i, k) => {
         const path = i.path.join(".");
         const reason = String(i.params["reason"] ?? "");

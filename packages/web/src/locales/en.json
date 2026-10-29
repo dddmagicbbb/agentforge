@@ -1,0 +1,277 @@
+{
+  "app": {
+    "title": "AgentForge",
+    "subtitle": "Multi-agent parallel development environment generator"
+  },
+  "steps": {
+    "requirement": "Requirements",
+    "routine": "Routine & agents",
+    "developers": "Developers",
+    "skills": "Skills",
+    "connection": "Connection & run",
+    "generate": "Generate"
+  },
+  "req": {
+    "name": "Project name (folder and tmux session name)",
+    "language": "Answer and document language",
+    "text": "Requirements (free text, saved as .agentforge/requirements.md)",
+    "uiDesign": "Use the UI/UX design stage",
+    "install": "Install command (run in each worktree)",
+    "test": "Test command",
+    "e2e": "E2E command (integration check, optional)",
+    "title": "Requirements",
+    "devCount": "Number of developers",
+    "devLess": "Remove a developer",
+    "devMore": "Add a developer",
+    "devHint": "1 to {{max}} developers. Each gets dev-N and review-N agents and one tmux window",
+    "maxRejects": "Rejection limit (a human steps in beyond it)"
+  },
+  "lang": {
+    "ko": "한국어",
+    "en": "English",
+    "switch": "Display language"
+  },
+  "preview": {
+    "title": "Generated files",
+    "count": "{{count}} total",
+    "empty": "(empty file)",
+    "exec": "755",
+    "ai": "AI",
+    "none": "No files generated. Fix the input errors first"
+  },
+  "export": {
+    "zip": "Download ZIP",
+    "blocked": "Fix {{count}} error(s) first",
+    "busy": "Generating…",
+    "failed": "Failed to create the ZIP: {{reason}}",
+    "goto": "Go to {{step}}"
+  },
+  "generate": {
+    "title": "Generate",
+    "chip": {
+      "files": "{{count}} files",
+      "exec": "{{count}} executable scripts",
+      "ai": "{{count}} files for AI to fill"
+    },
+    "nextTitle": "After you download",
+    "next": {
+      "setup": "Unzip, then run bash scripts/setup.sh",
+      "login": "Run claude and sign in yourself; put keys in .agentforge/env.local",
+      "planner": "bash scripts/run-role.sh planner, then /forge-init, then approve the PRD",
+      "seqUi": "Analysis, UI/UX design, system design, common development (follow the README order)",
+      "seq": "Analysis, system design, common development (follow the README order)",
+      "agents": "In the lead session run /forge-agents, then bash scripts/check-forge.sh",
+      "models": "bash scripts/check-models.sh checks each agent model (it calls the real models, so tokens are used)",
+      "worktrees": "bash scripts/create-worktrees.sh && bash scripts/run-agents.sh",
+      "integrate": "After everyone passes, run bash scripts/integrate.sh"
+    },
+    "github": {
+      "title": "Create a GitHub repository",
+      "note": "Creating GitHub or GHES repositories will be offered in phase P1. It is not available yet and no token is requested. Download the ZIP and upload it yourself."
+    }
+  },
+  "issue": {
+    "PROJECT_NAME": "Project names may use only lowercase letters, digits, '.', '_' and '-'.",
+    "NAME_INVALID": "Project names may use only lowercase letters, digits, '.', '_' and '-'.",
+    "NAME_INVALID_withSlug": "Project names may use only lowercase letters, digits, '.', '_' and '-'. With the current value it will be created as \"{{slug}}\".",
+    "REQ_SHORT": "The requirements are short ({{length}} characters; {{min}} or more recommended). /forge-init will have to ask many questions.",
+    "UI_OFF": "The UI/UX design stage is not used. System design follows analysis directly.",
+    "ALL_OK": "No problems with the configuration.",
+    "PATH_OVERLAP": "Owned folders overlap: dev-{{devA}} ({{pathA}}) / dev-{{devB}} ({{pathB}}). This causes merge conflicts and hook bypasses.",
+    "DEV_DEFERRED": "dev-{{dev}}: domain and folders are left empty. /forge-agents will fill them in after analysis.",
+    "MODEL_MISSING": "{{agent}}: enter a model ID.",
+    "REVIEW_WEAKER": "review-{{dev}} may be a weaker model than dev-{{dev}}. A reviewer should use a model equal to or stronger than the developer's.",
+    "IMPORT_UNACKED": "{{id}}: the risky items have not been confirmed (Skills step).",
+    "DOMAIN": "A domain uses only lowercase letters, digits and '-', up to 32 characters.",
+    "MODEL_ID": "A model ID starts with a letter or digit and may contain only letters, digits, '.', '_', ':', '/', '@' and '-'.",
+    "PATH_PREFIX": "Write owned folders as paths relative to the repository root (letters, digits, '.', '_', '-', and '/' for subfolders).",
+    "PATH_DOT_SEGMENT": "Owned folders cannot contain '.' or '..' path segments.",
+    "DEV_PARTIAL": "dev-{{dev}}: fill in the domain and the owned folders together, or leave both empty.",
+    "OPENROUTER_FREE_LIMIT": "{{count}} agent(s) use OpenRouter free models and share the account-wide limits of 20 requests per minute and 50 per day (1,000 per day after topping up $10 or more).",
+    "GATEWAY_REQUIRED": "OpenAI and Gemini go through the LiteLLM gateway. Start scripts/start-gateway.sh before running in parallel.",
+    "VLLM_TOOL_PARSER": "An internal vLLM must run with --enable-auto-tool-choice --tool-call-parser for file edits to work.",
+    "HTTP_URL": "The address is not valid. Use only http(s)://host[:port], without credentials, spaces or quotes.",
+    "DEV_COUNT_MISMATCH": "The developer count ({{developerCount}}) does not match the developer list ({{devs}}).",
+    "DEV_COUNT_OVER_TIER": "The current tier allows up to {{tierLimit}} developers.",
+    "COMMAND": "Enter the command on a single line.",
+    "SCHEMA_INVALID": "Check the input: {{path}}",
+    "default": "{{code}} — {{path}}",
+    "DEVCONTAINER_CLOSED_NET": "Dev Container: the image and packages are downloaded in your environment, so network access is required (the app itself calls nothing external). On a closed network, switch to an image from your internal registry.",
+    "TMUX_PREFIX": "Write the tmux prefix as C-a to C-z (for example C-a)."
+  },
+  "dev": {
+    "title": "Agents per developer",
+    "lead": "Each developer gets a dedicated agent (dev-N), a paired reviewer (review-N), a dedicated skill (devN-domain) and an owned-scope file (.claude/devs/dev-N.paths). If you leave the domain and folders empty, /forge-agents creates them from tasks.md after analysis.",
+    "col": {
+      "agent": "Agent",
+      "domain": "Domain",
+      "paths": "Owned folders (comma separated)",
+      "dev": "Development model",
+      "review": "Review model"
+    },
+    "domainLabel": "dev-{{n}} domain",
+    "pathsLabel": "dev-{{n}} owned folders",
+    "domainPh": "e.g. order",
+    "pathsPh": "src/order/, tests/order/",
+    "note": "A hook enforces the owned scope. If Edit or Write touches a file outside it, guard-paths.sh blocks the call (exit 2) and returns the reason to the agent. Changes made around it through Bash are caught again by a git diff scope check before review."
+  },
+  "conn": {
+    "title": "Connection and parallel run",
+    "lead": "AgentForge never accepts keys. Copy the generated .agentforge/env.local.example and fill in your own. Only the default addresses are set here.",
+    "table": "Providers in use",
+    "col": {
+      "provider": "Provider in use",
+      "count": "Agents",
+      "connect": "Connection"
+    },
+    "vllmLabel": "vLLM address",
+    "ollamaLabel": "Ollama address",
+    "claude": "Sign in directly (subscription or API key)",
+    "openrouter": "https://openrouter.ai/api · key goes in env.local",
+    "litellm": "http://localhost:4000 (LiteLLM) · key goes in env.local",
+    "note": "VS Code: in the integrated terminal (WSL) run Tasks: Run Task, then AF: parallel run. Signal files are collected in .agentforge/signals/ of the main repository, and the watch window delivers messages by tmux pane id."
+  },
+  "tmux": {
+    "title": "tmux layout (one window per developer pair)",
+    "watch": "Signal watch, scope check, limit of {{max}} rejections",
+    "noModel": "No model entered",
+    "paneModel": "{{provider}} · {{model}}",
+    "paneModel_claude": "Claude {{model}}",
+    "layoutLabel": "tmux layout",
+    "prefixLabel": "tmux prefix",
+    "mouseLabel": "Enable mouse",
+    "logsLabel": "Record pane logs",
+    "reset": "Reset tmux to defaults",
+    "layout": {
+      "pair": "pair: one window per developer pair",
+      "grid": "grid: tiled in one window",
+      "role": "role: a dev window and a review window"
+    },
+    "prefixHint": "One of C-a to C-z. Default C-b",
+    "logsHint": "When on, output is appended to .agentforge/logs/<agent>.log (excluded by .gitignore).",
+    "settings": "tmux settings (optional)",
+    "unset": "If left unset, defaults apply (pair, C-b, mouse off, logs off) and no tmux entry is added to the output."
+  },
+  "nav": {
+    "label": "Steps",
+    "prev": "Previous",
+    "next": "Next",
+    "hasError": "Has errors"
+  },
+  "provider": {
+    "claude": "Claude sign-in",
+    "openrouter": "OpenRouter",
+    "ollama": "Ollama (local)",
+    "vllm": "Internal vLLM",
+    "openai": "OpenAI via LiteLLM",
+    "gemini": "Gemini via LiteLLM",
+    "short": {
+      "claude": "Claude",
+      "openrouter": "OpenRouter",
+      "ollama": "Ollama",
+      "vllm": "Internal vLLM",
+      "openai": "OpenAI",
+      "gemini": "Gemini"
+    }
+  },
+  "routine": {
+    "title": "Routine and sequential-stage agents",
+    "lead": "Boundaries are fixed sequentially up to common development; only after that does work split per developer. Parallel-stage agents are chosen per developer on the Developers screen.",
+    "col": {
+      "no": "#",
+      "step": "Stage",
+      "provider": "Provider",
+      "model": "Model",
+      "out": "Output and gate"
+    },
+    "optional": "Optional",
+    "gate": "Gate: {{gate}}",
+    "providerLabel": "{{id}} provider",
+    "modelLabel": "{{id}} model",
+    "flow": {
+      "parallel": "Parallel, one tmux window per developer",
+      "dev": "dev-{{n}} detailed design, then development",
+      "review": "review-{{n}} verification",
+      "optionalMark": "(optional)"
+    },
+    "note": "A provider is chosen per agent (session). The generated scripts/agent-env.sh picks the address and model by agent name at run time. Claude uses the account you signed in to yourself.",
+    "seq": {
+      "planner": {
+        "step": "Planning",
+        "out": "docs/prd.md",
+        "gate": "Human approval (feature list and priorities)"
+      },
+      "analyst": {
+        "step": "Analysis",
+        "out": "analysis.md · tasks.md",
+        "gate": "Every feature ID assigned, zero owned-folder overlap"
+      },
+      "ux-designer": {
+        "step": "UI/UX design",
+        "out": "docs/design/ui/",
+        "gate": "Screens mapped to features, data needed per screen settled"
+      },
+      "architect": {
+        "step": "System design",
+        "out": "system.md · API contract",
+        "gate": "Contract frozen, screen data to API mapping complete"
+      },
+      "common-dev": {
+        "step": "Common development",
+        "out": "Common modules · develop",
+        "gate": "Build and tests pass, develop tagged"
+      },
+      "integrator": {
+        "step": "Integration check",
+        "out": "integration.md",
+        "gate": "All tests pass plus final human approval"
+      }
+    }
+  },
+  "skills": {
+    "title": "Skills",
+    "lead": "Skills provide knowledge; hooks do the enforcing. Skill folders have no access restriction, so only the ones needed are preloaded through each agent definition's skills: list.",
+    "layer": {
+      "common": "Common layer",
+      "role": "Role layer",
+      "dev": "Developer-specific layer",
+      "gen": "Generator skills",
+      "market": "Import from a sharing site"
+    },
+    "required": "Required",
+    "runInUser": "Run in your own Claude Code",
+    "devDesc": "Terms, rules, APIs and test data of the {{domain}} domain",
+    "devPending": "Domain undecided, created by /forge-agents",
+    "market": "Marketplace import will be offered in phase P1. It is not available yet.",
+    "core": {
+      "conventions": {
+        "to": "dev-* · review-* · common-dev",
+        "desc": "Language, commit and report format"
+      },
+      "tdd": {
+        "to": "dev-* · common-dev",
+        "desc": "Tests first, confirm failure, then implement"
+      },
+      "detail-design": {
+        "to": "dev-*",
+        "desc": "Detailed design template (docs/design/detail/dev-N.md)"
+      },
+      "code-review": {
+        "to": "review-* · integrator",
+        "desc": "Rejection reasons and record format"
+      },
+      "forge-init": {
+        "to": "Run by you with /forge-init",
+        "desc": "Requirements to PRD and the CLAUDE.md project section"
+      },
+      "forge-agents": {
+        "to": "Run by you with /forge-agents",
+        "desc": "tasks.md to per-developer agents, skills and scope"
+      }
+    }
+  },
+  "devcontainer": {
+    "label": "Generate a Dev Container",
+    "hint": "When on, .devcontainer/devcontainer.json is created. Put env.local in yourself inside the container as well."
+  }
+}

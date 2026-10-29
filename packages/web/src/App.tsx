@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { defaultDraft, type ProjectInput } from "@agentforge/core";
+import { LangSwitch } from "./components/LangSwitch";
 import { PreviewPane } from "./components/PreviewPane";
 import { StepBar, StepButtons, STEP_KEYS, type StepIndex } from "./components/StepNav";
 import { StepConnection } from "./steps/StepConnection";
@@ -27,6 +28,7 @@ export function App() {
       <header>
         <h1>{t("app.title")}</h1>
         <span>{t("app.subtitle")}</span>
+        <LangSwitch />
         <StepBar step={step} onStep={setStep} errorSteps={errorSteps(issues)} />
       </header>
       <main>

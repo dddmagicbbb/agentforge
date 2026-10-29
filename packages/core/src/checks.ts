@@ -101,6 +101,7 @@ export function checks(input: ProjectInput): Issue[] {
   });
 
   if (p["uiDesign"] === false) add("info", "UI_OFF", ["uiDesign"]);
+  if (p["devcontainer"] === true) add("info", "DEVCONTAINER_CLOSED_NET", ["devcontainer"]);
 
   if (!out.some((i) => i.level === "error" || i.level === "warn")) out.unshift({ level: "ok", code: "ALL_OK", path: [], params: {} });
   return out;

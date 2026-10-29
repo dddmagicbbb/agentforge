@@ -122,3 +122,62 @@ wait-and-review.sh 의 이력 이름이 `date +%s` 라 같은 초에 두 번 소
 - 파일: `tests/e2e/playwright.config.ts`(Chromium, vite preview 4173 고정, 직렬), `helpers.ts`(core render 기대값·jszip 풀기·셸 단계 skip 판정·격리 env), `export.spec.ts`, `tsconfig.json`. 루트 `test:e2e` 스크립트, typecheck 에 `tsc -p tests/e2e` 추가, devDependencies `@playwright/test`·`jszip`(리드 승인).
 - 시험: ① 기본값 1→6단계·칩·`order-portal-agentforge.zip` / ② e2e-demo·개발자 2·UI 끔·폴더 겹침 차단→이동→수정→다운로드 / ③ ZIP 목록·루트·권한 = core render(모든 OS) / ④ 풀기→setup.sh→더미 prd·tasks→check-forge.sh→`-x` (Linux/macOS 에서만, 그 외 skip).
 - 계약 변경: 없음.
+
+## PH6 1라운드: T-612 (RUN-04 bats), T-614 (보안 S-4 bats)
+
+계약 기준 TDD다. 구현(dev-1)이 반영되기 전에는 새 사례가 실패하는 것이 정상이다. 문구는 dev-1 이 정하므로 동작(exit code·파일·pane·tmux 옵션) 위주로 단언한다.
+
+### P6-1. 파일
+| 파일 | 책임 |
+|---|---|
+| `tests/scripts/run-agents.bats` (신규) | design.md 8.2: g3 입력에 `tmux` 를 jq 로 주입 → ZIP → setup → develop → create-worktrees → run-agents(가짜 claude) |
+| `tests/scripts/parallel-mock.bats` (수정) | 8.6 S-4: 기존 통합 사례 준비에 검토 파일 커밋 추가(`add_reviews`), 검토 파일 누락·미커밋 사례 추가 |
+
+### P6-2. 테스트 목록
+| 계약 | 사례 |
+|---|---|
+| 8.2 pair(기본) | tmux 미지정: config 에 `tmuxLayout: pair` 만, 창 watch·dev1·dev2, 창당 2 pane, panes 파일 유효 |
+| 8.2 grid | 창 watch·agents, agents 4 pane, panes 파일이 모두 agents 창의 pane, pane 순서 = dev-1, review-1, dev-2, review-2, design-1.done → review-1 전달 |
+| 8.2 role | 창 watch·dev·review, dev·review 각 2 pane, 창 안 순서 dev-1·dev-2 / review-1·review-2, dev-i 는 dev 창·review-i 는 review 창, 신호 전달 |
+| 8.2 prefix·mouse | 세션 범위(`show-options -t`)에 prefix C-a·mouse on, 전역(`-g`)은 C-b·off 유지, 안내 출력에 `C-a` 포함·`Ctrl-b` 없음 |
+| 8.2 pair + prefix·mouse | 배치는 pair(dev1·dev2 창)이고 옵션만 세션 범위로 적용(배치·옵션 분기 독립) |
+| 8.2 기본값 | tmux 지정이나 C-b·mouse false·logs false: 세션 옵션 없음, logs 폴더·gitignore 항목 없음 |
+| 8.2 logs | logs=true: `.agentforge/logs/<에이전트>.log` 4개 생성, `.gitignore` 에 `.agentforge/logs/` |
+| 8.2 logs + 경로 인용 | 상위 폴더에 한글·공백·작은따옴표(`프로 젝트 it's`), 시험 중 `LC_ALL=C` 로 tmux 서버를 재기동하고 run-agents 실행: 4개 로그 파일 모두 생성 |
+| 8.6 S-4 누락 | dev-2 검토 파일 없음: integrate exit 1, develop 불변, integrator 미실행 |
+| 8.6 S-4 미커밋 | 작업 트리에만 있고 커밋 안 됨: 위와 동일 |
+| 8.6 S-4 요청 문구 | review-1 코드 검토 요청에 `docs/review/dev-1.md` 가 포함 |
+
+### P6-3. 계약 변경
+없음. `templates/` 수정 없음.
+
+## PH6 2라운드: T-611·T-613
+
+### P6R2-1. 파일
+| 파일 | 책임 |
+|---|---|
+| `tests/scripts/check-models.bats` (신규) | design.md 8.3 `scripts/check-models.sh` 판정·대상·요약·호출 형태·비밀 |
+| `tests/scripts/devcontainer-check.sh` (신규) | design.md 8.4 생성 devcontainer.json 의 구조 확인과 postCreateCommand 실동작 확인 |
+
+### P6R2-2. 시험 데이터
+- golden `ui-off-dev2-litellm`(project=batch-hub, agents 9개: litellm 경유 planner·dev-1·review-2, ollama dev-2, claude 나머지). check-models.sh 는 현재 정적 템플릿을 복사해 쓴다.
+- 가짜 claude: `--agent <a>` 로 에이전트를 알아내 `$FAKE_DIR/<a>.out|rc|sleep` 대로 출력·종료·지연하고, 받은 인자와 표준입력 EOF 여부(`stdin-rc=1`)를 기록한다.
+- 키 값은 시험 전용 문자열(`SECRET`)을 `env.local` 의 `LITELLM_MASTER_KEY` 로 넣는다.
+
+### P6R2-3. 사례 표
+| 계약 | 사례 |
+|---|---|
+| 8.3 통과 | 값 있음 + num_turns 3 → ✓, exit 0 |
+| 8.3 경계 | num_turns=2 통과(`>=2` 변이 검출), num_turns=1 경고 |
+| 8.3 경고 | 값 없음 / num_turns<2 → !, exit 0 |
+| 8.3 실패 | is_error / claude exit 3 / JSON 깨짐 / agent-env 키 누락(claude 미호출) / AF_CHECK_TIMEOUT 초과 → ✗, exit 1 |
+| 8.3 대상·요약 | 인자 지정 에이전트만, 인자 없으면 agents 전부, 혼합 요약 `통과 1 · 경고 1 · 실패 1` + exit 1 |
+| 8.3 호출 형태 | `--agent <a>`·`--output-format json`·`--max-turns 3`·`-p`, 표준입력 /dev/null |
+| 8.3 비밀 | litellm 에이전트로 통과·경고(값 없음)·경고(num_turns=1)·is_error·JSON 깨짐·claude exit≠0 각각 실행해 출력에 키 값·응답 원문이 없음 |
+| 8.4 구조 | devcontainer: true 입력 → `.devcontainer/devcontainer.json` 의 name=slug·image·postCreateCommand·remoteEnv.AF_IN_CONTAINER=1·mode 644 |
+| 8.4 docker | docker 가 있으면 이미지로 컨테이너를 띄워 postCreateCommand 후 tmux·jq·claude 버전 확인 |
+| 8.4 이미지 안 | docker 없이 `AF_IN_DEVCONTAINER_IMAGE=1` 이면 현재 환경에서 같은 확인 |
+| 8.4 건너뜀 | 둘 다 아니면 구조 확인만 하고 exit 0. `AF_DEVCONTAINER_REQUIRED=1` 이면 exit 1 |
+
+### P6R2-4. 계약 변경
+없음.

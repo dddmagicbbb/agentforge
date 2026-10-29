@@ -3,7 +3,7 @@ import type { StepIndex } from "./components/StepNav";
 
 /**
  * Issue.path 첫 요소 → 원인을 고칠 수 있는 단계(0 기준).
- * 요구사항(0) · 루틴 agents(1) · 개발자 devs(2) · 스킬 skills/imported(3) · 연결 connections(4).
+ * 요구사항(0) · 루틴 agents(1) · 개발자 devs(2) · 스킬 skills/imported(3) · 연결 connections·tmux·devcontainer(4).
  * 알 수 없는 경로는 입력의 시작인 1단계로 보낸다.
  */
 export function stepOfPath(path: readonly (string | number)[]): StepIndex {
@@ -16,6 +16,8 @@ export function stepOfPath(path: readonly (string | number)[]): StepIndex {
     case "imported":
       return 3;
     case "connections":
+    case "tmux":
+    case "devcontainer":
       return 4;
     default:
       return 0;
