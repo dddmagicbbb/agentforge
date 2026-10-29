@@ -64,7 +64,7 @@ describe("RUN-04 run-agents.sh", () => {
   });
   it("모든 배치가 같은 함수로 panes 기록을 남기고, 안내 문구는 실제 접두키를 쓴다", () => {
     expect(s).toContain('> "$panes/$a"');
-    expect(s).not.toContain("Ctrl-b 숫자");
-    expect(s).toContain("Ctrl-${prefix#C-}");
+    expect(s).toContain("창 이동: $key 숫자");
+    expect(s).toContain('key="$prefix"');
   });
 });

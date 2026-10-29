@@ -84,4 +84,5 @@ case "$layout" in
     for i in $(seq 1 "$n"); do tiled_pane review "review-$i" "$(wtof "$i")"; done ;;
 esac
 tmux send-keys -t "$name:watch" "bash scripts/wait-and-review.sh" Enter
-echo "실행됨. 붙기: tmux attach -t $name   (창 이동: Ctrl-${prefix#C-} 숫자)"
+key="$prefix"; [ "$prefix" = "C-b" ] && key="Ctrl-b"
+echo "실행됨. 붙기: tmux attach -t $name   (창 이동: $key 숫자)"
