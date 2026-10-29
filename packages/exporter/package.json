@@ -3,12 +3,29 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": { ".": { "@agentforge/source": "./src/index.ts", "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
-  "files": ["dist"],
+  "exports": {
+    ".": {
+      "@agentforge/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./github": {
+      "@agentforge/source": "./src/github.ts",
+      "types": "./dist/github.d.ts",
+      "default": "./dist/github.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests"
   },
-  "dependencies": { "@agentforge/core": "workspace:*", "jszip": "^3.10.1" }
+  "dependencies": {
+    "@agentforge/core": "workspace:*",
+    "@octokit/core": "^7.0.8",
+    "jszip": "^3.10.1"
+  }
 }
