@@ -35,8 +35,20 @@ prepare() {
   P="$PWD"; SIG="$P/.agentforge/signals"; PANES="$P/.agentforge/panes"; LOG="$FAKE_CLAUDE_LOG"
 }
 
+# tmux 버전(macOS brew 등)에 따라 전역 기본값·출력 형식이 달라도 되도록 값만(-v) 비교한다.
+# 전역 값은 run-agents 실행 전에 저장해 두고 실행 후 같은지 본다.
+expect_opt() {  # expect_opt session <옵션> <기대 값>
+  local got; got="$(tmux show-options -t "$SESSION" -v "$2" 2>/dev/null)"
+  [ "$got" = "$3" ] || { echo "세션 옵션 $2: 실제 [$got] 기대 [$3]"; return 1; }
+}
+expect_global_unchanged() {  # expect_global_unchanged <옵션>
+  local var="GLOBAL_BEFORE_$1" got; got="$(tmux show-options -gv "$1" 2>/dev/null)"
+  [ "$got" = "${!var}" ] || { echo "전역 옵션 $1 이 바뀜: 전 [${!var}] 후 [$got]"; return 1; }
+}
+
 # run-agents.sh 실행 후 에이전트 4개(dev-1·review-1·dev-2·review-2)가 모두 기동하기를 기다린다
 start_all() {
+  GLOBAL_BEFORE_prefix="$(tmux show-options -gv prefix 2>/dev/null)"; GLOBAL_BEFORE_mouse="$(tmux show-options -gv mouse 2>/dev/null)"
   run bash scripts/run-agents.sh
   [ "$status" -eq 0 ]
   local a
@@ -131,11 +143,11 @@ design_signal_reaches_review_1() {
 @test "8.2 prefix·mouse: 세션 범위에만 적용되고 전역 옵션은 바뀌지 않는다" {
   prepare grid C-a true false
   start_all
-  [ "$(tmux show-options -t "$SESSION" prefix)" = "prefix C-a" ]
-  [ "$(tmux show-options -t "$SESSION" mouse)" = "mouse on" ]
+  expect_opt session prefix C-a
+  expect_opt session mouse on
   # 전역(-g)은 기본값 그대로
-  [ "$(tmux show-options -g prefix)" = "prefix C-b" ]
-  [ "$(tmux show-options -g mouse)" = "mouse off" ]
+  expect_global_unchanged prefix
+  expect_global_unchanged mouse
   # 안내 문구에 실제 접두키가 쓰이고 기본 접두키 표기는 남지 않는다
   [[ "$output" != *"Ctrl-b"* ]]
   [[ "$output" == *"C-a"* ]]
@@ -145,8 +157,8 @@ design_signal_reaches_review_1() {
   prepare role C-b false false
   start_all
   [ "$(window_names)" = "dev review watch" ]
-  [ -z "$(tmux show-options -t "$SESSION" prefix)" ]
-  [ -z "$(tmux show-options -t "$SESSION" mouse)" ]
+  [ -z "$(tmux show-options -t "$SESSION" -v prefix 2>/dev/null)" ]
+  [ -z "$(tmux show-options -t "$SESSION" -v mouse 2>/dev/null)" ]
   [ ! -e .agentforge/logs ]
   not_in_file ".agentforge/logs/" .gitignore
 }
@@ -173,10 +185,10 @@ design_signal_reaches_review_1() {
   pane_in review-1 dev1
   pane_in dev-2 dev2
   pane_in review-2 dev2
-  [ "$(tmux show-options -t "$SESSION" prefix)" = "prefix C-a" ]
-  [ "$(tmux show-options -t "$SESSION" mouse)" = "mouse on" ]
-  [ "$(tmux show-options -g prefix)" = "prefix C-b" ]
-  [ "$(tmux show-options -g mouse)" = "mouse off" ]
+  expect_opt session prefix C-a
+  expect_opt session mouse on
+  expect_global_unchanged prefix
+  expect_global_unchanged mouse
   design_signal_reaches_review_1
 }
 
