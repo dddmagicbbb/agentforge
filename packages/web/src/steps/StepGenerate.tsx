@@ -22,6 +22,7 @@ const NEXT_KEYS = ["setup", "login", "planner", "seq", "agents", "models", "work
 export function StepGenerate({ existingMd, onExistingMd, draft, issues, files, exportable, onStep }: Props) {
   const { t } = useTranslation();
   const exec = files.filter((f) => f.mode === 0o755).length;
+  const docInvalid = issues.some((i) => i.code === "CLAUDE_MD_MARKERS");
   const ai = files.filter((f) => f.author === "ai-fill").length;
   return (
     <>
@@ -31,13 +32,14 @@ export function StepGenerate({ existingMd, onExistingMd, draft, issues, files, e
         <span className="chip">{t("generate.chip.exec", { count: exec })}</span>
         <span className="chip ver">{t("generate.chip.ai", { count: ai })}</span>
       </div>
-      <IssueList issues={issues} onGoto={onStep} testId="check-list" />
+      <IssueList issues={issues} onGoto={onStep} current={5} testId="check-list" />
       <label className="block">
         {t("doc.label")}
-        <textarea rows={6} value={existingMd} spellCheck={false} aria-describedby="doc-hint" onChange={(e) => onExistingMd(e.target.value)} />
+        <textarea rows={6} value={existingMd} spellCheck={false} aria-invalid={docInvalid ? true : undefined} aria-describedby={docInvalid ? "doc-hint doc-note doc-error" : "doc-hint doc-note"} onChange={(e) => onExistingMd(e.target.value)} />
       </label>
       <small id="doc-hint">{t("doc.hint")}</small>
-      <small>{t("doc.note")}</small>
+      <small id="doc-note">{t("doc.note")}</small>
+      <IssueList issues={issues} filter={(i) => i.code === "CLAUDE_MD_MARKERS"} id="doc-error" />
       <ZipButton files={files} name={draft.name} issues={issues} exportable={exportable} onStep={onStep} current={5} />
       <h3>{t("generate.nextTitle")}</h3>
       <ol className="next" data-testid="next-steps">

@@ -11,12 +11,14 @@ interface Props {
   readonly onGoto?: (s: StepIndex) => void;
   readonly testId?: string;
   readonly id?: string;
+  /** 현재 단계: 이동 버튼이 현재 단계를 가리키면 숨긴다 */
+  readonly current?: StepIndex;
 }
 
 const ICON = { ok: "✓", warn: "!", error: "✕", info: "i" } as const;
 
 /** 검사 결과 목록(i18n `issue.<CODE>`, params 보간). 오류는 alert, 나머지는 status. */
-export function IssueList({ issues, filter, onGoto, testId, id }: Props) {
+export function IssueList({ issues, filter, onGoto, testId, id, current }: Props) {
   const { t } = useTranslation();
   const shown = filter ? issues.filter(filter) : issues;
   if (!shown.length) return null;
@@ -30,7 +32,7 @@ export function IssueList({ issues, filter, onGoto, testId, id }: Props) {
           <li key={k} className={`lv-${i.level}`}>
             {onGoto ? <span className="i" aria-hidden="true">{ICON[i.level]} </span> : null}
             {t(`issue.${i.code}`, { context: i.params["slug"] ? "withSlug" : undefined, defaultValue: t("issue.default", { code: i.code, path }), path, ...i.params, reason })}
-            {onGoto && gotoStepOf(i) !== undefined ? (
+            {onGoto && gotoStepOf(i) !== undefined && gotoStepOf(i) !== current ? (
               <button type="button" className="goto" onClick={() => onGoto(gotoStepOf(i)!)}>
                 {t("export.goto", { step: t(`steps.${STEP_KEYS[gotoStepOf(i)!]}`) })}
               </button>

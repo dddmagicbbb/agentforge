@@ -86,6 +86,7 @@ describe("DOC-03 T-624: 6단계 화면", () => {
     await waitFor(() => expect(toZip).toHaveBeenCalled());
     const sent = toZip.mock.calls[0]![0];
     expect(claudeOf(sent)).toContain("ZZ-HEAD");
+    expect(claudeOf(sent)).toBe(previewText());
     expect(sent.filter((f) => f.path !== "CLAUDE.md")).toEqual(base.files.filter((f) => f.path !== "CLAUDE.md"));
     vi.restoreAllMocks();
   });
@@ -98,6 +99,37 @@ describe("DOC-03 T-624: 6단계 화면", () => {
     expect(screen.getByRole("button", { name: /^오류 \d+건을 먼저 해결하세요/ })).toBeDisabled();
     paste("");
     expect(screen.getByRole("button", { name: "ZIP 다운로드" })).toBeEnabled();
+  });
+
+  it("오류 접근성: aria-invalid·describedby 연결, 현재 단계 이동 버튼은 숨긴다", () => {
+    mount(<App />);
+    goto(6);
+    expect(area()).not.toHaveAttribute("aria-invalid");
+    paste("<!-- AGENTFORGE:DEVS:BEGIN -->x");
+    expect(area()).toHaveAttribute("aria-invalid", "true");
+    const ids = area().getAttribute("aria-describedby")!.split(" ");
+    expect(ids).toEqual(["doc-hint", "doc-note", "doc-error"]);
+    expect(document.getElementById("doc-error")).toHaveTextContent(/DEVS/);
+    const item = within(screen.getByTestId("check-list")).getByText(/DEVS/).closest("li")!;
+    expect(within(item).queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("회복: 마커를 바로잡은 값으로 바꾸면 ZIP 이 다시 풀린다", () => {
+    mount(<App />);
+    goto(6);
+    paste("<!-- AGENTFORGE:DEVS:BEGIN -->x");
+    expect(screen.getByRole("button", { name: /^오류/ })).toBeDisabled();
+    paste(oldMd());
+    expect(screen.getByRole("button", { name: "ZIP 다운로드" })).toBeEnabled();
+    expect(area()).not.toHaveAttribute("aria-invalid");
+    expect(previewText()).toContain("ZZ-HEAD");
+  });
+
+  it("공백만 있는 입력은 빈 값으로 본다", () => {
+    mount(<App />);
+    goto(6);
+    paste("  \n ");
+    expect(previewText()).toBe(claudeOf(base.files));
   });
 
   it("붙여넣은 내용은 저장하지 않는다", () => {

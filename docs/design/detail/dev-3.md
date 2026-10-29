@@ -185,3 +185,5 @@ core/exporter 변경 없음.
 - `StepGenerate.tsx`: textarea(`doc.label`), 안내 2줄(`doc.hint`, `doc.note`: 코드블록 안 마커도 셈, 저장 안 함).
 - `issue-step.ts`: `existingClaudeMd` -> 6단계(인덱스 5).
 - 시험: `test/round7-doc.test.tsx`.
+- 공백만 있는 입력은 빈 값으로 본다(`oldMd.trim() === ""` -> 생성본 그대로). 사용자가 실수로 남긴 공백이 병합을 일으키지 않게 하려는 의도다.
+- 마커 오류 시 textarea 는 `aria-invalid` + `aria-describedby="doc-hint doc-note doc-error"`. 6단계 검사 목록은 `current={5}` 로 현재 단계 이동 버튼을 숨긴다.
