@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { TEMPLATES } from "../src/index.js";
 import { build, find } from "./fixtures.js";
@@ -80,5 +81,29 @@ describe("RUN-04 review-1 반려 대응", () => {
     expect(s).toContain("list-panes");
     expect(s).toContain("tail -n1");
     expect(s).toMatch(/split-window[^\n]*-t "\$last"/);
+  });
+});
+
+describe("RUN-04 sq() 동작(왕복)", () => {
+  const ok = (cmd: string) => {
+    try {
+      execFileSync(cmd, ["-c", "exit 0"]);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const hasShells = ok("bash") && ok("sh");
+  const line = (TEMPLATES["static/run-agents.sh"] ?? "").split("\n").find((l) => l.startsWith("sq()")) ?? "";
+  const cases = ["it's", "\'", "''", "a\nb", "공백 한글 경로", "$HOME", "`id`", "a\"b", "plain"];
+  it.skipIf(!hasShells)("sq 결과를 /bin/sh 가 실행해도 원문과 같다", () => {
+    expect(line).not.toBe("");
+    for (const p of cases) {
+      // 인자 대신 환경 변수로 넘긴다(Windows 에서 인자의 작은따옴표가 변형되는 것을 피함)
+      const quoted = execFileSync("bash", [], { input: `${line}
+sq "$P"`, encoding: "utf8", env: { ...process.env, P: p } });
+      const back = execFileSync("sh", [], { input: `printf %s ${quoted}`, encoding: "utf8" });
+      expect(back, JSON.stringify(p)).toBe(p);
+    }
   });
 });

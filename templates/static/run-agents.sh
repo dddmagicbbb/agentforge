@@ -20,7 +20,7 @@ if tmux has-session -t "$name" 2>/dev/null; then
 fi
 
 # POSIX 작은따옴표 인용: tmux 가 /bin/sh 로 실행하는 명령에 쓴다(printf %q 는 bash 전용)
-sq() { local s="$1" q="'"; printf "'%s'" "${s//$q/$q\\$q$q}"; }
+sq() { local s="$1" q="'" r="'\''"; printf "'%s'" "${s//$q/$r}"; }
 
 # 한 pane 에서 실행할 명령을 만든다: 제공자 설정 → 범위 변수 → claude --agent
 launch() {  # launch <에이전트> <작업폴더> [첫 프롬프트]
