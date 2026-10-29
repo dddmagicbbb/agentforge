@@ -76,3 +76,9 @@
 - SCRIPTS: `scripts/` 대소문자 무시, `.zsh .rb .pl`, 첫 줄 `#!`. 
 - 보강 시험: iwr/Invoke-WebRequest, 따옴표 name, 크기 경계 512,000/512,001, README·LICENSE 앞 SKILL.md 순서, `reference/a.md` 의 `` !`id` `` 는 BANG 아님. 오탐 유지: `Bash(git:*)`, `Bash(npm run *)`, `| shasum`.
 - `invariants.ts` CRLF 를 LF 로 정리.
+
+## PH7 1라운드 재반려 대응 2차 (review-1 재검토)
+- 새 사례 약 33건(이어쓰기 6, 파이프·프로세스 치환 7, 인터프리터 URL 7, BROAD 변형 7, skill.md 소문자 1, 오탐 유지 2 등)을 먼저 추가. 구현 전 22건 실패 확인(이어쓰기 curl·wget·CRLF, sudo -u/env 경로, `>(sh)`, 인터프리터, 따옴표·대소문자 키 등). 이후 core 468 통과·3 건너뜀, web 109, typecheck·lint 0.
+- 원인 메모: 이전 이어쓰기 정규식(`\[`)과 시험 입력의 백슬래시 이스케이프가 도구 전달 중 손실돼 "무의미한 시험"이 통과하고 있었다. 이번에는 Edit/Write 도구로 직접 써서 실제 `\`+줄바꿈 입력으로 확인. 이어쓰기 중 줄 끝 `|`+bash 와 `\`+`/bin/bash` 사례는 기존에도 다른 규칙으로 통과(실패 선행 아님).
+- 구현: 이어쓰기 `/\[ \t]*\r?\n/`, 여는 괄호 뒤 줄바꿈 합침, PIPE_SHELL 접두 경로·옵션 인자 1개·`>(sh)` 프로세스 치환, INTERP(urllib·urlopen·requests.*·fetch(·LWP·Net::HTTP·http(s).get), 따옴표 키, 키 소문자·`_`→`-` 정규화, `Bash(**)`·대소문자 무시, `skill.md` 대소문자 무시.
+- 알려진 오탐(의도, 보수적): 마크다운 표의 `| bash |` 셀, 줄 머리 `!`+비공백 문장.
