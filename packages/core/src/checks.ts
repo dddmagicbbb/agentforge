@@ -108,7 +108,12 @@ export function checks(input: ProjectInput): Issue[] {
     const o = isObj(m) ? m : {};
     // files 가 올바른 형태면 invariants 와 같이 원문에서 다시 계산, 아니면 입력 flags 기준
     const files = fileList(o["files"]);
-    const risky = files ? scanSkillRisk(files).length > 0 : Array.isArray(o["flags"]) && o["flags"].length > 0;
+    const scanned = files ? scanSkillRisk(files) : null;
+    const flagList = Array.isArray(o["flags"]) ? o["flags"] : [];
+    const risky = scanned ? scanned.length > 0 : flagList.length > 0;
+    // 위험 코드를 화면에 알린다(불변식 위반은 validate 가 보고하므로 여기서 중복하지 않는다)
+    const codes = scanned ?? flagList.filter((f): f is string => typeof f === "string");
+    if (codes.length > 0) add("info", "IMPORT_RISK", ["imported", i], { id: str(o["id"]), codes: codes.join(",") });
     if (risky && o["acknowledged"] !== true) {
       add("error", "IMPORT_UNACKED", ["imported", i], { id: str(o["id"]) });
     }

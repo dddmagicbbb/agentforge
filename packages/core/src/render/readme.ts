@@ -7,5 +7,5 @@ export function renderReadme(c: RenderContext): string {
   const { p, slug } = c;
   const t = text(p.language);
   const steps = t.readmeSteps(slug, p.uiDesign).map((s, i) => `${i + 1}. \`${s}\``).join("\n");
-  return t.readmeBody(slug, t.readmeRoutine(p.uiDesign), steps, p.devcontainer === true ? t.readmeDevNote : "");
+  return t.readmeBody(slug, t.readmeRoutine(p.uiDesign), steps, (p.devcontainer === true ? t.readmeDevNote : "") + (p.imported.length > 0 ? t.readmeImportedNote : ""));
 }

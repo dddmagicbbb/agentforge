@@ -146,7 +146,7 @@ describe("checks 코드 12종", () => {
     });
     expect(codes(r)).toEqual([
       "NAME_INVALID", "REQ_SHORT", "PATH_OVERLAP", "DEV_DEFERRED", "MODEL_MISSING", "OPENROUTER_FREE_LIMIT",
-      "GATEWAY_REQUIRED", "VLLM_TOOL_PARSER", "IMPORT_UNACKED", "UI_OFF",
+      "GATEWAY_REQUIRED", "VLLM_TOOL_PARSER", "IMPORT_RISK", "IMPORT_UNACKED", "UI_OFF",
     ]);
   });
 });
