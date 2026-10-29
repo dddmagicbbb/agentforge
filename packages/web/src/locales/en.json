@@ -104,7 +104,8 @@
     "GIT_BRANCH": "Invalid branch name.",
     "GITHUB_OWNER": "Owner must be 1-39 letters, digits or hyphens.",
     "GITHUB_REPO": "Repository name must be 1-100 letters, digits, . _ or -.",
-    "IMPORT_RISK": "{{id}}: risk items {{codes}}"
+    "IMPORT_RISK": "{{id}}: risk items {{codes}}",
+    "HTTPS_URL": "The GHES address must start with https://."
   },
   "dev": {
     "title": "Agents per developer",
@@ -383,7 +384,7 @@
       "pr": "Pull request to existing repository"
     },
     "baseUrl": "GHES API URL (optional)",
-    "baseUrlHint": "https is recommended. Leave empty for github.com. Example: https://ghe.example.com/api/v3",
+    "baseUrlHint": "An https address is required for GHES. Leave empty for github.com. Example: https://ghe.example.com/api/v3",
     "branch": "Branch",
     "token": "Token (not stored, used once)",
     "tokenHint": "The field is cleared right after. It cannot be used if GHES blocks CORS in the browser.",
@@ -399,7 +400,10 @@
       "GITHUB_RATE_LIMIT": "Rate limit exceeded. Try again later.",
       "GITHUB_NETWORK": "Network error. Check the address and connection (including CORS).",
       "GITHUB_FAILED": "Could not export to GitHub.",
-      "EXPORT_SECRET_PATH": "A secret file (env.local) is included, so it cannot be uploaded."
-    }
+      "EXPORT_SECRET_PATH": "A secret file (env.local) is included, so it cannot be uploaded.",
+      "GITHUB_PARTIAL": "The repository (branch) was created but could not be finished — check it, then delete it or open the PR yourself."
+    },
+    "crashed": "Could not display the GitHub section.",
+    "loading": "Loading the GitHub section…"
   }
 }

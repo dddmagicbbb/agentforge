@@ -32,7 +32,8 @@ export function GithubPanel({ draft, patch, issues, files, exportable, push = de
   const [hasToken, setHasToken] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<PushResult | null>(null);
-  const [failure, setFailure] = useState<string | null>(null);
+  const [failure, setFailure] = useState<{ code: string; url?: string } | null>(null);
+  const running = useRef(false);
 
   const set = <K extends keyof Fields>(k: K, v: Fields[K]) => {
     const next = { ...f, [k]: v };
@@ -47,19 +48,23 @@ export function GithubPanel({ draft, patch, issues, files, exportable, push = de
 
   const run = async () => {
     const token = tokenRef.current?.value ?? "";
-    if (!target || !token || busy) return;
+    if (!target || !token || busy || running.current) return;
+    running.current = true;
     setBusy(true);
     setResult(null);
     setFailure(null);
     try {
       setResult(await push(files, target, token, { language: i18n.language === "en" ? "en" : "ko" }));
     } catch (e) {
-      setFailure(errorCodeOf(e));
+      const code = errorCodeOf(e);
+      const url = code === "GITHUB_PARTIAL" && typeof e === "object" && e !== null && "params" in e ? (e as { params?: Record<string, unknown> }).params?.["url"] : undefined;
+      setFailure({ code, url: typeof url === "string" ? url : undefined });
     } finally {
       // 성공·실패 모두 토큰을 즉시 지운다
       if (tokenRef.current) tokenRef.current.value = "";
       setHasToken(false);
       setBusy(false);
+      running.current = false;
     }
   };
 
@@ -91,10 +96,10 @@ export function GithubPanel({ draft, patch, issues, files, exportable, push = de
       <small id="gh-base-hint">{t("github.baseUrlHint")}</small>
       <IssueList issues={ghIssues} id="gh-err" />
       <label className="block">{t("github.token")}
-        <input ref={tokenRef} type="password" autoComplete="off" spellCheck={false} aria-describedby="gh-token-hint" onChange={(e) => setHasToken(e.target.value.length > 0)} />
+        <input ref={tokenRef} type="password" autoComplete="new-password" spellCheck={false} aria-describedby="gh-token-hint" onChange={(e) => setHasToken(e.target.value.length > 0)} />
       </label>
       <small id="gh-token-hint">{t("github.tokenHint")}</small>
-      {failure ? <p className="issues" role="alert" data-testid="github-error">{t(`github.error.${failure}`)}</p> : null}
+      {failure ? <p className="issues" role="alert" data-testid="github-error">{t(`github.error.${failure.code}`)}{failure.url ? <> {link(failure.url)}</> : null}</p> : null}
       {result ? (
         <ul className="sub" data-testid="github-result" role="status">
           <li>{t("github.doneRepo")} {link(result.url)}</li>

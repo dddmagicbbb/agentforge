@@ -104,7 +104,8 @@
     "GIT_BRANCH": "브랜치 이름이 올바르지 않습니다.",
     "GITHUB_OWNER": "소유자(owner)는 영문·숫자·하이픈 1~39자여야 합니다.",
     "GITHUB_REPO": "저장소(repo) 이름은 영문·숫자·.·_·- 1~100자여야 합니다.",
-    "IMPORT_RISK": "{{id}}: 위험 항목 {{codes}}"
+    "IMPORT_RISK": "{{id}}: 위험 항목 {{codes}}",
+    "HTTPS_URL": "GHES 주소는 https:// 로 시작해야 합니다."
   },
   "dev": {
     "title": "개발자별 에이전트",
@@ -383,7 +384,7 @@
       "pr": "기존 저장소에 PR"
     },
     "baseUrl": "GHES API 주소(선택)",
-    "baseUrlHint": "https 주소를 권장합니다. 비우면 github.com 입니다. 예: https://ghe.example.com/api/v3",
+    "baseUrlHint": "GHES 주소는 https 가 필수입니다. 비우면 github.com 입니다. 예: https://ghe.example.com/api/v3",
     "branch": "브랜치",
     "token": "토큰(저장하지 않음, 한 번만 사용)",
     "tokenHint": "끝나면 입력란이 즉시 지워집니다. 브라우저에서 GHES 가 CORS 를 막으면 사용할 수 없습니다.",
@@ -399,7 +400,10 @@
       "GITHUB_RATE_LIMIT": "요청 한도를 초과했습니다. 잠시 뒤 다시 시도하세요.",
       "GITHUB_NETWORK": "네트워크 오류입니다. 주소와 연결(CORS 포함)을 확인하세요.",
       "GITHUB_FAILED": "GitHub 로 내보내지 못했습니다.",
-      "EXPORT_SECRET_PATH": "비밀 값 파일(env.local)이 포함되어 있어 올릴 수 없습니다."
-    }
+      "EXPORT_SECRET_PATH": "비밀 값 파일(env.local)이 포함되어 있어 올릴 수 없습니다.",
+      "GITHUB_PARTIAL": "저장소(브랜치)는 생성됐지만 마무리하지 못했습니다 — 확인 후 지우거나 직접 PR 하세요."
+    },
+    "crashed": "GitHub 영역을 표시하지 못했습니다.",
+    "loading": "GitHub 영역을 불러오는 중…"
   }
 }

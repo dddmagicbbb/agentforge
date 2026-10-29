@@ -72,3 +72,7 @@
 - 번들: 메인 index 61.4 kB, GithubPanel 4.7 kB(지연), MarketPanel 9.7 kB, vendor-core 177.7 kB, vendor-react 268.4 kB.
 - 리드 조치: exporter 가 `pushToGithub` 를 `@agentforge/exporter` 루트에서 내보내는지 확인(현재 `defaultPush` 는 루트 import 후 속성 검사, 없으면 GITHUB_FAILED). 별도 경로(`/github`)면 `src/push.ts` 한 줄 교체.
 - 기존 시험 변경: round4 "GitHub 영역은 비활성 안내" 를 "접힌 채 시작"으로, round6 StepGenerate props 에 `patch` 추가.
+
+### PH7 2라운드 보강
+- `@agentforge/exporter/github` 진입점, `GITHUB_PARTIAL`, `HTTPS_URL` 문구, 리뷰 권고 1~6·8 반영. 시험 163건 통과, typecheck·lint 통과.
+- **web build 는 exporter 에 `./github` export 가 생기기 전에는 실패**(리드 통합 후 확인). 통합 후 `packages/web/vitest.config.ts` 의 alias, `test/stub-exporter-github.ts`, `src/exporter-github.d.ts` 제거.

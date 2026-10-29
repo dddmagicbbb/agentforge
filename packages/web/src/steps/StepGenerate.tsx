@@ -30,7 +30,9 @@ const NEXT_KEYS = ["setup", "login", "planner", "seq", "agents", "models", "work
 /** 6단계: 파일 수 칩, 검사 전체 목록, ZIP, 받은 뒤 할 일, GitHub(P1 안내) — EXP-01 */
 export function StepGenerate({ existingMd, onExistingMd, draft, issues, files, exportable, onStep, push, patch }: Props) {
   const { t } = useTranslation();
-  const [ghOpen, setGhOpen] = useState(false);
+  const [ghToggled, setGhOpen] = useState(false);
+  // GitHub 항목 오류가 ZIP 을 막고 있으면 이유가 보이도록 영역을 접지 못하게 연다
+  const ghOpen = ghToggled || issues.some((i) => i.level === "error" && i.path[0] === "export");
   const exec = files.filter((f) => f.mode === 0o755).length;
   const docInvalid = issues.some((i) => i.code === "CLAUDE_MD_MARKERS");
   const ai = files.filter((f) => f.author === "ai-fill").length;
@@ -58,12 +60,12 @@ export function StepGenerate({ existingMd, onExistingMd, draft, issues, files, e
         ))}
       </ol>
       <h3>
-        <button type="button" aria-expanded={ghOpen} aria-controls="gh-panel" onClick={() => setGhOpen((v) => !v)}>{t("github.toggle")}</button>
+        <button type="button" aria-expanded={ghOpen} aria-controls={ghOpen ? "gh-panel" : undefined} onClick={() => setGhOpen((v) => !v)}>{t("github.toggle")}</button>
       </h3>
       {ghOpen ? (
         <div id="gh-panel">
-          <ErrorBoundary fallback={<p className="issues" role="alert">{t("market.crashed")}</p>}>
-            <Suspense fallback={<p className="sub">{t("market.checking")}</p>}>
+          <ErrorBoundary fallback={<p className="issues" role="alert">{t("github.crashed")}</p>}>
+            <Suspense fallback={<p className="sub">{t("github.loading")}</p>}>
               <GithubPanel draft={draft} patch={patch} issues={issues} files={files} exportable={exportable} push={push} />
             </Suspense>
           </ErrorBoundary>

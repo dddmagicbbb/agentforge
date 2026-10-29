@@ -44,11 +44,13 @@ describe("EXP-02 T-722: 입력과 접근성", () => {
     goto(6);
     const toggle = await screen.findByRole("button", { name: "GitHub 내보내기" });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(toggle).not.toHaveAttribute("aria-controls");
     expect(screen.queryByLabelText(/^토큰/)).toBeNull();
     fireEvent.click(toggle);
     const t = await screen.findByLabelText("토큰(저장하지 않음, 한 번만 사용)");
     expect(t).toHaveAttribute("type", "password");
-    expect(t).toHaveAttribute("autocomplete", "off");
+    expect(t).toHaveAttribute("autocomplete", "new-password");
+    expect(screen.getByRole("button", { name: "GitHub 내보내기" })).toHaveAttribute("aria-controls", "gh-panel");
     expect(screen.getByLabelText("GHES API 주소(선택)")).toHaveAccessibleDescription(/https/);
   });
 
@@ -77,6 +79,22 @@ describe("EXP-02 T-722: 입력과 접근성", () => {
     expect(pushBtn()).toBeEnabled();
     token("");
     expect(pushBtn()).toBeDisabled();
+  });
+
+  it("owner·repo 를 입력했다가 둘 다 비우면 ZIP 버튼이 다시 활성화된다(export 제거)", async () => {
+    await open();
+    fireEvent.change(screen.getByLabelText("소유자(owner)"), { target: { value: "bad owner!" } });
+    expect(screen.getByRole("button", { name: /오류 [0-9]+건/ })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("소유자(owner)"), { target: { value: "" } });
+    expect(screen.getByRole("button", { name: "ZIP 다운로드" })).toBeEnabled();
+  });
+
+  it("GitHub 항목 오류가 있으면 영역이 접히지 않고 이유(오류 문구)가 보인다", async () => {
+    await open();
+    fireEvent.change(screen.getByLabelText("소유자(owner)"), { target: { value: "bad owner!" } });
+    fireEvent.click(screen.getByRole("button", { name: "GitHub 내보내기" }));
+    expect(screen.getByLabelText("소유자(owner)")).toBeInTheDocument();
+    expect(screen.getAllByText(ko.issue.GITHUB_OWNER).length).toBeGreaterThan(0);
   });
 
   it("owner·repo 가 비어 있으면 ZIP 이 막히지 않는다(draft.export 없음)", async () => {
@@ -163,6 +181,28 @@ describe("EXP-02 T-722: 푸시", () => {
     expect((screen.getByLabelText(/^토큰/) as HTMLInputElement).value).toBe("");
   });
 
+  it("GITHUB_PARTIAL 은 부분 완료 문구와 https 링크만 보인다", async () => {
+    const push = vi.fn<Push>(async () => { throw new AppError("GITHUB_PARTIAL", { stage: "pr", url: "https://github.com/acme/repo" }); });
+    await open(push);
+    fill();
+    token();
+    fireEvent.click(pushBtn());
+    const alert = await screen.findByTestId("github-error");
+    expect(alert).toHaveTextContent(ko.github.error.GITHUB_PARTIAL);
+    expect(within(alert).getByRole("link")).toHaveAttribute("href", "https://github.com/acme/repo");
+    expect(en.github.error.GITHUB_PARTIAL).toBeTruthy();
+  });
+
+  it("GITHUB_PARTIAL 의 https 아닌 url 은 링크가 아니다", async () => {
+    const push = vi.fn<Push>(async () => { throw new AppError("GITHUB_PARTIAL", { stage: "commit", url: "javascript:alert(1)" }); });
+    await open(push);
+    fill();
+    token();
+    fireEvent.click(pushBtn());
+    const alert = await screen.findByTestId("github-error");
+    expect(within(alert).queryByRole("link")).toBeNull();
+  });
+
   it("알 수 없는 오류는 일반 실패 문구이고 원문을 노출하지 않는다", async () => {
     const push = vi.fn<Push>(async () => { throw new Error(`boom ${TOKEN}`); });
     await open(push);
@@ -230,6 +270,15 @@ describe("R1: 위험 목록은 core 재계산", () => {
     const hit = await screen.findByTestId("hit-sneaky");
     expect(hit.textContent).not.toContain("evil");
     expect(within(hit).getByRole("button", { name: "가져오기" })).toBeDisabled();
+  });
+});
+
+describe("HTTPS_URL 문구", () => {
+  it("스키마 오류 HTTPS_URL 문구가 ko·en 에 있고 GHES 힌트가 https 필수를 밝힌다", () => {
+    expect(ko.issue.HTTPS_URL).toBeTruthy();
+    expect(en.issue.HTTPS_URL).toBeTruthy();
+    expect(ko.github.baseUrlHint).toMatch(/https.*필수/);
+    expect(en.github.baseUrlHint).toMatch(/https.*required/i);
   });
 });
 

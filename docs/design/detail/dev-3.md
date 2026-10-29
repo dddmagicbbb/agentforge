@@ -232,7 +232,7 @@ T-722 6단계 GitHub 내보내기, T-723 시험 안정화, R1 위험 목록을 c
 | `src/App.tsx` | `push?` prop 을 StepGenerate 로 전달 |
 | `src/issue-step.ts` | `export` 경로 → 6단계 |
 | `src/steps/StepSkills.tsx` | 위험 목록·확인 필요를 `scanSkillRisk(files)`(files 있을 때)로 |
-| `src/market/market-api.ts` | `blocked` 허용 목록 검사 |
+| `src/components/MarketPanel.tsx` | `blocked` 허용 목록 검사(모르는 값은 일반 문구) |
 | `src/market/risk.ts` | 알려진 위험 코드 목록으로 검사 |
 | `src/locales/*.json` | `github.*`, `issue.GITHUB_*` |
 
@@ -250,3 +250,9 @@ T-722 6단계 GitHub 내보내기, T-723 시험 안정화, R1 위험 목록을 c
 토큰이 draft(필드 값)·localStorage·sessionStorage·DOM(푸시 후)·오류 문구에 없음 / push 의 files == ZIP 의 files / 비활성 조건 / https 링크만 / 코드별 문구(ko·en) / 접근성 라벨·설명 / pr 모드에서만 branch / R1 서버 flags 가 비어도 core 결과 표시 / 모르는 blocked·코드는 일반 문구.
 
 ## 7. 계약 변경: 없음(exporter 의 `pushToGithub` 노출 경로는 리드 통합 때 확인)
+
+## PH7 2라운드 보강 (계약 9.7 EXP-02 보강)
+- `push.ts` 동적 import 는 `@agentforge/exporter/github`. 오류 코드에 `GITHUB_PARTIAL`{stage,url} 추가(url 은 https 일 때만 링크). 스키마 오류 `HTTPS_URL` 문구.
+- 토큰 `autoComplete="new-password"`, 푸시 재진입은 useRef 플래그, fallback 문구는 `github.*` 키, `aria-controls` 는 열렸을 때만.
+- GitHub 항목 오류가 있으면 영역이 접히지 않아 ZIP 차단 이유가 보인다.
+- 시험 환경: exporter `./github` 가 없는 브랜치에서는 vitest alias 로 빈 모듈 대체(`vitest.config.ts`, `src/exporter-github.d.ts` 는 통합 후 제거).
