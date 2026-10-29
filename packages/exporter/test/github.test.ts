@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import JSZip from "jszip";
 import { AppError, type GithubTargetT, type RenderedFile } from "@agentforge/core";
 import { pushToGithub } from "../src/github.js";
@@ -48,14 +48,10 @@ function fake(routes: Routes) {
 }
 
 function createRoutes(extra: Routes = {}, orgOwner = false): Routes {
-  let b = 0;
-  const blob = () => ({ status: 201, body: { sha: `blob${++b}` } });
   return {
     "GET /user": { body: { login: orgOwner ? "someone" : "alice" } },
     "POST /user/repos": { status: 201, body: { name: "proj", default_branch: "main", html_url: "https://github.com/alice/proj" } },
     "POST /orgs/acme/repos": { status: 201, body: { name: "proj", default_branch: "trunk", html_url: "https://github.com/acme/proj" } },
-    "POST /repos/alice/proj/git/blobs": blob,
-    "POST /repos/acme/proj/git/blobs": blob,
     "POST /repos/alice/proj/git/trees": { status: 201, body: { sha: "tree1" } },
     "POST /repos/acme/proj/git/trees": { status: 201, body: { sha: "tree1" } },
     "POST /repos/alice/proj/git/commits": { status: 201, body: { sha: "commit1" } },
@@ -70,13 +66,13 @@ const T: GithubTargetT = { owner: "alice", repo: "proj", visibility: "private" }
 const seq = (calls: Call[]) => calls.map((c) => `${c.method} ${new URL(c.url).pathname}`);
 
 describe("pushToGithub create", () => {
-  it("순서: user → repos → blobs → trees(base_tree 없음) → commits(부모 없음) → refs force", async () => {
+  it("순서: user → repos → trees(content 직접)(base_tree 없음) → commits(부모 없음) → refs force", async () => {
     const { f, calls } = fake(createRoutes());
     const r = await pushToGithub(FILES, T, TOKEN, { fetch: f, language: "ko" });
     const s = seq(calls);
     expect(s[0]).toBe("GET /user");
     expect(s[1]).toBe("POST /user/repos");
-    expect(s.filter((x) => x.endsWith("/git/blobs"))).toHaveLength(3);
+    expect(s.some((x) => x.endsWith("/git/blobs"))).toBe(false);
     expect(s.slice(-3)).toEqual(["POST /repos/alice/proj/git/trees", "POST /repos/alice/proj/git/commits", "PATCH /repos/alice/proj/git/refs/heads/main"]);
     const tree = calls.find((c) => c.url.endsWith("/git/trees"))!;
     expect(tree.body.base_tree).toBeUndefined();
@@ -94,12 +90,12 @@ describe("pushToGithub create", () => {
     expect(calls.find((c) => c.url.endsWith("/git/commits"))!.body.message).toBe("Generate AgentForge environment");
   });
 
-  it("tree mode: RenderedFile.mode 기준(0o755 만 100755), type blob", async () => {
+  it("tree mode: RenderedFile.mode 기준(0o755 만 100755), type blob, blob 요청 없음", async () => {
     const { f, calls } = fake(createRoutes());
     await pushToGithub(FILES, T, TOKEN, { fetch: f, language: "ko" });
-    const items = calls.find((c) => c.url.endsWith("/git/trees"))!.body.tree as { path: string; mode: string; type: string; sha: string }[];
+    const items = calls.find((c) => c.url.endsWith("/git/trees"))!.body.tree as { path: string; mode: string; type: string; content: string }[];
     expect(Object.fromEntries(items.map((i) => [i.path, i.mode]))).toEqual({ "README.md": "100644", "scripts/setup.sh": "100755", ".claude/settings.json": "100644" });
-    expect(items.every((i) => i.type === "blob" && i.sha.startsWith("blob"))).toBe(true);
+    expect(items.every((i) => i.type === "blob" && typeof i.content === "string")).toBe(true);
   });
 
   it("mode 0o644 인 .sh(가져온 스킬)는 100644", async () => {
@@ -150,7 +146,6 @@ describe("pushToGithub pr", () => {
     "GET /repos/alice/proj": { body: { default_branch: "main", html_url: "https://github.com/alice/proj" } },
     "GET /repos/alice/proj/git/ref/heads/main": { body: { object: { sha: "base1" } } },
     "GET /repos/alice/proj/git/commits/base1": { body: { tree: { sha: "basetree" } } },
-    "POST /repos/alice/proj/git/blobs": { status: 201, body: { sha: "blobX" } },
     "POST /repos/alice/proj/git/trees": { status: 201, body: { sha: "tree2" } },
     "POST /repos/alice/proj/git/commits": { status: 201, body: { sha: "commit2" } },
     "POST /repos/alice/proj/git/refs": { status: 201, body: {} },
@@ -208,7 +203,7 @@ describe("pushToGithub 오류 매핑", () => {
     expect((await run(createRoutes({ "POST /user/repos": { status: 422, body: secretBody } }))).code).toBe("GITHUB_REPO_EXISTS");
   });
   it("500 → GITHUB_FAILED", async () => {
-    expect((await run(createRoutes({ "POST /repos/alice/proj/git/trees": { status: 500 } }))).code).toBe("GITHUB_FAILED");
+    expect((await run(createRoutes({ "POST /user/repos": { status: 500 } }))).code).toBe("GITHUB_FAILED");
   });
   it("네트워크 오류 → GITHUB_NETWORK", async () => {
     const f = (async () => {
@@ -221,14 +216,14 @@ describe("pushToGithub 오류 매핑", () => {
     const cases = [
       createRoutes({ "GET /user": { status: 401, body: secretBody } }),
       createRoutes({ "POST /user/repos": { status: 422, body: secretBody } }),
-      createRoutes({ "POST /repos/alice/proj/git/blobs": { status: 500, body: secretBody } }),
+      createRoutes({ "POST /repos/alice/proj/git/trees": { status: 500, body: secretBody } }),
     ];
     for (const routes of cases) {
       const e = await run(routes);
       const dump = JSON.stringify({ m: e.message, p: e.params, s: e.stack ?? "", c: (e as { cause?: unknown }).cause ?? null });
       expect(dump).not.toContain(TOKEN);
       expect(dump).not.toContain("bad credentials");
-      expect(Object.keys(e.params).every((k) => k === "status")).toBe(true);
+      expect(Object.keys(e.params).every((k) => ["status", "stage", "url"].includes(k))).toBe(true);
     }
   });
 });
@@ -237,18 +232,110 @@ describe("ZIP 동등", () => {
   it("tree 의 path·content·실행 권한이 toZip 항목과 같다", async () => {
     const { f, calls } = fake(createRoutes());
     await pushToGithub(FILES, T, TOKEN, { fetch: f, language: "ko" });
-    const blobs = calls.filter((c) => c.url.endsWith("/git/blobs")).map((c) => c.body as { content: string; encoding: string });
-    const items = calls.find((c) => c.url.endsWith("/git/trees"))!.body.tree as { path: string; mode: string }[];
+    const items = calls.find((c) => c.url.endsWith("/git/trees"))!.body.tree as { path: string; mode: string; content: string }[];
     const zip = await JSZip.loadAsync(await toZip(FILES, "proj"));
     const names = Object.keys(zip.files).filter((n) => !zip.files[n]!.dir);
     expect(items.map((i) => `proj/${i.path}`).sort()).toEqual(names.sort());
-    for (const [i, it] of items.entries()) {
+    for (const it of items) {
       const entry = zip.files[`proj/${it.path}`]!;
       const text = await entry.async("string");
-      const blob = blobs[i]!;
-      const got = blob.encoding === "base64" ? Buffer.from(blob.content, "base64").toString("utf8") : blob.content;
-      expect(got).toBe(text);
+      expect(it.content).toBe(text);
       expect((Number(entry.unixPermissions ?? 0) & 0o111) !== 0).toBe(it.mode === "100755");
     }
+  });
+});
+
+describe("EXP-02 보강", () => {
+  const noSleep = async () => {};
+  const prBase = (extra: Routes = {}): Routes => ({
+    "GET /repos/alice/proj": { body: { default_branch: "trunk", html_url: "https://github.com/alice/proj" } },
+    "GET /repos/alice/proj/git/ref/heads/trunk": { body: { object: { sha: "base1" } } },
+    "GET /repos/alice/proj/git/commits/base1": { body: { tree: { sha: "basetree" } } },
+    "POST /repos/alice/proj/git/trees": { status: 201, body: { sha: "tree2" } },
+    "POST /repos/alice/proj/git/commits": { status: 201, body: { sha: "commit2" } },
+    "POST /repos/alice/proj/git/refs": { status: 201, body: {} },
+    "POST /repos/alice/proj/pulls": { status: 201, body: { html_url: "https://github.com/alice/proj/pull/7" } },
+    ...extra,
+  });
+  const run = (routes: Routes, t: GithubTargetT = T, sleep = noSleep) =>
+    pushToGithub(FILES, t, TOKEN, { fetch: fake(routes).f, language: "ko", sleep }).then(
+      () => {
+        throw new Error("오류가 나야 한다");
+      },
+      (e: unknown) => e as AppError,
+    );
+
+  it("2차 rate limit: retry-after 헤더 403/429, 메시지 secondary rate limit", async () => {
+    expect((await run(createRoutes({ "GET /user": { status: 403, headers: { "retry-after": "30" } } }))).code).toBe("GITHUB_RATE_LIMIT");
+    expect((await run(createRoutes({ "GET /user": { status: 429, headers: { "retry-after": "30" } } }))).code).toBe("GITHUB_RATE_LIMIT");
+    const e = await run(createRoutes({ "GET /user": { status: 403, body: { message: "You have exceeded a Secondary Rate Limit." } } }));
+    expect(e.code).toBe("GITHUB_RATE_LIMIT");
+    expect(JSON.stringify([e.message, e.params])).not.toMatch(/secondary/i);
+  });
+
+  it("pr: 기본 브랜치 trunk 를 base 로 쓴다", async () => {
+    const { f, calls } = fake(prBase());
+    await pushToGithub(FILES, { ...T, mode: "pr" }, TOKEN, { fetch: f, language: "ko", sleep: noSleep });
+    expect(calls.find((c) => c.url.endsWith("/pulls"))!.body.base).toBe("trunk");
+    expect(calls.some((c) => c.url.includes("/git/ref/heads/trunk"))).toBe(true);
+  });
+
+  it("login 대소문자가 달라도 같은 사용자로 본다(/user/repos)", async () => {
+    const { f, calls } = fake(createRoutes({ "GET /user": { body: { login: "ALICE" } } }));
+    await pushToGithub(FILES, T, TOKEN, { fetch: f, language: "ko", sleep: noSleep });
+    expect(calls.some((c) => c.url.endsWith("/user/repos"))).toBe(true);
+  });
+
+  it("create: 저장소 생성 뒤 실패하면 GITHUB_PARTIAL{stage:commit,url}", async () => {
+    const e = await run(createRoutes({ "POST /repos/alice/proj/git/commits": { status: 500, body: { message: TOKEN } } }));
+    expect(e.code).toBe("GITHUB_PARTIAL");
+    expect(e.params).toEqual({ stage: "commit", url: "https://github.com/alice/proj" });
+  });
+
+  it("create: 저장소 생성 자체의 실패는 PARTIAL 이 아니다", async () => {
+    expect((await run(createRoutes({ "POST /user/repos": { status: 500 } }))).code).toBe("GITHUB_FAILED");
+  });
+
+  it("pr: 브랜치 생성 뒤 PR 실패면 GITHUB_PARTIAL{stage:pr,url=브랜치}", async () => {
+    const e = await run(prBase({ "POST /repos/alice/proj/pulls": { status: 500 } }), { ...T, mode: "pr", branch: "feat/x" });
+    expect(e.code).toBe("GITHUB_PARTIAL");
+    expect(e.params).toEqual({ stage: "pr", url: "https://github.com/alice/proj/tree/feat/x" });
+  });
+
+  it("auto_init 직후 409·404 는 1초 간격으로 재시도 후 성공", async () => {
+    let n = 0;
+    const delays: number[] = [];
+    const { f, calls } = fake(createRoutes({ "POST /repos/alice/proj/git/trees": () => (++n <= 2 ? { status: n === 1 ? 409 : 404 } : { status: 201, body: { sha: "tree1" } }) }));
+    const r = await pushToGithub(FILES, T, TOKEN, { fetch: f, language: "ko", sleep: async (ms) => void delays.push(ms) });
+    expect(r.commitSha).toBe("commit1");
+    expect(delays).toEqual([1000, 1000]);
+    expect(calls.filter((c) => c.url.endsWith("/git/trees"))).toHaveLength(3);
+  });
+
+  it("재시도는 최대 3회, 소진되면 GITHUB_PARTIAL", async () => {
+    const delays: number[] = [];
+    const { f, calls } = fake(createRoutes({ "POST /repos/alice/proj/git/trees": { status: 409 } }));
+    const e = await pushToGithub(FILES, T, TOKEN, { fetch: f, language: "ko", sleep: async (ms) => void delays.push(ms) }).then(
+      () => {
+        throw new Error("x");
+      },
+      (x: unknown) => x as AppError,
+    );
+    expect(e.code).toBe("GITHUB_PARTIAL");
+    expect(calls.filter((c) => c.url.endsWith("/git/trees"))).toHaveLength(4);
+    expect(delays).toEqual([1000, 1000, 1000]);
+  });
+
+  it("Octokit 로거가 토큰을 콘솔에 쓰지 않는다", async () => {
+    const spies = (["debug", "info", "warn", "error", "log"] as const).map((k) => vi.spyOn(console, k).mockImplementation(() => {}));
+    await run(createRoutes({ "GET /user": { status: 401 } }));
+    expect(spies.every((s) => s.mock.calls.length === 0)).toBe(true);
+    spies.forEach((s) => s.mockRestore());
+  });
+
+  it("루트 index 는 pushToGithub 를 내보내지 않는다(ZIP 번들 분리)", async () => {
+    const idx = await import("../src/index.js");
+    expect("pushToGithub" in idx).toBe(false);
+    expect("toZip" in idx).toBe(true);
   });
 });

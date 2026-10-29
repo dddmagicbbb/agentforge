@@ -92,3 +92,6 @@ GPL 계열 신규 의존성 없음(전이 의존성도 확인: 기존 jszip 의 
 | 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
 |---|---|---|---|---|
 | T-712 | 완료. `pushToGithub` create(커밋 1건·force ref)/pr(base_tree·브랜치·PR), 오류 코드 매핑, 토큰 미노출 | `packages/exporter/src/github.ts`, `src/index.ts`, `package.json`(`./github` 진입점, `@octokit/core` ^7.0.8 MIT), `test/github.test.ts`, `pnpm-lock.yaml`, 상세 설계 | exporter 39 통과(신규 20 이상 포함), typecheck·lint 통과 | 1) 내부 `planTree` 를 core `planGithubTree` 로 교체(TODO 주석). 2) 기존 스텁 `pushToGitHub`(대문자 H) 제거, web 사용처 없음. 3) auto_init 직후 ref PATCH 가 일시적으로 실패할 수 있어 재시도 미구현. 4) exporter 단독 build 는 core dist 가 없으면 실패(기존 상태) |
+
+### T-712 보강 (design 9.7 EXP-02 보강)
+blob 개별 요청 제거(tree content), 2차 rate limit 분류(retry-after·메시지), GITHUB_PARTIAL(create commit·pr 단계, params 는 stage·url 만), auto_init 직후 409·404 재시도 1초 x 3(`sleep` 옵션 주입), Octokit 로거 noop, 루트 index 에서 pushToGithub 재export 제거(`@agentforge/exporter/github` 만), 생존 변이 대응 시험(trunk pr, login 대소문자, retry-after 403). exporter 50 통과·typecheck·lint 통과. 참고: 재시도 소진·재시도 불가 실패도 저장소 생성 뒤라면 PARTIAL.

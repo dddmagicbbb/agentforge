@@ -12,6 +12,8 @@ export interface PushOptions {
   readonly fetch?: typeof fetch;
   /** 커밋 메시지 언어 */
   readonly language: "ko" | "en";
+  /** 재시도 대기 주입(시험용). 없으면 setTimeout */
+  readonly sleep?: (ms: number) => Promise<void>;
 }
 
 interface TreeItem {
@@ -37,16 +39,22 @@ function refRoute(method: string, prefix: string, branch: string): { route: stri
   return { route: `${method} /repos/{owner}/{repo}/git/${prefix}/heads/${parts.map((_, i) => `{b${i}}`).join("/")}`, params };
 }
 
+const noop = (): void => {};
+const RETRY_MAX = 3;
+const RETRY_MS = 1000;
+
 const MESSAGES = { ko: "AgentForge 환경 생성", en: "Generate AgentForge environment" } as const;
 
 /** 상태 코드 → AppError. 응답 본문·토큰은 쓰지 않는다. */
 function mapError(e: unknown, networkFailed: boolean, onUnprocessable?: string): AppError {
   if (e instanceof AppError) return e;
   if (networkFailed) return new AppError("GITHUB_NETWORK");
-  const err = e as { status?: unknown; response?: { headers?: Record<string, string | number | undefined> } };
+  const err = e as { status?: unknown; message?: unknown; response?: { headers?: Record<string, string | number | undefined>; data?: { message?: unknown } } };
   const status = typeof err.status === "number" ? err.status : 0;
   const h = err.response?.headers ?? {};
-  const limited = status === 429 || (status === 403 && (String(h["x-ratelimit-remaining"]) === "0" || h["retry-after"] !== undefined));
+  // 메시지는 분류에만 쓰고 밖으로 내보내지 않는다
+  const text = `${typeof err.message === "string" ? err.message : ""} ${typeof err.response?.data?.message === "string" ? err.response.data.message : ""}`;
+  const limited = status === 429 || (status === 403 && (String(h["x-ratelimit-remaining"]) === "0" || h["retry-after"] !== undefined || /secondary rate limit/i.test(text)));
   if (limited) return new AppError("GITHUB_RATE_LIMIT", { status });
   if (status === 401 || status === 403) return new AppError("GITHUB_AUTH", { status });
   if (status === 404) return new AppError("GITHUB_NOT_FOUND", { status });
@@ -71,9 +79,10 @@ export async function pushToGithub(files: readonly RenderedFile[], target: Githu
       throw e;
     }
   }) as typeof fetch;
-  const kit = new Octokit({ auth: token, baseUrl: target.baseUrl ?? "https://api.github.com", request: { fetch: wrapped } });
+  const kit = new Octokit({ auth: token, baseUrl: target.baseUrl ?? "https://api.github.com", request: { fetch: wrapped }, log: { debug: noop, info: noop, warn: noop, error: noop } });
   const { owner, repo } = target;
   const message = MESSAGES[opts.language];
+  const sleep = opts.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
 
   // 단계별 오류 매핑: 422 의 의미는 호출하는 단계가 정한다
   const step = async <T>(fn: () => Promise<T>, onUnprocessable?: string): Promise<T> => {
@@ -84,13 +93,10 @@ export async function pushToGithub(files: readonly RenderedFile[], target: Githu
     }
   };
 
+  // blob 을 따로 만들지 않고 tree 항목에 content 를 넣는다(2차 rate limit 회피)
   const makeTree = async (baseTree?: string): Promise<string> => {
-    const tree: { path: string; mode: "100755" | "100644"; type: "blob"; sha: string }[] = [];
-    for (const it of items) {
-      const blob = await step(() => kit.request("POST /repos/{owner}/{repo}/git/blobs", { owner, repo, content: it.content, encoding: "utf-8" }));
-      tree.push({ path: it.path, mode: it.mode, type: "blob" as const, sha: blob.data.sha });
-    }
-    const t = await step(() => kit.request("POST /repos/{owner}/{repo}/git/trees", { owner, repo, tree, ...(baseTree ? { base_tree: baseTree } : {}) }));
+    const tree = items.map((it) => ({ path: it.path, mode: it.mode, type: "blob" as const, content: it.content }));
+    const t = await kit.request("POST /repos/{owner}/{repo}/git/trees", { owner, repo, tree, ...(baseTree ? { base_tree: baseTree } : {}) });
     return t.data.sha;
   };
 
@@ -102,11 +108,27 @@ export async function pushToGithub(files: readonly RenderedFile[], target: Githu
         ? await step(() => kit.request("POST /user/repos", { name: repo, private: priv, auto_init: true }), "GITHUB_REPO_EXISTS")
         : await step(() => kit.request("POST /orgs/{org}/repos", { org: owner, name: repo, private: priv, auto_init: true }), "GITHUB_REPO_EXISTS");
     const branch = created.data.default_branch ?? "main";
-    const treeSha = await makeTree();
-    const commit = await step(() => kit.request("POST /repos/{owner}/{repo}/git/commits", { owner, repo, message, tree: treeSha, parents: [] }));
+    const repoUrl = created.data.html_url;
+    // 저장소가 이미 만들어졌으므로 이후 실패는 부분 실패다. auto_init 직후 409·404 는 재시도한다.
+    const after = async <T>(fn: () => Promise<T>): Promise<T> => {
+      for (let i = 0; ; i++) {
+        try {
+          return await fn();
+        } catch (e) {
+          const st = (e as { status?: unknown }).status;
+          if (!networkFailed && (st === 409 || st === 404) && i < RETRY_MAX) {
+            await sleep(RETRY_MS);
+            continue;
+          }
+          throw new AppError("GITHUB_PARTIAL", { stage: "commit", url: repoUrl });
+        }
+      }
+    };
+    const treeSha = await after(() => makeTree());
+    const commit = await after(() => kit.request("POST /repos/{owner}/{repo}/git/commits", { owner, repo, message, tree: treeSha, parents: [] }));
     const upd = refRoute("PATCH", "refs", branch);
-    await step(() => kit.request(upd.route, { owner, repo, ...upd.params, sha: commit.data.sha, force: true }));
-    return { url: created.data.html_url, commitSha: commit.data.sha };
+    await after(() => kit.request(upd.route, { owner, repo, ...upd.params, sha: commit.data.sha, force: true }));
+    return { url: repoUrl, commitSha: commit.data.sha };
   }
 
   const info = await step(() => kit.request("GET /repos/{owner}/{repo}", { owner, repo }));
@@ -115,10 +137,13 @@ export async function pushToGithub(files: readonly RenderedFile[], target: Githu
   const ref = await step(() => kit.request(get.route, { owner, repo, ...get.params }));
   const baseSha = ref.data.object.sha;
   const baseCommit = await step(() => kit.request("GET /repos/{owner}/{repo}/git/commits/{commit_sha}", { owner, repo, commit_sha: baseSha }));
-  const treeSha = await makeTree(baseCommit.data.tree.sha);
+  const treeSha = await step(() => makeTree(baseCommit.data.tree.sha));
   const commit = await step(() => kit.request("POST /repos/{owner}/{repo}/git/commits", { owner, repo, message, tree: treeSha, parents: [baseSha] }));
   const branch = target.branch ?? "agentforge/setup";
   await step(() => kit.request("POST /repos/{owner}/{repo}/git/refs", { owner, repo, ref: `refs/heads/${branch}`, sha: commit.data.sha }), "GITHUB_BRANCH_EXISTS");
-  const pr = await step(() => kit.request("POST /repos/{owner}/{repo}/pulls", { owner, repo, title: message, head: branch, base }));
+  // 브랜치가 만들어진 뒤의 PR 실패는 부분 실패다
+  const pr = await step(() => kit.request("POST /repos/{owner}/{repo}/pulls", { owner, repo, title: message, head: branch, base })).catch(() => {
+    throw new AppError("GITHUB_PARTIAL", { stage: "pr", url: `${info.data.html_url}/tree/${branch}` });
+  });
   return { url: info.data.html_url, commitSha: commit.data.sha, prUrl: pr.data.html_url };
 }
