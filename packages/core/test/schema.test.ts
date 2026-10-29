@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AppError, checks, defaultDraft, PathPrefix, TEMPLATES, validate, type ProjectInput } from "../src/index.js";
+import { AppError, defaultDraft, mergeClaudeMd, PathPrefix, TEMPLATES, validate, type ProjectInput } from "../src/index.js";
 
 // 불변식 I1~I6과 입력 패턴(design.md 2.2·2.3) 검증
 
@@ -102,8 +102,8 @@ describe("PH2 골격", () => {
     expect(TEMPLATES["md/dev.tpl.md"]).toContain("{{N}}");
   });
 
-  it("미구현 API는 AppError(NOT_IMPLEMENTED)를 던진다", () => {
-    expect(() => checks(defaultDraft())).toThrow(AppError);
+  it("미구현 API(mergeClaudeMd, P1)는 AppError(NOT_IMPLEMENTED)를 던진다", () => {
+    expect(() => mergeClaudeMd("", "")).toThrow(AppError);
   });
 });
 
@@ -111,5 +111,15 @@ describe("오류 코드", () => {
   it("패턴 위반은 패턴 코드(PROJECT_NAME 등)로 보고한다", () => {
     expect(codes(draft((d) => (d.name = "Order Portal")))).toEqual(["PROJECT_NAME"]);
     expect(codes(draft((d) => (d.devs[0]!.domain = "주문")))).toEqual(["DOMAIN"]);
+  });
+
+  // T-503 보안 점검: litellm.yaml·frontmatter 에 그대로 들어가므로 YAML 예약 문자(@ :)·옵션 모양(-)으로 시작하면 안 된다
+  it("모델 ID 는 영문·숫자로 시작해야 한다(MODEL_ID)", () => {
+    for (const m of ["@x", ":x", "-x", ".x", "/x"]) {
+      expect(codes(draft((d) => (d.devs[0]!.dev = { provider: "openai", model: m })))).toEqual(["MODEL_ID"]);
+    }
+    for (const m of ["gpt-5.5", "qwen/qwen3-coder:free", "org/model@v2"]) {
+      expect(codes(draft((d) => (d.devs[0]!.dev = { provider: "openai", model: m })))).toEqual([]);
+    }
   });
 });

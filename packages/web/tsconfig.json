@@ -10,5 +10,5 @@
     "resolveJsonModule": true,
     "customConditions": ["@agentforge/source"]
   },
-  "include": ["src", "test", "vite.config.ts"]
+  "include": ["src", "test", "vite.config.ts", "vitest.config.ts"]
 }

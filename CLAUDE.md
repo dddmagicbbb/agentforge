@@ -84,7 +84,7 @@ AgentForge — Claude Code 멀티 에이전트 병렬 개발 환경 생성기. �
   1. 모든 단계·작업을 시작하기 전에 반드시 `git pull --rebase --autostash`를 실행하고 결과를 확인한다. 충돌·실패 시 작업을 시작하지 않고 보고한다.
   2. 커밋을 요청받으면 **커밋과 push를 한 번에** 진행한다. 커밋 후 push 결과(`origin/<브랜치>` 반영 여부)를 확인해 보고하고, push가 실패하면 원인과 함께 알린다.
 - **작업 전 pull(자동)**: `.claude/hooks/git-pull.sh`(`git pull --rebase --autostash`)를 SessionStart·UserPromptSubmit 훅으로 실행한다. pull 실패 경고가 보이면 충돌부터 해결한다.
-- **커밋 후 자동 push**: `.githooks/post-commit`이 현재 브랜치를 `origin`으로 push 한다(settings.json의 `git push` 거부와 무관하게 git 훅에서 실행). 일시 중지는 `AGENTFORGE_NO_AUTOPUSH=1`.
+- **커밋·병합 후 자동 push**: `.githooks/post-commit`·`post-merge`가 현재 브랜치를 `origin`으로 push 한다(settings.json의 `git push` 거부와 무관하게 git 훅에서 실행). 일시 중지는 `AGENTFORGE_NO_AUTOPUSH=1`.
 - 새로 clone 한 PC에서는 `git config core.hooksPath .githooks`를 한 번 실행한다.
 
 @docs/project-rules.md

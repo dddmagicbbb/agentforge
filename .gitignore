@@ -17,3 +17,6 @@ packages/core/src/templates.generated.ts
 
 # 브라우저 점검 임시 파일
 .playwright-mcp/
+
+# 서브에이전트 worktree
+.claude/worktrees/

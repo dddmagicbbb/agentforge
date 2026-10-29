@@ -21,3 +21,27 @@
 - G3: golden 146파일 바이트 일치(의도적 차이 0), core 199·exporter 4 테스트 통과, shellcheck 0, bats 13/13(ubuntu) — **ZIP → setup → create-worktrees → run-agents → design-1.done 이 review-1 pane 에 도착**(가짜 claude, CI run 40642862952).
 - 결정: D5·D6은 `shWord`(안전 단어 외 인용)로 처리해 PoC 출력 유지(ADR-0003 갱신). 패턴 오류는 패턴 코드로 보고.
 - 이월: macOS 에서 setup.sh 의존 bats 4건 skip(D7, T-404). 화면 2~6단계는 PH4.
+
+## PH4 MVP 병렬 개발 — 2026-10-29 (G4 전, 단계 전환 대기)
+- 방식: 리드 + 서브에이전트 dev-1..3 / review-1..3(worktree 격리), 5라운드. 신호 파일 대신 "상세 설계 → 구현 → review-N 설계·코드 동시 검토", 보고서는 응답으로 받고 리드가 요약(리드 결정).
+- 완료 작업: T-401~T-406(dev-1), T-411~T-415(dev-2), T-421~T-426(dev-3) — tasks.md PH4 17건 전부. P0 기능 22개 구현 완료.
+- 시험(develop 4c80bbc): core 285 · exporter 20 · web 73 · bats 47 · E2E 5(6단계→ZIP→풀기→setup→check-forge). golden 3구성 바이트 일치(의도적 차이 6파일, ADR-0004).
+- CI: ubuntu 전 단계 통과(run 40727988115). macOS 는 3라운드까지 bats 44/44 통과(run 40722628452), 5라운드는 GitHub 러너 미할당으로 미검증.
+- 반려·재작업: review 반려 4회(dev-3 시험 누락, dev-1 export 문장 노출, dev-1 guard glob 우회 — 보안, dev-3 마무리 없음). 보안 결함은 재현 → 수정 → bats 고정.
+- 결정: ADR-0004(정적 스크립트 보정: macOS 호환, guard fail-closed·완전 일치·glob/제어 문자 차단, integrate 충돌 복구, 반려 이력 순번, check-forge 7항목). 심볼릭 링크 우회는 한계로 수용(2차 방어: git diff 범위 검사·리뷰).
+- 운영 교훈: 서브에이전트 worktree 가 main 기준으로 생성됨 → 시작 시 `git merge --ff-only develop` 필수. 병합 커밋 push 를 위해 post-merge 훅 추가. core 빌드 설정(types: [])으로도 typecheck.
+- 미결: macOS CI 재검증(Actions 사용량 확인 필요), `.claude/settings.json` 병합(사람), WSL jq·shellcheck·bats 설치(사람), web 번들 500kB 경고, review 권고 잔여(R5-3 이름 규칙 문구에 "." 누락, 테스트 데이터 `as never`).
+
+## PH5 통합·실기 검증 — 2026-10-29 (진행 중, G4 전)
+- 전환: 사람 승인(2026-10-29) → prd "현재 단계" PH5, tasks T-501~T-505.
+- T-501 실기 점검 자동화: 구성 3종(`tests/realdevice/`) × ZIP→setup→check-forge→agent-env→worktree→병렬 실행→신호 전달(`tests/scripts/realdevice.bats`). **자동 9칸 통과** — ubuntu·macOS·Dev Container(CI run 40754097160). macOS bats 50/50 으로 PH4 5라운드 미검증분도 해소.
+- T-503 보안 점검(`docs/report-security.md`): 수정 2건 — S-1 모델 ID 첫 글자(YAML 예약 문자), S-2 guard 가 NotebookEdit(`notebook_path`)를 검사하지 않음 → ADR-0005. 수용 3건 — S-3 Bash 리다이렉션(실기 확인 R-6), S-4 신호 위조(위협 모델 밖), S-5 심볼릭 링크(ADR-0004).
+- T-505 잔여 권고: 이름 규칙 문구 ".", 테스트 데이터 `as never` 제거, exporter 지연 로딩(첫 화면 번들 538→443kB, 경고 해소).
+- T-504 dogfooding: 이 저장소 설정(`tests/realdevice/self-agentforge.json`)으로 다시 생성 → 51파일 중 42개 바이트 일치. 의도된 개선분 6개(scripts 4·guard·forge-agents, ADR-0004·0005)를 생성 결과로 교체. CLAUDE.md·.gitignore 는 저장소 고유 내용이라 유지. `.claude/settings.json` 은 병합안만 준비(사람 적용).
+- T-502 WSL 3칸 통과(사람 실행: realdevice 3/3, test:scripts 51/51) → 자동 점검 12칸 완료.
+- settings.json 병합 적용(d40c3fa): 생성 권한·guard hook + 기존 git-pull hook.
+- T-502 실제 Claude Code 주기(WSL, 구성 C) R-1~R-8 전부 ✓ — /forge-init → analyst → check-forge → 병렬 1주기 → integrate·integrator 완주. 결과는 `docs/report-realdevice.md` 3.2.
+  - 실기에서 발견해 수정(ADR-0005): D-C 짝 검토 파일이 범위 밖으로 오탐, D-D integrate 가 develop 의 테스트 명령을 무시, D-E 설계 반려 한도 없음. bats 로 재현(수정 전 실패) 후 수정.
+  - 확인: guard 가 실제 Claude Code 의 Write·NotebookEdit 를 차단(S-2 실효). frontmatter model 이 ANTHROPIC_MODEL 보다 우선, inherit 일 때만 환경 변수(PRD 9장 미결 해소).
+  - 관찰: 대화형 기본 권한이 auto mode 라 Bash 쓰기를 자동 허용할 수 있음 → S-3 갱신, PH6 권고.
+- G4 판정 대기: 점검표 12칸 ✓, 실제 주기 완주, 보안 조치 완료.

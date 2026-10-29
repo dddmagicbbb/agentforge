@@ -87,7 +87,7 @@ export const ProjectSchema = z.object({
 | `ProjectName` | `^[a-z0-9][a-z0-9._-]{0,63}$` | 폴더·tmux 세션·README·config |
 | `Domain` | `^[a-z0-9][a-z0-9-]{0,31}$` (한글 불가 → 스킬명 `devN-<domain>` 보장) | frontmatter description, 스킬 폴더명 |
 | `PathPrefix` | `^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*/?$`, `.`·`..` 세그먼트 금지, 절대 경로·`\` 금지. 정규화: 끝에 `/` | `.paths`, CLAUDE.md 표, description |
-| `ModelId` | `^[A-Za-z0-9._:/@-]{0,128}$` | agent-env case, litellm.yaml, frontmatter(claude만) |
+| `ModelId` | `^(?:[A-Za-z0-9][A-Za-z0-9._:/@-]{0,127})?$` (ADR-0005) | agent-env case, litellm.yaml, frontmatter(claude만) |
 | `Command` | 한 줄, 제어문자 금지, 1~200자 | forge.config.json(JSON), settings.json `Bash(<cmd>:*)` |
 | `HttpUrl` | `http(s)://host[:port][/path]`, userinfo(`user:pw@`) 금지, 공백·`$`·`` ` ``·`'`·`"` 금지 | env.local.example(bash가 source) |
 

@@ -101,11 +101,11 @@
 - [ ] 제품명 확정(상표 검색), "for Claude Code" 표기 가능 여부
 - [ ] 가격 정책(구독/영구)
 - [ ] Gemini·OpenAI 기본 추천 모델 ID(카탈로그로 관리)
-- [ ] `claude --agent` 실행 시 frontmatter `model`과 `ANTHROPIC_MODEL` 우선순위 실기 확인
+- [x] `claude --agent` 실행 시 frontmatter `model`과 `ANTHROPIC_MODEL` 우선순위 실기 확인 → frontmatter 우선, `inherit` 일 때만 `ANTHROPIC_MODEL`(PH5 R-8)
 
 ## 10. 개발 단계
 
-> **현재 단계: PH4**
+> **현재 단계: PH5**
 > 에이전트는 현재 단계에 포함된 기능 ID만 구현한다. 다음 단계 기능이 필요해 보이면 구현하지 말고 report에 적는다.
 > 단계 전환은 사람(PM)이 게이트를 확인한 뒤 위 "현재 단계" 값을 바꾸고 태그를 남겨서 한다.
 

@@ -10,7 +10,12 @@ if [ "$miss" -ne 0 ]; then
   echo "설치 후 다시 실행하세요. (WSL Ubuntu) sudo apt install -y git tmux jq && npm install -g @anthropic-ai/claude-code"
   exit 1
 fi
-find scripts .claude/hooks -name '*.sh' -exec sed -i 's/\r$//' {} + -exec chmod +x {} +
+# CRLF → LF (GNU/BSD 공통 동작을 위해 인플레이스 sed 대신 tr + mv). mv 가 권한을 바꾸므로 chmod 는 그 뒤에 한다.
+while IFS= read -r f; do
+  tr -d '\r' < "$f" > "$f.af-tmp" || { echo "CR 제거 실패: $f"; exit 1; }
+  mv "$f.af-tmp" "$f"
+  chmod +x "$f"
+done < <(find scripts .claude/hooks -name '*.sh')
 mkdir -p .agentforge/signals .agentforge/panes
 if [ ! -f .agentforge/env.local ]; then
   cp .agentforge/env.local.example .agentforge/env.local && chmod 600 .agentforge/env.local

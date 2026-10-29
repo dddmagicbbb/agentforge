@@ -8,8 +8,8 @@ export const ProjectName = z.string().regex(/^[a-z0-9][a-z0-9._-]{0,63}$/, { err
 /** 개발자 도메인. 스킬명 `devN-<domain>`이 항상 유효하도록 영문 소문자만 허용(PoC 결함 D3). */
 export const Domain = z.string().regex(/^[a-z0-9][a-z0-9-]{0,31}$/, { error: "DOMAIN" });
 
-/** 모델 ID. claude는 빈 값 허용(기본 sonnet). */
-export const ModelId = z.string().regex(/^[A-Za-z0-9._:/@-]{0,128}$/, { error: "MODEL_ID" });
+/** 모델 ID. claude는 빈 값 허용(기본 sonnet). 첫 글자는 영문·숫자(YAML 예약 문자 @ : 와 옵션 모양 - 방지, T-503). */
+export const ModelId = z.string().regex(/^(?:[A-Za-z0-9][A-Za-z0-9._:/@-]{0,127})?$/, { error: "MODEL_ID" });
 
 const PATH_PREFIX = /^[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+)*\/?$/;
 
