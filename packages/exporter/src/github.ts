@@ -20,12 +20,12 @@ interface TreeItem {
   readonly content: string;
 }
 
-// TODO: 통합 시 core 의 planGithubTree 로 교체한다(같은 규칙: .sh 100755, 그 외 100644, env.local 차단).
+// TODO: 통합 시 core 의 planGithubTree 로 교체한다(같은 규칙: mode 0o755 → 100755, 그 외 100644, env.local 차단).
 function planTree(files: readonly RenderedFile[]): TreeItem[] {
   return files.map((f) => {
     const base = f.path.split("/").pop() ?? "";
     if (base === "env.local") throw new AppError("EXPORT_SECRET_PATH", { path: f.path });
-    return { path: f.path, mode: f.path.endsWith(".sh") ? "100755" : "100644", content: f.content };
+    return { path: f.path, mode: f.mode === 0o755 ? "100755" : "100644", content: f.content };
   });
 }
 

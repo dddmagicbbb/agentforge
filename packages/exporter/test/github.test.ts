@@ -94,12 +94,19 @@ describe("pushToGithub create", () => {
     expect(calls.find((c) => c.url.endsWith("/git/commits"))!.body.message).toBe("Generate AgentForge environment");
   });
 
-  it("tree mode: .sh 100755, 나머지 100644, type blob", async () => {
+  it("tree mode: RenderedFile.mode 기준(0o755 만 100755), type blob", async () => {
     const { f, calls } = fake(createRoutes());
     await pushToGithub(FILES, T, TOKEN, { fetch: f, language: "ko" });
     const items = calls.find((c) => c.url.endsWith("/git/trees"))!.body.tree as { path: string; mode: string; type: string; sha: string }[];
     expect(Object.fromEntries(items.map((i) => [i.path, i.mode]))).toEqual({ "README.md": "100644", "scripts/setup.sh": "100755", ".claude/settings.json": "100644" });
     expect(items.every((i) => i.type === "blob" && i.sha.startsWith("blob"))).toBe(true);
+  });
+
+  it("mode 0o644 인 .sh(가져온 스킬)는 100644", async () => {
+    const { f, calls } = fake(createRoutes());
+    const imported: RenderedFile[] = [{ path: ".claude/skills/x/run.sh", content: "echo", mode: 0o644, author: "ai-fill" }];
+    await pushToGithub(imported, T, TOKEN, { fetch: f, language: "ko" });
+    expect(calls.find((c) => c.url.endsWith("/git/trees"))!.body.tree[0].mode).toBe("100644");
   });
 
   it("owner 가 인증 사용자가 아니면 /orgs/{owner}/repos, 기본 브랜치는 응답 값, visibility 반영", async () => {
