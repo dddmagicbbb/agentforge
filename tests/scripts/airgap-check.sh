@@ -129,6 +129,7 @@ net_curl "http://$APP_T:$PORT/api/market/health" | grep -q '"license":"pro"' || 
 license_up "$IMG" "$APP_P"
 plic="$(net_curl "http://$APP_P:$PORT/api/license")" || fail "운영 이미지 /api/license 응답 없음"
 echo "$plic" | grep -q '"tier":"free"' || fail "운영 이미지가 시험 키를 인정합니다(등급 우회): $plic"
+echo "$plic" | grep -q '"code":"LICENSE_UNKNOWN_KID"' || fail "운영 이미지의 거부 사유가 LICENSE_UNKNOWN_KID 가 아닙니다: $plic"
 
 echo "== 7) 외부 연결 차단 확인"
 # 판정을 분리한다: 연결 실패(차단됨)=7 → 정상, 연결 성공(새어 나감)=8 → exit 3, 그 밖(exec 실패 등) → exit 1

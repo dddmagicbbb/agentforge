@@ -126,7 +126,7 @@ describe("startApp", () => {
     expect(seen["AF_LICENSE"]).toBe("AF1.x.y");
   });
 
-  it("라이선스 파일이 없으면 안내 후 Free 로 계속(종료 아님), AF_LICENSE 는 비움", async () => {
+  it("라이선스 파일이 없으면 안내 후 계속 기동(종료 아님), AF_LICENSE 는 비움", async () => {
     const f = fixtures();
     const warns: string[] = [];
     const seen: Record<string, string | undefined> = {};
