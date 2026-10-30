@@ -65,7 +65,7 @@
 - **게이트 통과(사람 승인 2026-10-29)**: develop → main 병합(PR #7, 84a5aef), 태그 `v0.2.0`. 최종 CI(580bde2)에서 Dev Container 생성물 postCreateCommand 실동작(tmux 3.5a·jq 1.7·Claude Code 2.1.312) 확인.
 - 다음: PH7(확장 2 — MKT-01·02, EXP-02) 착수는 사람 결정.
 
-## PH7 확장 2 — 마켓·GitHub — 2026-10-30 (G 판정 대기, `v0.3.0` 예정)
+## PH7 확장 2 — 마켓·GitHub — 2026-10-30 · `v0.3.0`
 - 계약 선행: design.md 9장·ADR-0007. 스키마 확장(가져온 스킬 `files`·`ref`, GitHub `mode`·`baseUrl`(https 전용)·`branch`)은 리드가 했다. 기본값 생성물은 v0.2.0과 바이트 단위로 같다(golden 유지).
 - 완료 작업(tasks.md PH7 전부):
   - dev-1: 위험 검사 `scanSkillRisk`(5종, YAML 표기 변형·줄 이어쓰기·파이프 셸·irm/iex·인터프리터 URL), 위험을 files로 재계산하는 불변식, 가져온 스킬 원문 렌더(644), `sources.lock`(순수 sha256), `planGithubTree`(mode 기준, env.local 차단), IMPORT_RISK·README 안내
@@ -101,3 +101,7 @@
 - 실기에서 발견한 것(후속):
   - Octokit 로거를 noop으로 지정했는데도 `@octokit/request`의 deprecation 경고(메서드·URL, 토큰 없음)가 console에 찍힌다. 요청 단위 `request.log`에도 noop을 넘겨야 한다.
   - GitHub가 `POST /user/repos`를 2028-03-10 제거 예정으로 표시한다. API 버전 헤더(`X-GitHub-Api-Version`) 고정과 대체 엔드포인트를 확인해야 한다.
+- **CI 복구**: 저장소를 공개로 전환해(사람 결정 2026-10-30) Actions 결제 제약을 해소했다. 전환 전에 전 브랜치 이력의 비밀 값 패턴 0건, env.local 커밋 0건, 자체 runner 미등록을 확인했다. develop 20b155c에서 CI 3종이 통과했다.
+- **게이트 통과(사람 승인 2026-10-30)**: develop → main 병합(PR #12, d4b2b29), 태그 `v0.3.0`.
+- 남은 정리(사람): 실기용 임시 저장소 `dddmagicbbb/af-push-test` 삭제(토큰에 delete_repo 권한 없음).
+- 다음: PH8(상용화·베타 — LIC-01, DPL-01, 베타 5명·폐쇄망 설치 시험) 착수는 사람 결정.
