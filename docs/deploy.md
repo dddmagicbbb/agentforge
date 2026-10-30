@@ -21,7 +21,14 @@ npx agentforge --port 4000 --license-file ./agentforge.license
 | `--license-file` | 없음 | `AF_LICENSE`(키 문자열) | 라이선스 키 |
 | `--admin` | 꺼짐 | 없음 | 마켓 소스 등록·삭제·갱신 API를 켠다. 인자로만 켤 수 있다 |
 
-- npm 공개 배포 여부와 패키지 이름 확정(`agentforge`)은 출시 준비(PH9)에서 결정한다. 그 전에는 저장소에서 `pnpm build` 후 `node packages/app/dist/cli.js`로 실행한다.
+- npm 공개 배포 여부와 패키지 이름 확정(`agentforge`)은 출시 준비(PH9)에서 결정한다. 그 전에는 저장소에서 빌드해 실행한다.
+  ```bash
+  # v0.9.0 전까지 라이선스·npx 진입점(packages/app)은 develop 에만 있다(main 은 v0.3.0)
+  git clone -b develop https://github.com/dddmagicbbb/agentforge && cd agentforge
+  corepack enable pnpm          # pnpm 이 없을 때. 권한 오류면 npm i -g pnpm@10
+  pnpm install --frozen-lockfile && pnpm build
+  node packages/app/dist/cli.js --license-file ~/agentforge.license
+  ```
 
 ## 2. Docker (설치형·폐쇄망)
 ### 빌드와 반입
