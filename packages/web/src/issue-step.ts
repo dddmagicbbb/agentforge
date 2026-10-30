@@ -20,6 +20,7 @@ export function stepOfPath(path: readonly (string | number)[]): StepIndex {
     case "devcontainer":
       return 4;
     case "existingClaudeMd":
+    case "export":
       return 5;
     default:
       return 0;

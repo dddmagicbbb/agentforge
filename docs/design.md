@@ -314,3 +314,170 @@ PoC에 기준 구현이 없는 기능이라, 병렬 개발 전에 계약을 여�
 | `CLAUDE_MD_MARKERS` | AppError | 8.1 마커 짝 오류 |
 | `TMUX_PREFIX` | error(스키마) | 이미 존재 |
 | `DEVCONTAINER_CLOSED_NET` | info | `devcontainer: true`: 이미지·패키지를 내려받는다는 안내 |
+
+## 9. PH7 설계 — 마켓플레이스·GitHub 내보내기 (ADR-0007)
+PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙은 PH6과 같다. `imported: []`이고 `export`를 지정하지 않으면 생성물은 v0.2.0과 바이트 단위로 같다.
+
+### 9.1 스키마 (리드 반영 완료)
+- `ImportedSkill`에 `ref?`(출처 커밋, `^[0-9a-f]{7,40}$`, `SKILL_REF`)와 `files?`(최대 50개, `{path: SkillFilePath, content ≤ 200,000자}`)를 추가했다.
+  - `SkillFilePath`는 스킬 폴더 기준 상대 경로다. 세그먼트는 `[A-Za-z0-9._-]`, 최대 깊이 5, `.`·`..` 금지(`SKILL_FILE_PATH`).
+- `GithubTarget`에 `mode?`(create|pr, 기본 create), `baseUrl?`(GHES API, HttpUrl), `branch?`(`GitBranch`, 기본 `agentforge/setup`)를 추가했다. 토큰은 스키마에 두지 않는다.
+
+### 9.2 위험 검사 (core, 순수 함수) — MKT-02
+- `scanSkillRisk(files): RiskCode[]`는 결정적이고 정렬된 고유 코드 목록을 반환한다.
+
+| 코드 | 조건 |
+| --- | --- |
+| `SCRIPTS` | `scripts/` 아래 파일이 있거나, 확장자 `.sh .bash .py .js .mjs .cjs .ts .ps1 .bat .cmd .exe`인 파일 |
+| `BANG_COMMAND` | SKILL.md 본문의 동적 명령: 백틱 앞의 `!` 문법, 또는 줄 머리가 `!`인 명령 |
+| `BROAD_TOOLS` | frontmatter `allowed-tools`에 `Bash(*)`·`Bash` 단독·`*`가 있음 |
+| `BYPASS_PERMISSIONS` | `permissionMode: bypassPermissions` 또는 `dangerously-skip-permissions` 문자열 |
+| `REMOTE_DOWNLOAD` | `curl`·`wget`·`Invoke-WebRequest`·`iwr` 다음에 `http(s)://`가 오는 줄, 또는 `sh`·`bash`로 넘기는 파이프 |
+
+- 불변식 I6 변경:
+  - `files`가 있으면 `flags`를 **입력값이 아니라 `scanSkillRisk(files)`로 다시 계산한 값**으로 판정한다. 입력의 flags 조작으로 확인을 건너뛸 수 없다.
+  - 위험이 하나라도 있고 `acknowledged`가 false이면 `IMPORT_UNACKED`.
+- 추가 불변식:
+  - `files`가 있으면 `SKILL.md`가 반드시 있어야 한다(`IMPORT_NO_SKILL_MD`).
+  - SKILL.md frontmatter의 `name`은 `id`와 같아야 한다(`IMPORT_NAME_MISMATCH`).
+  - 파일 경로는 중복되면 안 된다(`IMPORT_DUP_PATH`).
+  - 전체 크기는 512,000자 이하여야 한다(`IMPORT_TOO_LARGE`).
+- 불변식은 schema 폴더(리드 승인 영역)지만, 이번에는 ADR-0007로 승인하고 dev-1이 구현한다.
+
+### 9.3 렌더 (core) — MKT-02
+- `files`가 있는 스킬은 `.claude/skills/<id>/<path>`로 원문을 그대로 넣는다(mode 644, 실행 권한 없음).
+  - SKILL.md도 원문 그대로 넣는다(앱이 문구를 바꾸지 않는다).
+  - `files`가 없으면 지금처럼 출처 안내만 넣는다.
+- `.agentforge/sources.lock`(imported가 비어 있지 않을 때만, 644): JSON
+  `{ "version": 1, "skills": [{ id, src, trust, ref|null, target, flags, files: [{ path, sha256 }] }] }`
+  - `sha256`은 core 순수 구현(UTF-8 바이트)이다. 키 순서는 고정한다.
+- 기존 CLAUDE.md SKILLS 표와 dev/review `skills:` 배정(SKL-02)은 그대로다.
+
+### 9.4 마켓 색인 (server, 선택 배포) — MKT-01
+- Fastify 앱 `createServer({ dataDir, fetch?, gitBin?, webDist? })`. 앱 본체(web)는 서버 없이도 동작하고, 서버가 있을 때만 마켓을 쓸 수 있다.
+- 소스 종류:
+
+| kind | 필드 | 가져오는 방법 |
+| --- | --- | --- |
+| `github` | `owner`, `repo`, `ref?`(기본 기본 브랜치), `path?`(기본 저장소 루트), `baseUrl?`(GHES API) | REST: commits(ref→sha), git/trees?recursive=1, blobs |
+| `git` | `url`(https:// 또는 테스트용 file://), `ref?`, `path?` | 시스템 `git clone --depth 1 --branch` → 임시 폴더, 끝나면 삭제 |
+
+- 공통 필드: `id`(SkillName 패턴), `trust`(official·org·community·unverified, 등록 시 지정, 기본 unverified), `tokenEnv?`(비공개 저장소 토큰을 담은 **서버 환경 변수 이름**. API로 토큰 값을 받지 않는다).
+- 스킬 인식:
+  - `path` 아래 깊이 2 이내에서 `SKILL.md`를 가진 폴더를 스킬로 본다.
+  - 폴더명이 SkillName 패턴이 아니면 건너뛴다.
+  - 파일은 50개 이하, 파일당 200,000자, 합계 512,000자 이하이고, 넘으면 `tooLarge` 표시 후 가져오기를 막는다.
+  - 텍스트가 아닌(UTF-8 디코드 실패) 파일이 있으면 `binary` 표시 후 가져오기를 막는다.
+- 저장: `dataDir/sources.json`(등록 목록), `dataDir/index/<sourceId>.json`(색인: sha, 스킬별 name·description·files·flags = core `scanSkillRisk`).
+- 기본 소스: `catalog/market-sources.json`(공식 `anthropics/skills`, trust official). 서버가 처음 시작할 때 dataDir에 없으면 복사한다.
+- API(JSON, 같은 출처, 오류는 `{ code, params }`):
+
+| 메서드·경로 | 내용 |
+| --- | --- |
+| `GET /api/market/health` | `{ ok: true, version }` — web 이 서버 존재를 감지 |
+| `GET /api/market/sources` | 등록 목록(+마지막 색인 시각·sha·오류 코드) |
+| `POST /api/market/sources` | 등록(zod 검증; id 중복 `SOURCE_EXISTS`) |
+| `DELETE /api/market/sources/:id` | 삭제(색인도 삭제) |
+| `POST /api/market/refresh` | `{ id? }` 색인 갱신(없으면 전체). 소스별 결과·오류 코드 |
+| `GET /api/market/search?q=&trust=` | 이름·설명 부분 일치(대소문자 무시), 목록 항목 = `{ sourceId, id, description, trust, src, ref, flags, fileCount, blocked? }` |
+| `GET /api/market/skills/:sourceId/:skillId` | 가져오기용 전체: `{ id, src, trust, ref, description, flags, files: [{path, content}] }` — 이 응답을 그대로 `ImportedSkill`로 바꿀 수 있어야 한다 |
+
+- 보안:
+  - 등록 URL·owner·repo·ref·path는 zod 패턴으로 검증한다. `git`은 `https://` 또는 `file://`만 허용하고, `file://`은 `AF_ALLOW_FILE_SOURCES=1`일 때만 허용한다.
+  - git 명령은 인자 배열로 실행한다(셸 금지). 시간 제한은 60초다.
+  - 토큰은 로그·응답·색인에 쓰지 않는다.
+- `webDist`가 있으면 `/`에서 web 정적 파일을 제공한다(E2E·설치형 대비).
+
+### 9.5 GitHub·GHES 내보내기 (exporter) — EXP-02
+- `planGithubTree(files: RenderedFile[]): { path, mode: "100755"|"100644", content }[]` (core 순수 함수)
+  - `.sh`는 100755, 나머지는 100644다.
+  - `env.local` 경로가 있으면 `AppError("EXPORT_SECRET_PATH")`.
+  - ZIP과 같은 `RenderedFile[]`에서 만들고, 경로 집합·내용이 ZIP 항목과 같음을 시험으로 보장한다.
+- `pushToGithub(files, target, token, { fetch?, language })`(exporter, `@octokit/core`, web에서 지연 로딩)
+  - **create**:
+    1. 저장소를 만든다(owner가 인증 사용자면 `POST /user/repos`, 아니면 `POST /orgs/:owner/repos`, `auto_init: true`, visibility).
+    2. blob과 tree를 만든다(`base_tree` 없음).
+    3. 부모 없는 commit을 만든다.
+    4. `PATCH refs/heads/<default>` `force: true`로 바꾼다.
+    - 결과 이력은 **커밋 1건**이다.
+  - **pr**:
+    1. 기본 브랜치 sha를 읽는다.
+    2. tree를 만든다(`base_tree` = 기본 브랜치 tree. 생성 파일만 덮어쓰고 다른 파일은 유지).
+    3. commit을 만든다(부모 1).
+    4. `refs/heads/<branch>`를 만든다(있으면 `GITHUB_BRANCH_EXISTS`).
+    5. PR을 만든다.
+  - 커밋 메시지: `AgentForge 환경 생성` / `Generate AgentForge environment`(language). 작성자는 토큰 사용자다.
+  - 반환: `{ url, commitSha, prUrl? }`
+  - 오류는 `AppError` 코드로만 낸다. 응답 본문·토큰은 메시지에 넣지 않는다.
+
+| 코드 | 원인 |
+| --- | --- |
+| `GITHUB_AUTH` | 401·403 |
+| `GITHUB_NOT_FOUND` | 404 |
+| `GITHUB_REPO_EXISTS` | 422 |
+| `GITHUB_BRANCH_EXISTS` | pr 모드에서 브랜치가 이미 있음 |
+| `GITHUB_RATE_LIMIT` | 요청 한도 초과 |
+| `GITHUB_NETWORK` | 네트워크 오류 |
+| `GITHUB_FAILED` | 그 밖의 실패 |
+
+- 토큰:
+  - 화면 입력(password)으로 받아 한 번만 쓰고 메모리에서 지운다.
+  - 저장소·URL·로그·오류에 남기지 않는다.
+  - 브라우저에서 GHES CORS가 막히는 경우의 서버 중계는 이번 단계 범위 밖이다(P2, ADR-0007).
+
+### 9.6 새 issue·오류 코드
+- 스키마·불변식(error): `SKILL_FILE_PATH` `SKILL_REF` `GIT_BRANCH` `IMPORT_NO_SKILL_MD` `IMPORT_NAME_MISMATCH` `IMPORT_DUP_PATH` `IMPORT_TOO_LARGE`
+- 위험 코드 5종(9.2): 화면에서 사람이 읽는 문구로 표시
+- AppError: `EXPORT_SECRET_PATH`, `GITHUB_*`
+- 서버: `SOURCE_EXISTS` `SOURCE_INVALID` `SOURCE_FETCH_FAILED` `SOURCE_TIMEOUT` `SKILL_BLOCKED`
+
+### 9.7 PH7 1라운드 보충 계약 (리드 확정)
+- **응답 형태**(서버 구현 기준으로 확정):
+  - `GET /api/market/health` → `{ ok: true, version, admin: boolean }`
+  - `GET /api/market/sources` → `{ sources: SourceRecord[] }`. SourceRecord는 등록 필드에 상태 `lastIndexedAt?`(ISO), `lastSha?`, `lastError?`(오류 코드)를 더한 것이다.
+  - `POST /api/market/refresh` → `{ results: [{ id, ok: true, sha, skillCount } | { id, ok: false, code, params }] }`. 갱신 실패도 HTTP 200이다.
+  - `GET /api/market/search` → `{ skills: [{ sourceId, id, description, trust, src, ref, flags, fileCount, blocked? }] }`. `blocked`는 `"tooLarge" | "binary" | "badPath"`(badPath = 스킬 안 파일 경로가 SkillFilePath 위반, 스킬 전체 차단).
+  - 오류는 `{ code, params }`이고, 추가 코드는 `NOT_FOUND`·`INTERNAL`·`ADMIN_DISABLED`다.
+- **관리 API 보호(SSRF 대책)**:
+  - 등록·삭제·갱신(`POST/DELETE /api/market/sources`, `POST /api/market/refresh`)은 서버 환경 변수 `AF_MARKET_ADMIN=1`일 때만 허용한다. 아니면 403 `ADMIN_DISABLED`.
+  - 읽기(health·sources·search·skills)는 항상 허용한다.
+  - 서버 기본 바인드 주소는 `127.0.0.1`이다.
+  - 화면은 `health.admin`이 false이면 소스 관리 버튼을 숨기고 "관리자 모드에서만 소스를 바꿀 수 있습니다"를 보인다.
+- **위험 판정 연결**: `createServer`의 `scan` 기본값은 core `scanSkillRisk`다(통합 시 연결, 주입은 시험용으로 유지).
+- **위험 검사 확장(9.2 갱신, review-1 반려 반영)**: 판정은 YAML 표기 변형에 강해야 하고, 애매하면 위험으로 본다.
+  - `BROAD_TOOLS`:
+    - frontmatter 키 표기 변형(콜론 앞뒤 공백, 들여쓰지 않은 `-` 목록, 같은 키가 여러 번 나오면 모든 값)을 인식한다.
+    - 경로가 `SKILL.md`로 끝나는 모든 파일(하위 폴더 포함)을 검사한다.
+  - `BYPASS_PERMISSIONS`: 어느 파일이든 문자열 `bypassPermissions`(대소문자 무시) 또는 `dangerously-skip-permissions`가 있으면 위험이다.
+  - `REMOTE_DOWNLOAD`:
+    - 셸 `\`·PowerShell 백틱 줄 이어쓰기를 합친 뒤 검사한다.
+    - 다운로드 명령에 `irm`·`Invoke-RestMethod`를 더한다.
+    - 파이프 대상은 `sudo`·`env` 접두, 경로(`/bin/bash`), 옵션, 대소문자에 관계없이 `sh|bash|zsh|dash`와 `iex`·`Invoke-Expression`이다.
+  - `SCRIPTS`:
+    - 폴더명 `scripts/`는 대소문자를 무시한다.
+    - 확장자에 `.zsh .rb .pl`을 더한다.
+    - 첫 줄이 `#!`로 시작하는 파일도 위험으로 본다.
+  - `BANG_COMMAND`: SKILL.md(경로가 `SKILL.md`로 끝나는 파일)에서만 판정한다.
+    - 실행 문법인 백틱 앞의 `!`는 위험이다.
+    - 줄 머리 `!` 다음에 공백이 아닌 문자가 오는 경우도 보수적으로 위험이다.
+- **서버 보안 보강(review-2 권고 반영, 리드 확정)**:
+  - `tokenEnv`는 `AF_MARKET_TOKEN_`으로 시작하는 환경 변수 이름만 허용한다. 그래야 임의의 서버 비밀을 외부로 보낼 수 없다.
+  - 토큰을 쓰는 소스의 `baseUrl`·`url`은 `https://`만 허용한다.
+  - `repo`·`owner`·`path` 세그먼트에 `.`·`..`는 금지한다.
+  - 관리 API는 `Content-Type: application/json`만 받는다(아니면 415 `SOURCE_INVALID`, CSRF 대비).
+  - 모든 API는 `Host` 헤더를 허용 목록(`localhost`, `127.0.0.1`, `[::1]` + 환경 변수 `AF_MARKET_HOSTS` 쉼표 목록)으로 검사한다. 아니면 403 `HOST_DENIED`(DNS rebinding 대비).
+  - git 소스의 symlink(mode 120000)는 OS와 무관하게 제외한다(`git ls-tree` 기준).
+  - 기동 진입점 `listen({ host = "127.0.0.1", port })`를 코드로 고정한다.
+- **9.5 정정(리드 확정)**: `planGithubTree`의 mode는 확장자가 아니라 `RenderedFile.mode`를 따른다(0o755 → 100755, 그 외 100644). 그래서 가져온 스킬 안의 `.sh`는 ZIP과 같이 100644이고, "실행 권한 없이 넣음" 원칙과 일치한다. exporter의 임시 규칙도 같게 맞춘다.
+- **화면 문구 추가**: `IMPORT_RISK`(info, params `id`, `codes` 쉼표 목록)
+- **EXP-02 보강(review-2 권고, 리드 확정)**:
+  - `GithubTarget.baseUrl`은 https만 허용한다(`HttpsUrl`, 오류 `HTTPS_URL` — 토큰 평문 전송 방지). 리드 반영 완료.
+  - push는 blob을 파일마다 따로 만들지 않고, `git/trees` 항목의 `content`로 한 번에 보낸다(2차 rate limit 회피, mode 유지).
+  - 2차 rate limit(403·429 + `retry-after`, 또는 응답 메시지가 secondary rate limit)은 `GITHUB_RATE_LIMIT`로 분류한다. 메시지는 분류에만 쓰고 노출하지 않는다.
+  - 부분 실패는 `AppError("GITHUB_PARTIAL", { stage, url })`로 알린다.
+    - create: 저장소 생성 후 실패하면 stage `commit`, url은 저장소 html_url.
+    - pr: 브랜치 생성 후 PR 생성이 실패하면 stage `pr`, url은 브랜치 주소.
+    - 화면은 "저장소(브랜치)는 생성됨 — 확인 후 지우거나 직접 PR" 안내와 링크(https만)를 보인다.
+  - `auto_init` 직후 git data API의 409·404는 1초 간격으로 최대 3회 재시도한다.
+  - Octokit 로거는 모두 noop이다.
+  - exporter 루트(`.`)는 `pushToGithub`를 다시 export하지 않는다. web은 `@agentforge/exporter/github`만 지연 로딩한다(ZIP 청크와 분리).

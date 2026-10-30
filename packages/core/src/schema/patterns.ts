@@ -35,3 +35,22 @@ export const HttpUrl = z
 
 /** 스킬 폴더명 = frontmatter name. */
 export const SkillName = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/, { error: "SKILL_NAME" });
+
+/** 가져온 스킬 안의 파일 경로(ADR-0007). 상대 경로, 세그먼트는 영문·숫자·._-, `.`·`..` 금지, 최대 깊이 5. */
+export const SkillFilePath = z
+  .string()
+  .regex(/^[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+){0,4}$/, { error: "SKILL_FILE_PATH" })
+  .refine((p) => p.split("/").every((seg) => seg !== "." && seg !== ".."), { error: "SKILL_FILE_PATH" });
+
+/** git 브랜치 이름(EXP-02 pr 모드). git check-ref-format 의 보수적 부분집합. */
+export const GitBranch = z
+  .string()
+  .max(100)
+  .regex(/^[A-Za-z0-9][A-Za-z0-9._/-]*$/, { error: "GIT_BRANCH" })
+  .refine((b) => !b.includes("..") && !b.includes("//") && !b.endsWith("/") && !b.endsWith(".lock") && !b.endsWith("."), { error: "GIT_BRANCH" });
+
+/** https 만 허용하는 주소(토큰을 싣는 GHES API 등 — ADR-0007). 형식은 HttpUrl 과 같다. */
+export const HttpsUrl = z
+  .string()
+  .max(200)
+  .regex(/^https:\/\/[A-Za-z0-9.-]+(:\d{1,5})?(\/[A-Za-z0-9._~%/-]*)?$/, { error: "HTTPS_URL" });

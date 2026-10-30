@@ -209,3 +209,72 @@ T-615: I18N-01(화면 영어 전환·생성물 언어), DOC-03(기존 CLAUDE.md 
 
 ### P6R3-5. 계약 변경
 없음. 로컬 실행 시 4173 점유 주의(오래된 preview 재사용 가능): `AF_E2E_PORT` 사용.
+
+## PH7 1라운드: T-711 (MKT-01 마켓 색인 서버)
+
+### P7R1-1. 담당 작업·기능 ID
+T-711: MKT-01. 계약: design.md 9.4·9.6, ADR-0007.
+
+### P7R1-2. 파일
+| 파일 | 책임 |
+|---|---|
+| `packages/server/src/app.ts` | `createServer(opts)` Fastify 앱, 라우트 7종, 오류 변환(`{code, params}`) |
+| `packages/server/src/schemas.ts` | zod: 소스 등록 입력, 쿼리 |
+| `packages/server/src/store.ts` | dataDir 의 sources.json·index/<id>.json 읽기/쓰기, 기본 소스 복사 |
+| `packages/server/src/indexer.ts` | 파일 목록(`RawFile`) → 스킬 인식·크기·binary 판정·색인 항목 |
+| `packages/server/src/fetch-github.ts` | github REST 수집(ref→sha, trees, blobs), 토큰은 Authorization 에만 |
+| `packages/server/src/fetch-git.ts` | `git clone --depth 1` execFile(인자 배열), 임시 폴더, 60초, file:// 제한 |
+| `packages/server/src/index.ts` | 공개 export |
+| `packages/server/test/*.test.ts` | 시험 |
+
+### P7R1-3. 주요 시그니처
+- `createServer({ dataDir, scan, fetch?, gitBin?, webDist?, env?, defaultSourcesFile? }): Promise<FastifyInstance>`
+  - `scan: (files: {path, content}[]) => string[]` 은 필수 주입이다. 통합 때 core `scanSkillRisk` 를 기본값으로 연결한다(TODO).
+  - 입력은 zod 로 검증하고, 실패는 `SOURCE_INVALID`. 알 수 없는 예외는 `INTERNAL`(내부 메시지 미노출).
+- 스킬 인식: path 아래 깊이 2 이내에서 SKILL.md 를 가진 폴더, 폴더명 SkillName, 파일 50개·200,000자·합계 512,000자 초과 `tooLarge`, UTF-8 디코드 실패 `binary`. 둘 다 `blocked` 로 상세 GET 은 `SKILL_BLOCKED`.
+- 경로 조작: tree 항목·git 파일 경로가 `..`·절대·역슬래시이거나 `.git` 이면 무시. 스킬 파일 경로는 SkillFilePath 패턴이 아니면 해당 스킬을 건너뜀이 아니라 파일만 제외하지 않고 스킬을 건너뛴다(원문 보존 규칙).
+- 오류 코드: `SOURCE_EXISTS` `SOURCE_INVALID` `SOURCE_FETCH_FAILED` `SOURCE_TIMEOUT` `SKILL_BLOCKED` `NOT_FOUND`(소스·스킬 없음).
+
+### P7R1-4. 사용 계약
+9.4 API 7종 그대로. core 는 `SkillName`·`GitBranch`·`HttpUrl` 패턴·`AppError` 코드 규약만 읽는다.
+
+### P7R1-5. 테스트 목록
+| 기능 | 사례 |
+|---|---|
+| MKT-01 | github 색인(ref·sha·path), GHES baseUrl, 토큰 헤더 + 값 미노출, 404/rate limit → SOURCE_FETCH_FAILED |
+| MKT-01 | git file:// 색인(허용/미허용), 깊이 2, 잘못된 폴더명, tooLarge, binary 차단 |
+| MKT-01 | 검색 q·trust, 등록 중복, 삭제 시 색인 삭제, 경로 조작 거부, 기본 소스 복사, health |
+
+### P7R1-6. 계약 변경
+없음. 단 core `scanSkillRisk` 미구현이라 `scan` 주입 필수(통합에서 기본값 연결).
+
+### P7R1-7. 보강: 관리 API 보호와 서버 보안 (리드 요청 + review-2, design.md 9.7)
+- 관리 API 보호: `POST/DELETE /api/market/sources`, `POST /api/market/refresh` 는 `AF_MARKET_ADMIN=1` 일 때만 동작하고, 아니면 본문 파싱 전에 403 `ADMIN_DISABLED`. 읽기 API 는 항상 허용. `GET /api/market/health` 는 `{ ok, version, admin }`.
+- 추가 응답 코드(9.6 외): `ADMIN_DISABLED`(403), `HOST_DENIED`(403), `NOT_FOUND`(404), `INTERNAL`(500). 관리 POST 의 Content-Type 오류는 415 `SOURCE_INVALID`.
+- `blocked` 값: `tooLarge`, `binary`, `badPath`. `badPath` 는 스킬 안 파일 경로가 SkillFilePath 패턴(공백·한글·깊이 6 이상 등)에 맞지 않을 때 일부만 가져오지 않고 스킬 전체를 차단한다(원문 보존 원칙). 앞 절의 "파일만 제외" 문구는 이 규칙으로 정정한다.
+- 보강 규칙:
+  1. `tokenEnv` 는 `AF_MARKET_TOKEN_` 접두 이름만. 토큰을 쓰는 소스의 `baseUrl`·`url` 은 https 만(등록 시 검증, 갱신 시 재검사).
+  2. `repo` 가 `.`·`..` 이거나 `path` 세그먼트가 `.`·`..` 이면 거부(API 경로 이탈 방지).
+  3. 관리 POST 는 Content-Type `application/json` 만(아니면 415). 본문 없는 `POST /refresh` 로 전체 갱신하던 CSRF 경로 차단.
+  4. 모든 요청의 Host 허용 목록: `localhost`, `127.0.0.1`, `[::1]` + `AF_MARKET_HOSTS`(쉼표 목록). 아니면 403 `HOST_DENIED`.
+  5. git 은 `git ls-tree -r -z HEAD` 로 일반 파일(100644·100755)만 수집(심볼릭 링크·서브모듈 제외, OS 무관). 파일 수 20,000 초과는 `SOURCE_FETCH_FAILED {reason: tooMany}`.
+  6. 기동: `listenServer(app, { host = "127.0.0.1", port })`, `startFromEnv(env, scan)`(PORT·AF_MARKET_DATA·AF_WEB_DIST), CLI `src/main.ts`(core 의 `scanSkillRisk` 를 동적으로 찾아 연결, 없으면 종료).
+  7. `workDir` 옵션: clone 임시 폴더 위치(시험은 전용 폴더로 정리 확인).
+- 비차단 반영: BOM 이 있는 SKILL.md 의 description 인식, `path` 가 스킬 폴더 자체이면 루트 SKILL.md 인식(id = path 마지막 폴더명).
+- 시험: `hardening.test.ts`(위 1~6, 경계값 50개·200,000자·512,000자, badPath, INTERNAL 비노출, `cloneArgs` 의 `--` 구분자, `gitEnv` 의 GIT_ALLOW_PROTOCOL). 임시 폴더는 `test/setup.ts` 의 afterAll 에서 삭제한다.
+
+## PH7 2라운드: T-712 (EXP-02 GitHub·GHES push)
+- 파일: `packages/exporter/src/github.ts`(pushToGithub, 내부 planTree), `packages/exporter/test/github.test.ts`(가짜 GitHub API fetch), package.json(`@octokit/core` ^7, exports `./github` 진입점 추가), `src/index.ts`(재export, 기존 스텁 `pushToGitHub` 제거).
+- 시그니처: `pushToGithub(files, target, token, { fetch?, language }): Promise<{ url, commitSha, prUrl? }>`. baseUrl 기본 `https://api.github.com`, `request.fetch` 주입.
+- tree 계획: core `planGithubTree` 가 이 브랜치에 없어 내부 함수로 같은 규칙(.sh 100755, 그 외 100644, env.local 경로 EXPORT_SECRET_PATH)을 두고 통합 때 교체(TODO).
+- create: GET /user → POST /user/repos 또는 /orgs/{owner}/repos(auto_init) → 기본 브랜치 → blobs → trees(base_tree 없음) → commits(parents []) → PATCH refs/heads/{default} force. pr: 저장소 조회 → ref → commit → tree → blobs → trees(base_tree) → commits(parents [sha]) → POST refs(422 GITHUB_BRANCH_EXISTS) → POST pulls.
+- 오류: 401/403 GITHUB_AUTH(rate limit 헤더면 GITHUB_RATE_LIMIT), 404 GITHUB_NOT_FOUND, create 422 GITHUB_REPO_EXISTS, 네트워크 GITHUB_NETWORK, 그 외 GITHUB_FAILED. params 는 status 만. 본문·토큰 미포함.
+- 시험: create 순서·부모 없음·force·mode·env.local 차단·org/user·visibility, pr 순서·base_tree·브랜치 존재, 오류 매핑, 토큰 미노출, GHES baseUrl, toZip 동등.
+- 계약 변경 없음(core planGithubTree 는 dev-1 라운드, 통합 교체).
+
+## PH7 3라운드: T-713 (MKT-01·02, EXP-02 E2E)
+- 파일: `tests/e2e/market.spec.ts`, `tests/e2e/github.spec.ts`, `tests/e2e/helpers.ts`(빈 포트·임시 git 저장소·서버 기동 보조 추가). 서버·exporter 코드는 바꾸지 않는다.
+- market: beforeAll 에서 임시 git 저장소(safe-skill, risky-skill)를 만들고 `node packages/server/dist/main.js` 를 spawn(PORT=빈 포트, AF_MARKET_DATA=임시, AF_WEB_DIST=packages/web/dist, AF_MARKET_ADMIN=1, AF_ALLOW_FILE_SOURCES=1). admin 꺼진 서버는 별도 기동. afterAll 에서 종료·삭제. 화면은 서버 출처(같은 출처)로 연다.
+- github: 실제 GitHub 대신 `page.route("https://api.github.com/**")` 가 가짜 응답(CORS 헤더 포함). baseUrl 은 https 전용이므로 화면 경로만 쓴다.
+- 시험: 마켓 전체 흐름(검색·미리보기·위험 확인 전 ZIP 차단·ZIP 원문·권한 644·sources.lock sha256·README 안내), admin 꺼짐 UI 숨김, push 성공 요청 순서·mode·토큰 지움·토큰 미노출, 401 GITHUB_AUTH, commit 500 GITHUB_PARTIAL.
+- 계약 변경 없음.

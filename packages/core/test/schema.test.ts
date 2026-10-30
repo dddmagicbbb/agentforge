@@ -123,3 +123,29 @@ describe("오류 코드", () => {
     }
   });
 });
+
+// PH7(ADR-0007): 가져온 스킬의 실제 파일·출처 커밋, GitHub 내보내기 방식
+describe("PH7 스키마 확장", () => {
+  const base = { id: "webapp-testing", src: "anthropics/skills", trust: "official" as const, desc: "", flags: [], target: "all" as const, acknowledged: false };
+  const md = "---\nname: webapp-testing\ndescription: d\n---\n# x\n";
+  it("files·ref 는 선택이다(기존 입력 호환)", () => {
+    expect(codes(draft((d) => (d.imported = [base])))).toEqual([]);
+    expect(codes(draft((d) => (d.imported = [{ ...base, acknowledged: true, ref: "0123abc", files: [{ path: "SKILL.md", content: md }, { path: "scripts/run.py", content: "print(1)" }] }])))).toEqual([]);
+  });
+  it("파일 경로는 스킬 폴더 안의 상대 경로만(절대·..·백슬래시 금지)", () => {
+    for (const path of ["/etc/x", "../x", "a/../b", "a\b", "", "a//b"]) {
+      expect(codes(draft((d) => (d.imported = [{ ...base, files: [{ path: "SKILL.md", content: md }, { path, content: "x" }] }])))).toContain("SKILL_FILE_PATH");
+    }
+  });
+  it("ref 는 커밋 해시(7~40자리 16진수)", () => {
+    expect(codes(draft((d) => (d.imported = [{ ...base, ref: "main; rm -rf /" }])))).toContain("SKILL_REF");
+  });
+  it("GitHub 내보내기: mode·baseUrl·branch", () => {
+    const gh = { owner: "dmagic", repo: "app", visibility: "private" as const };
+    expect(codes(draft((d) => (d.export = { github: gh })))).toEqual([]);
+    expect(codes(draft((d) => (d.export = { github: { ...gh, mode: "pr", baseUrl: "https://ghe.example.com/api/v3", branch: "agentforge/setup" } })))).toEqual([]);
+    expect(codes(draft((d) => (d.export = { github: { ...gh, branch: "a..b" } })))).toContain("GIT_BRANCH");
+    // 토큰이 평문으로 가지 않도록 GHES 주소는 https 만(review-2 권고, ADR-0007)
+    expect(codes(draft((d) => (d.export = { github: { ...gh, baseUrl: "http://ghe.example.com/api/v3" } })))).toContain("HTTPS_URL");
+  });
+});

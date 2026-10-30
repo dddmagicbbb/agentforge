@@ -64,10 +64,6 @@
       "models": "bash scripts/check-models.sh — 에이전트별 모델 점검(실제 모델을 호출하므로 토큰이 사용됩니다)",
       "worktrees": "bash scripts/create-worktrees.sh && bash scripts/run-agents.sh",
       "integrate": "전원 통과 후 bash scripts/integrate.sh"
-    },
-    "github": {
-      "title": "GitHub 저장소로 만들기",
-      "note": "GitHub·GHES 저장소 생성은 P1 단계에서 제공할 예정입니다. 지금은 사용할 수 없으며 토큰은 입력받지 않습니다. ZIP을 받아 직접 올리세요."
     }
   },
   "issue": {
@@ -98,7 +94,18 @@
     "default": "{{code}} — {{path}}",
     "DEVCONTAINER_CLOSED_NET": "Dev Container: 이미지와 패키지를 내려받으므로 사용자 환경에서 네트워크가 필요합니다(앱 자체는 외부를 호출하지 않습니다). 폐쇄망이면 사내 레지스트리 이미지로 바꾸세요.",
     "TMUX_PREFIX": "tmux 접두키는 C-a ~ C-z 형식으로 적습니다(예: C-a).",
-    "CLAUDE_MD_MARKERS": "기존 CLAUDE.md 의 AGENTFORGE:{{id}} 마커가 짝이 맞지 않거나 중복되었거나 순서가 뒤집혔습니다. 마커를 바로잡거나 입력란을 비우세요."
+    "CLAUDE_MD_MARKERS": "기존 CLAUDE.md 의 AGENTFORGE:{{id}} 마커가 짝이 맞지 않거나 중복되었거나 순서가 뒤집혔습니다. 마커를 바로잡거나 입력란을 비우세요.",
+    "IMPORT_NO_SKILL_MD": "{{id}}: SKILL.md 가 없습니다.",
+    "IMPORT_NAME_MISMATCH": "{{id}}: SKILL.md 의 name 이 스킬 ID 와 다릅니다.",
+    "IMPORT_DUP_PATH": "{{id}}: 같은 경로의 파일이 중복되었습니다.",
+    "IMPORT_TOO_LARGE": "{{id}}: 스킬 전체 크기가 512,000자를 넘습니다.",
+    "SKILL_FILE_PATH": "스킬 파일 경로가 올바르지 않습니다(상대 경로, 깊이 5 이하, . 과 .. 금지).",
+    "SKILL_REF": "출처 커밋은 7~40자리 소문자 16진수여야 합니다.",
+    "GIT_BRANCH": "브랜치 이름이 올바르지 않습니다.",
+    "GITHUB_OWNER": "소유자(owner)는 영문·숫자·하이픈 1~39자여야 합니다.",
+    "GITHUB_REPO": "저장소(repo) 이름은 영문·숫자·.·_·- 1~100자여야 합니다.",
+    "IMPORT_RISK": "{{id}}: 위험 항목 {{codes}}",
+    "HTTPS_URL": "GHES 주소는 https:// 로 시작해야 합니다."
   },
   "dev": {
     "title": "개발자별 에이전트",
@@ -243,7 +250,6 @@
     "runInUser": "사용자 Claude Code 에서 실행",
     "devDesc": "{{domain}} 도메인 용어·규칙·API·테스트 데이터",
     "devPending": "도메인 미정 · /forge-agents가 생성",
-    "market": "마켓 가져오기는 P1 단계에서 제공할 예정입니다. 지금은 사용할 수 없습니다.",
     "core": {
       "conventions": {
         "to": "dev-* · review-* · common-dev",
@@ -279,5 +285,125 @@
     "label": "기존 CLAUDE.md 붙여넣기(선택)",
     "hint": "이미 쓰고 있는 CLAUDE.md 를 붙여넣으면 마커(AGENTFORGE:…) 밖의 내용과 PROJECT 구간은 그대로 두고 나머지 구간만 새로 생성한 내용으로 바꿉니다. 비워 두면 생성본 그대로입니다.",
     "note": "마커는 코드블록 안에 있어도 셈에 들어갑니다. 붙여넣은 내용은 저장하지 않으며, 화면을 닫으면 사라집니다."
+  },
+  "market": {
+    "region": "마켓",
+    "checking": "서버 확인 중…",
+    "unavailable": "마켓 서버를 찾지 못했습니다. 마켓은 선택 배포 서버를 실행하면 사용할 수 있습니다(packages/server). 서버 없이도 나머지 기능은 그대로 동작합니다.",
+    "sources": "소스",
+    "addTitle": "소스 등록",
+    "searchTitle": "스킬 검색",
+    "remove": "삭제",
+    "removeSource": "{{id}} 삭제",
+    "refreshAll": "전체 갱신",
+    "register": "소스 등록",
+    "f": {
+      "kind": "종류",
+      "id": "소스 ID",
+      "trust": "신뢰 등급",
+      "q": "검색어",
+      "trustFilter": "등급 필터",
+      "url": "저장소 URL",
+      "owner": "소유자(owner)",
+      "repo": "저장소(repo)",
+      "baseUrl": "GHES API 주소",
+      "ref": "브랜치·태그(ref)",
+      "path": "하위 경로(path)",
+      "tokenEnv": "토큰 환경 변수 이름"
+    },
+    "tokenEnvHint": "tokenEnv 는 비공개 저장소 토큰을 담은 \"서버 환경 변수 이름\"입니다. 토큰 값은 이 화면에 입력하지 않으며 저장·전송하지 않습니다.",
+    "trust": {
+      "official": "공식",
+      "org": "조직",
+      "community": "커뮤니티",
+      "unverified": "미검증"
+    },
+    "all": "전체",
+    "search": "검색",
+    "noResult": "검색 결과가 없습니다.",
+    "files": "파일 {{count}}개",
+    "flagCount": "위험 {{count}}",
+    "blocked": "가져올 수 없음",
+    "blockedReason": {
+      "tooLarge": "크기 초과",
+      "binary": "텍스트가 아닌 파일 포함",
+      "badPath": "경로가 올바르지 않음",
+      "unknown": "알 수 없는 사유"
+    },
+    "preview": "미리보기",
+    "import": "가져오기",
+    "previewTitle": "{{id}} 미리보기",
+    "noRisk": "감지된 위험 항목이 없습니다.",
+    "fileList": "포함 파일",
+    "noSkillMd": "SKILL.md 가 없습니다.",
+    "importedTitle": "가져온 스킬(저장되지 않음)",
+    "target": "대상",
+    "targets": {
+      "all": "전체",
+      "dev": "개발자(dev)",
+      "review": "검증자(review)"
+    },
+    "ack": "위험 항목을 확인했고 포함합니다 ({{id}})",
+    "removeImported": "제거",
+    "error": {
+      "UNKNOWN": "마켓 요청에 실패했습니다({{code}}).",
+      "NETWORK": "마켓 서버에 연결하지 못했습니다.",
+      "SOURCE_EXISTS": "이미 등록된 소스 ID입니다.",
+      "SOURCE_INVALID": "소스 입력값이 올바르지 않습니다.",
+      "SOURCE_FETCH_FAILED": "소스에서 스킬을 가져오지 못했습니다.",
+      "SOURCE_TIMEOUT": "소스 응답 시간이 초과되었습니다.",
+      "SKILL_BLOCKED": "이 스킬은 가져올 수 없습니다(크기 초과 또는 텍스트가 아닌 파일).",
+      "NOT_FOUND": "요청한 항목을 찾을 수 없습니다.",
+      "INTERNAL": "서버 내부 오류가 발생했습니다.",
+      "ADMIN_DISABLED": "관리자 모드에서만 소스를 바꿀 수 있습니다."
+    },
+    "adminOnly": "관리자 모드에서만 소스를 바꿀 수 있습니다.",
+    "crashed": "마켓 화면에 문제가 생겼습니다. 다른 기능은 그대로 사용할 수 있습니다."
+  },
+  "risk": {
+    "SCRIPTS": "스크립트 파일이 포함되어 있습니다(scripts/ 또는 실행 가능한 확장자).",
+    "BANG_COMMAND": "SKILL.md 에 로드 시 실행되는 동적 명령(! 문법)이 있습니다.",
+    "BROAD_TOOLS": "allowed-tools 가 Bash 전체를 허용합니다.",
+    "BYPASS_PERMISSIONS": "권한 확인을 건너뛰는 설정(bypassPermissions)이 있습니다.",
+    "REMOTE_DOWNLOAD": "외부에서 내려받아 실행하는 명령(curl·wget 등)이 있습니다.",
+    "UNKNOWN": "알 수 없는 위험 항목"
+  },
+  "github": {
+    "toggle": "GitHub 내보내기",
+    "note": "같은 파일을 GitHub 또는 GHES 저장소로 올립니다. 토큰은 이 요청 한 번에만 쓰고 어디에도 저장하지 않습니다.",
+    "owner": "소유자(owner)",
+    "repo": "저장소(repo)",
+    "visibility": "공개 범위",
+    "vis": {
+      "private": "비공개(private)",
+      "public": "공개(public)"
+    },
+    "mode": "방식",
+    "modes": {
+      "create": "새 저장소 만들기",
+      "pr": "기존 저장소에 PR"
+    },
+    "baseUrl": "GHES API 주소(선택)",
+    "baseUrlHint": "GHES 주소는 https 가 필수입니다. 비우면 github.com 입니다. 예: https://ghe.example.com/api/v3",
+    "branch": "브랜치",
+    "token": "토큰(저장하지 않음, 한 번만 사용)",
+    "tokenHint": "끝나면 입력란이 즉시 지워집니다. 브라우저에서 GHES 가 CORS 를 막으면 사용할 수 없습니다.",
+    "push": "GitHub 에 올리기",
+    "busy": "올리는 중…",
+    "doneRepo": "저장소:",
+    "donePr": "PR:",
+    "error": {
+      "GITHUB_AUTH": "인증에 실패했습니다. 토큰과 권한을 확인하세요.",
+      "GITHUB_NOT_FOUND": "저장소 또는 소유자를 찾을 수 없습니다.",
+      "GITHUB_REPO_EXISTS": "같은 이름의 저장소가 이미 있거나 만들 수 없습니다.",
+      "GITHUB_BRANCH_EXISTS": "같은 이름의 브랜치가 이미 있습니다. 다른 브랜치 이름을 쓰세요.",
+      "GITHUB_RATE_LIMIT": "요청 한도를 초과했습니다. 잠시 뒤 다시 시도하세요.",
+      "GITHUB_NETWORK": "네트워크 오류입니다. 주소와 연결(CORS 포함)을 확인하세요.",
+      "GITHUB_FAILED": "GitHub 로 내보내지 못했습니다.",
+      "EXPORT_SECRET_PATH": "비밀 값 파일(env.local)이 포함되어 있어 올릴 수 없습니다.",
+      "GITHUB_PARTIAL": "저장소(브랜치)는 생성됐지만 마무리하지 못했습니다 — 확인 후 지우거나 직접 PR 하세요."
+    },
+    "crashed": "GitHub 영역을 표시하지 못했습니다.",
+    "loading": "GitHub 영역을 불러오는 중…"
   }
 }

@@ -187,3 +187,72 @@ core/exporter 변경 없음.
 - 시험: `test/round7-doc.test.tsx`.
 - 공백만 있는 입력은 빈 값으로 본다(`oldMd.trim() === ""` -> 생성본 그대로). 사용자가 실수로 남긴 공백이 병합을 일으키지 않게 하려는 의도다.
 - 마커 오류 시 textarea 는 `aria-invalid` + `aria-describedby="doc-hint doc-note doc-error"`. 6단계 검사 목록은 `current={5}` 로 현재 단계 이동 버튼을 숨긴다.
+
+# PH7 1라운드 — T-721 (MKT-01·02 4단계 마켓)
+
+## 1. 작업
+T-721: 4단계 마켓 영역(서버 감지, 소스 CRUD·갱신, 검색, 미리보기, 위험 확인 가져오기). T-722·T-723 은 2라운드.
+
+## 2. 파일
+| 경로 | 책임 |
+| --- | --- |
+| `src/market/market-api.ts` | `createMarketApi(fetch)`: health·sources·add·remove·refresh·search·skill. 오류 응답 `{code,params}` 를 `MarketError(code)` 로 변환 |
+| `src/components/MarketPanel.tsx` | 마켓 UI 전체(서버 없으면 비활성 안내) |
+| `src/steps/StepSkills.tsx` | issues·marketFetch props, 가져온 스킬 목록(대상·확인 체크·제거·issue) |
+| `src/App.tsx` | `marketFetch?` prop 을 StepSkills 로 전달, issues 전달 |
+| `src/locales/*.json` | `market.*`, `risk.*`, `issue.IMPORT_*` 등 |
+
+## 3. 함수
+- `MarketApi.health(): Promise<boolean>` — 실패·비 ok 면 false(예외 없음).
+- 나머지는 실패 시 `MarketError(code, params)`. 네트워크 오류는 `NETWORK`.
+- 요청은 모두 상대 경로 `/api/market/...`. 소스 등록 본문은 필드 화이트리스트(`kind,id,trust,tokenEnv,...`)만 보낸다. 토큰 값 입력란 없음.
+- 미리보기 원문은 `<pre>` 의 텍스트 노드로만 출력(HTML 해석 금지, dangerouslySetInnerHTML 금지).
+
+## 5. 화면 상태
+서버 확인 중 / 없음(비활성 안내) / 있음. 소스·검색·미리보기 각각 로딩·빈 값·오류 코드 표시. blocked 항목은 가져오기 버튼 비활성. 이미 가져온 id 는 중복 추가 금지(버튼 비활성).
+
+## 위험 확인
+가져온 스킬의 `flags` 는 서버 응답 그대로 채운다(core 가 files 있으면 재계산). `acknowledged` 체크 전에는 core `IMPORT_UNACKED` 로 ZIP 이 막히고, 해당 항목 옆(`path[1]` 인덱스)과 6단계 검사 목록에 표시. 저장하지 않는다.
+
+## 6. 테스트 (`test/round8-market.test.tsx`)
+서버 없음 비활성 / 소스 목록·등록 본문(토큰 값 필드 없음)·삭제·갱신·오류 코드 / 검색 / 미리보기 텍스트만 / 위험 스킬 가져오기 -> 체크 전 ZIP 차단·후 해제 / blocked 비활성 / 대상 선택·제거 / i18n 동등(기존).
+
+## 7. 계약 변경: 없음
+
+# PH7 2라운드 — T-722 (EXP-02 GitHub 화면) · T-723 · R1
+
+## 1. 작업
+T-722 6단계 GitHub 내보내기, T-723 시험 안정화, R1 위험 목록을 core `scanSkillRisk(files)` 로.
+
+## 2. 파일
+| 경로 | 책임 |
+| --- | --- |
+| `src/components/GithubPanel.tsx` | 접이식 GitHub 영역(지연 로딩). 필드·토큰·진행·결과·오류 |
+| `src/steps/StepGenerate.tsx` | 기존 안내 문구 대신 GithubPanel(lazy) 배치, `push` 전달 |
+| `src/App.tsx` | `push?` prop 을 StepGenerate 로 전달 |
+| `src/issue-step.ts` | `export` 경로 → 6단계 |
+| `src/steps/StepSkills.tsx` | 위험 목록·확인 필요를 `scanSkillRisk(files)`(files 있을 때)로 |
+| `src/components/MarketPanel.tsx` | `blocked` 허용 목록 검사(모르는 값은 일반 문구) |
+| `src/market/risk.ts` | 알려진 위험 코드 목록으로 검사 |
+| `src/locales/*.json` | `github.*`, `issue.GITHUB_*` |
+
+## 3. 함수·상태
+- `PushFn = (files, target, token, {language}) => Promise<{url, commitSha, prUrl?}>`. 기본값은 `import("@agentforge/exporter")` 의 `pushToGithub`(계약 경로가 확정되면 한 줄 교체). 없으면 `GITHUB_FAILED`.
+- draft.export.github: owner·repo·visibility·mode·baseUrl·branch(빈 값은 생략, 모두 비면 export 제거). 스키마 오류는 `IssueList` 로 표시(6단계로 이동).
+- 토큰: 비제어 input(ref)만. 상태엔 "있음" boolean 만. 시도 끝(성공·실패) 즉시 `input.value=""`. draft·storage·URL·오류 문구에 넣지 않는다.
+- 결과 링크: `https://` 로 시작할 때만 `<a>`, 아니면 텍스트. 오류는 `AppError.code` 만 문구로(알려진 코드 목록 밖은 GITHUB_FAILED 문구).
+- 푸시 files 는 ZIP 과 같은 배열(`files` prop).
+
+## 5. 화면 상태
+접힘 / 펼침 / 진행(busy, 버튼 비활성) / 성공(링크) / 실패(코드 문구, role=alert). 버튼 비활성: 오류 있음, 토큰 없음, busy.
+
+## 6. 테스트 (`test/round9-github.test.tsx`)
+토큰이 draft(필드 값)·localStorage·sessionStorage·DOM(푸시 후)·오류 문구에 없음 / push 의 files == ZIP 의 files / 비활성 조건 / https 링크만 / 코드별 문구(ko·en) / 접근성 라벨·설명 / pr 모드에서만 branch / R1 서버 flags 가 비어도 core 결과 표시 / 모르는 blocked·코드는 일반 문구.
+
+## 7. 계약 변경: 없음(exporter 의 `pushToGithub` 노출 경로는 리드 통합 때 확인)
+
+## PH7 2라운드 보강 (계약 9.7 EXP-02 보강)
+- `push.ts` 동적 import 는 `@agentforge/exporter/github`. 오류 코드에 `GITHUB_PARTIAL`{stage,url} 추가(url 은 https 일 때만 링크). 스키마 오류 `HTTPS_URL` 문구.
+- 토큰 `autoComplete="new-password"`, 푸시 재진입은 useRef 플래그, fallback 문구는 `github.*` 키, `aria-controls` 는 열렸을 때만.
+- GitHub 항목 오류가 있으면 영역이 접히지 않아 ZIP 차단 이유가 보인다.
+- 시험 환경: exporter `./github` 가 없는 브랜치에서는 vitest alias 로 빈 모듈 대체(`vitest.config.ts`, `src/exporter-github.d.ts` 는 통합 후 제거).

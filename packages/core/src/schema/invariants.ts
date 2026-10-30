@@ -1,9 +1,13 @@
 import type { z } from "zod";
+import { parseSkillMd, scanSkillRisk, unquote } from "../market/risk.js";
 import type { ProjectShape } from "./project.js";
 
 // 필드 사이의 불변식(design.md 2.3). 위반은 code가 붙은 custom issue로 보고한다.
 
 type Ctx = z.RefinementCtx;
+
+/** 가져온 스킬 1개의 파일 내용 합계 상한(자) */
+export const IMPORT_MAX_TOTAL = 512_000;
 
 function report(ctx: Ctx, code: string, path: (string | number)[], params: Record<string, string | number> = {}): void {
   ctx.addIssue({ code: "custom", message: code, path, params: { code, ...params } });
@@ -51,10 +55,24 @@ export function invariants(p: ProjectShape, ctx: Ctx): void {
     }
   }
 
-  // I6 위험 항목이 있는 가져온 스킬은 사용자 확인 필수
+  // I6 위험 항목이 있는 가져온 스킬은 사용자 확인 필수.
+  // files 가 있으면 입력 flags 를 믿지 않고 원문에서 다시 계산한다(조작 방지, ADR-0007).
   p.imported.forEach((m, i) => {
-    if (m.flags.length > 0 && !m.acknowledged) {
-      report(ctx, "IMPORT_UNACKED", ["imported", i], { id: m.id });
+    const risky = m.files ? scanSkillRisk(m.files).length > 0 : m.flags.length > 0;
+    if (risky && !m.acknowledged) report(ctx, "IMPORT_UNACKED", ["imported", i], { id: m.id });
+    if (!m.files) return;
+    const skillMd = m.files.find((f) => f.path === "SKILL.md");
+    if (!skillMd) report(ctx, "IMPORT_NO_SKILL_MD", ["imported", i], { id: m.id });
+    else {
+      const name = parseSkillMd(skillMd.content).fm?.["name"];
+      if (name === undefined || unquote(name) !== m.id) report(ctx, "IMPORT_NAME_MISMATCH", ["imported", i], { id: m.id });
     }
+    const seen = new Set<string>();
+    for (const f of m.files) {
+      if (seen.has(f.path)) report(ctx, "IMPORT_DUP_PATH", ["imported", i], { id: m.id, path: f.path });
+      seen.add(f.path);
+    }
+    const total = m.files.reduce((n, f) => n + f.content.length, 0);
+    if (total > IMPORT_MAX_TOTAL) report(ctx, "IMPORT_TOO_LARGE", ["imported", i], { id: m.id, size: total, max: IMPORT_MAX_TOTAL });
   });
 }

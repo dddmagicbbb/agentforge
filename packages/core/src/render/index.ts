@@ -12,7 +12,8 @@ import { renderReadme } from "./readme.js";
 import { renderDevcontainer } from "./devcontainer.js";
 import { renderGitignore, renderPrdTemplate, renderRequirements, STATIC_SCRIPTS, staticScript } from "./scaffold.js";
 import { renderSettings } from "./settings.js";
-import { renderCoreSkill, renderImportedSkill } from "./skills.js";
+import { renderSourcesLock } from "./sources-lock.js";
+import { importedSkillFiles, renderCoreSkill } from "./skills.js";
 import { mdTpl } from "./tpl-source.js";
 import { renderVscodeTasks } from "./vscode.js";
 
@@ -41,7 +42,9 @@ export function renderProject(p: Project): RenderedFile[] {
     add(`.claude/skills/${devSkill(d, n)}/SKILL.md`, renderDevSkill(d, n, p.language), { ai: true });
   }
   for (const k of CORE_SKILLS) if (c.enabledSkill(k.id)) add(`.claude/skills/${k.id}/SKILL.md`, renderCoreSkill(c, k.id));
-  for (const m of p.imported) add(`.claude/skills/${m.id}/SKILL.md`, renderImportedSkill(m, p.language));
+  for (const m of p.imported) for (const f of importedSkillFiles(m, p.language)) add(f.path, f.content);
+  // 출처·해시 기록(imported 가 있을 때만)
+  if (p.imported.length > 0) add(".agentforge/sources.lock", renderSourcesLock(p.imported));
   add(".agentforge/forge.config.json", renderConfig(c));
   add(".agentforge/requirements.md", renderRequirements(c));
   add(".agentforge/env.local.example", renderEnvExample(c));

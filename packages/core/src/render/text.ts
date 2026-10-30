@@ -45,6 +45,7 @@ export interface Text {
   readonly readmeSteps: (slug: string, uiDesign: boolean) => string[];
   readonly readmeRoutine: (uiDesign: boolean) => string;
   readonly readmeDevNote: string;
+  readonly readmeImportedNote: string;
   readonly readmeBody: (slug: string, routine: string, steps: string, devNote: string) => string;
 }
 
@@ -111,6 +112,7 @@ const ko: Text = {
     "bash scripts/integrate.sh                 # 전원 통과 후",
   ],
   readmeRoutine: (ui) => (ui ? "기획 → 분석 → (UI/UX 설계: 선택) → 시스템 설계" : "기획 → 분석 → 시스템 설계"),
+  readmeImportedNote: "\n\n가져온 스킬: 출처와 해시는 .agentforge/sources.lock 에 있다. 스킬 파일은 실행 권한 없이 넣었으므로 필요하면 직접 chmod 한다.",
   readmeDevNote: "\n\nDev Container: .devcontainer/devcontainer.json 으로 열 수 있다. 폐쇄망이면 image 와 postCreateCommand 의 패키지 설치를 사내 레지스트리·미러 이미지로 바꾼다. env.local 은 컨테이너 안에서 직접 넣는다.",
   readmeBody: (slug, routine, steps, devNote) => `# ${slug} — AgentForge 개발 환경
 
@@ -190,6 +192,7 @@ const en: Text = {
     "bash scripts/integrate.sh                 # after everyone has passed",
   ],
   readmeRoutine: (ui) => (ui ? "Planning -> Analysis -> (UI/UX design: optional) -> System design" : "Planning -> Analysis -> System design"),
+  readmeImportedNote: "\n\nImported skills: sources and hashes are in .agentforge/sources.lock. Skill files are added without execute permission; run chmod yourself if needed.",
   readmeDevNote: "\n\nDev Container: you can open the project with .devcontainer/devcontainer.json. On a closed network, replace the image and the package installs in postCreateCommand with your internal registry or mirror. Enter env.local yourself inside the container.",
   readmeBody: (slug, routine, steps, devNote) => `# ${slug} — AgentForge development environment
 

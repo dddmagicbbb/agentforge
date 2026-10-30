@@ -52,3 +52,45 @@
 - en 에서 정적 스크립트가 보내는 한국어 메시지("설계 승인" 등)는 영어 에이전트 본문이 의미로 가리킨다. 실제 en 프로젝트에서 에이전트가 이를 이해하는지는 실기 확인 필요.
 - VS Code 작업 이름은 en 에서 영어("AF: Setup" 등). 한국어 작업 이름을 가정하는 e2e·bats 는 ko 구성만 대상이어야 한다.
 - 영어 `README.md`, `.paths` 주석, env.local.example, litellm.yaml 주석도 영어. `scripts/agent-env.sh` 의 한국어 오류 문구는 정적 스크립트 범위로 유지.
+
+---
+
+# PH7 1라운드 (ph7/dev1): T-701
+
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+| --- | --- | --- | --- | --- |
+| T-701 MKT-02 | 완료 | `packages/core/src/market/risk.ts`(신규), `schema/invariants.ts`, `checks.ts`, `render/{skills,index}.ts`, `src/index.ts`, `test/market-risk.test.ts`(신규), `test/schema.test.ts`(1줄) | core 414 통과·3 건너뜀, web 109 통과, typecheck·lint 0 | 아래 |
+
+## 리드 조치·참고
+- `test/schema.test.ts` PH7 확장 시험의 정상 입력(scripts/run.py 포함)에 `acknowledged: true` 를 추가했다. 새 불변식에서는 확인 없이는 위반이므로 의도된 변경이다.
+- 공개 API: `scanSkillRisk`, `RiskCode` 를 core index 에서 export(서버·web 용). `parseSkillMd` 는 내부용(미공개).
+- `checks()`(화면 경고)는 IMPORT_UNACKED 만 files 기준으로 맞췄다. 나머지 4종(NO_SKILL_MD 등)은 validate 에서만 보고되며 web i18n 키가 필요하다 — dev-3/서버가 가져오기 단계에서 처리하거나 추후 checks 확장 필요.
+- 기본값(imported 없음) golden·스냅샷 불변.
+- 위험: BANG_LINE 은 줄 머리 `!`(공백·`[`·`=` 제외)를 모두 본다. 마크다운 본문의 `!중요` 같은 문구는 오탐 가능(보수적 방향).
+
+## PH7 1라운드 반려 대응 (review-1, design.md 9.7)
+- 새 사례 18건을 먼저 추가해 실패를 확인한 뒤 `market/risk.ts` 를 고쳤다. core 439 통과·3 건너뜀, web 109, typecheck·lint 0.
+- B1 `key : value`, B2 들여쓰기 없는 `- 항목`(CRLF), 같은 키 반복 병합, 경로가 `SKILL.md` 로 끝나는 모든 파일(BROAD_TOOLS·BANG_COMMAND).
+- B3 줄 이어쓰기(`\`, 백틱, 줄 끝 `|`) 합친 뒤 검사. B4 파이프 대상 `sh|bash|zsh|dash|ksh`(sudo/env 접두·옵션·경로·대소문자) + `iex`·`Invoke-Expression`. `irm`·`Invoke-RestMethod` 추가.
+- B5·B6 어느 파일이든 `bypassPermissions`(대소문자 무시)·`dangerously-skip-permissions` 문자열이면 위험.
+- SCRIPTS: `scripts/` 대소문자 무시, `.zsh .rb .pl`, 첫 줄 `#!`. 
+- 보강 시험: iwr/Invoke-WebRequest, 따옴표 name, 크기 경계 512,000/512,001, README·LICENSE 앞 SKILL.md 순서, `reference/a.md` 의 `` !`id` `` 는 BANG 아님. 오탐 유지: `Bash(git:*)`, `Bash(npm run *)`, `| shasum`.
+- `invariants.ts` CRLF 를 LF 로 정리.
+
+## PH7 1라운드 재반려 대응 2차 (review-1 재검토)
+- 새 사례 약 33건(이어쓰기 6, 파이프·프로세스 치환 7, 인터프리터 URL 7, BROAD 변형 7, skill.md 소문자 1, 오탐 유지 2 등)을 먼저 추가. 구현 전 22건 실패 확인(이어쓰기 curl·wget·CRLF, sudo -u/env 경로, `>(sh)`, 인터프리터, 따옴표·대소문자 키 등). 이후 core 468 통과·3 건너뜀, web 109, typecheck·lint 0.
+- 원인 메모: 이전 이어쓰기 정규식(`\[`)과 시험 입력의 백슬래시 이스케이프가 도구 전달 중 손실돼 "무의미한 시험"이 통과하고 있었다. 이번에는 Edit/Write 도구로 직접 써서 실제 `\`+줄바꿈 입력으로 확인. 이어쓰기 중 줄 끝 `|`+bash 와 `\`+`/bin/bash` 사례는 기존에도 다른 규칙으로 통과(실패 선행 아님).
+- 구현: 이어쓰기 `/\[ \t]*\r?\n/`, 여는 괄호 뒤 줄바꿈 합침, PIPE_SHELL 접두 경로·옵션 인자 1개·`>(sh)` 프로세스 치환, INTERP(urllib·urlopen·requests.*·fetch(·LWP·Net::HTTP·http(s).get), 따옴표 키, 키 소문자·`_`→`-` 정규화, `Bash(**)`·대소문자 무시, `skill.md` 대소문자 무시.
+- 알려진 오탐(의도, 보수적): 마크다운 표의 `| bash |` 셀, 줄 머리 `!`+비공백 문장.
+
+---
+
+# PH7 2라운드 (T-702·T-703)
+
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+| --- | --- | --- | --- | --- |
+| T-702 | 완료 | `core/src/util/sha256.ts`, `render/sources-lock.ts`, `render/index.ts`, `export-plan.ts`, `index.ts` | `test/ph7-round2.test.ts` | planGithubTree 모드는 `RenderedFile.mode` 를 따른다(가져온 스킬 안의 .sh 는 644 → 100644, ZIP 과 동일). 9.5 의 ".sh 는 100755" 문구와 다르니 리드 확인 |
+| T-703 | 완료 | `checks.ts`(`IMPORT_RISK` info, params `{id, codes}` — codes 는 쉼표 연결), `render/readme.ts`·`text.ts`(조건부 한 줄 ko·en) | 같은 파일 + `checks.test.ts` 순서 갱신 | web i18n 에 `IMPORT_RISK` 문구 필요(dev-3) |
+
+- 스냅샷 2종(LiteLLM+마켓, en 동일)만 의도대로 갱신(sources.lock 추가·README 한 줄). golden·기본 구성 불변.
+- core 484 통과, web 134 통과, typecheck·lint 통과.

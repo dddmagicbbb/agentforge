@@ -47,7 +47,7 @@
 - **G4 통과(사람 승인 2026-10-29)**: 점검표 12칸 ✓, 실제 주기 완주, 보안 조치 완료. develop → main 병합(PR #4, 2a4d26a), 태그 `v0.1.0`.
 - 다음: PH6(확장 1 — DOC-03·PRV-03·RUN-04·VSC-02·I18N-01) 착수는 사람 결정. PH6 검토 후보: Bash 리다이렉션 범위 검사(S-3), integrate 전 리뷰 판정 확인(S-4), dev pane 권한 모드 안내.
 
-## PH6 확장 1 — 편집·다국어·배치 — 2026-10-29 (G 판정 대기, `v0.2.0` 예정)
+## PH6 확장 1 — 편집·다국어·배치 — 2026-10-29 · `v0.2.0`
 - 계약 선행: PoC 에 기준 구현이 없어 design.md 8장·ADR-0006 으로 계약을 고정한 뒤 3라운드 병렬 개발(dev 3 + review 3). 원칙 "선택값 미지정이면 생성물은 PH5 와 바이트 동일" — golden·ko 스냅샷 유지.
 - 완료 작업(tasks.md PH6 15건 전부):
   - dev-1: T-601 `mergeClaudeMd`(DOC-03), T-602 tmux pair·grid·role·접두키·마우스·로그(RUN-04), T-603 `check-models.sh`(PRV-03), T-604 Dev Container(VSC-02), T-605 생성물 영어판 `templates/md-en`(I18N-01), T-606 보안 후속(S-3 defaultMode, S-4 검토 파일 확인).
@@ -62,3 +62,42 @@
   - 로컬 E2E: 다른 worktree 의 미리보기 서버가 4173 을 점유하면 낡은 번들을 재사용 → `AF_E2E_PORT` 로 회피.
 - dogfooding: 자기 환경 재생성 → scripts 4종(check-models 신규)·README·VS Code 작업을 생성 결과로 교체. `.claude/settings.json` 의 `defaultMode: "default"`(S-3)는 이 저장소 세션의 권한 모드를 바꾸므로 적용하지 않음(사람 결정).
 - 남은 것(PH7 이후 후보): 정적 스크립트 출력 문구 영어화(메시지 카탈로그, P2), 영어 문구 원어민 검수, Bash PreToolUse 범위 검사(S-3 근본 대책).
+- **게이트 통과(사람 승인 2026-10-29)**: develop → main 병합(PR #7, 84a5aef), 태그 `v0.2.0`. 최종 CI(580bde2)에서 Dev Container 생성물 postCreateCommand 실동작(tmux 3.5a·jq 1.7·Claude Code 2.1.312) 확인.
+- 다음: PH7(확장 2 — MKT-01·02, EXP-02) 착수는 사람 결정.
+
+## PH7 확장 2 — 마켓·GitHub — 2026-10-30 (G 판정 대기, `v0.3.0` 예정)
+- 계약 선행: design.md 9장·ADR-0007. 스키마 확장(가져온 스킬 `files`·`ref`, GitHub `mode`·`baseUrl`(https 전용)·`branch`)은 리드가 했다. 기본값 생성물은 v0.2.0과 바이트 단위로 같다(golden 유지).
+- 완료 작업(tasks.md PH7 전부):
+  - dev-1: 위험 검사 `scanSkillRisk`(5종, YAML 표기 변형·줄 이어쓰기·파이프 셸·irm/iex·인터프리터 URL), 위험을 files로 재계산하는 불변식, 가져온 스킬 원문 렌더(644), `sources.lock`(순수 sha256), `planGithubTree`(mode 기준, env.local 차단), IMPORT_RISK·README 안내
+  - dev-2: 마켓 색인 서버
+    - Fastify, github·git 소스
+    - 보안: 관리 API는 `AF_MARKET_ADMIN`일 때만 열고, Host 허용 목록·JSON 전용·tokenEnv 접두·https 강제·symlink 제외를 적용했다. 기본 바인드는 127.0.0.1이다.
+  - dev-2: `pushToGithub`(create는 커밋 1건, pr은 PR. tree 일괄 전송, 2차 한도 분류, GITHUB_PARTIAL, 재시도, 로거 noop), E2E 5건
+  - dev-3: 4단계 마켓 화면, 6단계 GitHub 화면(토큰은 비제어 입력, 사용 즉시 삭제, https 링크만), 청크 분리(메인 62kB)
+- 시험(develop 467b0c6, WSL 로컬): bats 84, core 494 · exporter 50 · server 62 · web 163, E2E 13/14(Windows. 1건은 셸 단계라 CI에서 실행).
+- 검토: 반려 8회, 모두 수정.
+  - 보안 결함 우회: 위험 검사 우회 총 12종, 인터프리터·SSRF·토큰 평문 전송 경로·CSRF·DNS rebinding
+  - 정합성: 응답 계약 불일치, 가져오기 경쟁 상태
+  - 시험 판별력: 거짓 통과 다수(변이 시험으로 발견)
+- 운영:
+  - 계약 누락 2건(응답 필드, 관리 API 보호)은 리드가 9.7로 보충했다.
+  - 서브에이전트 사용량 한도에 1회 걸려(4시간 대기) 동시 실행 상한을 3개로 낮췄다.
+  - 통합 연결(core planGithubTree, web 임시 대역 제거)은 리드가 통합 브랜치에서 했다.
+- **CI 미실행**: GitHub Actions가 결제·지출 한도 문제로 job을 시작하지 않는다(PR #8 이후). develop 병합은 로컬 검증을 근거로 했다. 게이트 전에 CI 3종 통과가 필요하다.
+- 게이트 남은 조건(사람): ① Actions 결제 해결 후 CI 통과 ② 실제 GitHub 실기 1회(임시 비공개 저장소 생성 → 푸시 확인 → 삭제, 사람 승인 후).
+- 후속 후보:
+  - 마켓 인터프리터 변형 추가(`require('https').get`, `deno run https://` 등)
+  - GHES CORS 서버 중계(P2)
+  - E2E 보강(query string 토큰, ZIP과 tree 동일성, git 설정 격리)
+- **실제 GitHub 실기(사람 승인 2026-10-30)**:
+  - 방법: `dddmagicbbb/af-push-test`(비공개)를 앱 코드 `pushToGithub` create 모드로 만들고 기본 구성 생성물 54개를 푸시했다.
+  - GitHub API로 독립 검증한 결과:
+    - 커밋은 1건이다(부모 0).
+    - `.sh` 10개만 100755다.
+    - `env.local`은 없다(`env.local.example`만 있다).
+    - 54개 모두 render 결과와 git blob sha·mode가 일치한다.
+  - EXP-02 수용 기준(커밋 1건·실행 권한 유지·env.local 미포함)을 충족한다.
+  - 삭제는 토큰에 `delete_repo` 권한이 없어 403이었다. 사람이 직접 삭제한다.
+- 실기에서 발견한 것(후속):
+  - Octokit 로거를 noop으로 지정했는데도 `@octokit/request`의 deprecation 경고(메서드·URL, 토큰 없음)가 console에 찍힌다. 요청 단위 `request.log`에도 noop을 넘겨야 한다.
+  - GitHub가 `POST /user/repos`를 2028-03-10 제거 예정으로 표시한다. API 버전 헤더(`X-GitHub-Api-Version`) 고정과 대체 엔드포인트를 확인해야 한다.

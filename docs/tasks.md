@@ -87,6 +87,22 @@ G4(`v0.1.0`): 점검표 12칸 통과(T-501 자동 9칸 + T-502 WSL 3칸·실제 
 라운드: 1) T-601·T-602 / T-612·T-614 / T-621 → 2) T-603·T-604 / T-611·T-613 / T-622·T-623 → 3) T-605·T-606 / T-615 / T-624.
 G(`v0.2.0`): 기능 ID별 검증 통과, CI(ubuntu·macOS·Dev Container) 통과, 기본값 구성 golden 불변.
 
+## PH7 확장 2 — 마켓·GitHub (dev 3 + review 3, 계약: design.md 9장 · ADR-0007)
+| 작업 ID | 기능 ID | 담당 | 도메인 | 담당 폴더 | 선행 | 완료 기준 |
+| --- | --- | --- | --- | --- | --- | --- |
+| T-701 | MKT-02 | dev-1 | core | `packages/core/` | 스키마(리드 완료) | 9.2 `scanSkillRisk` 표(5종) + 불변식(flags 재계산·SKILL.md·name·중복·크기), 렌더 9.3(원문 644), 시험(위험 표·조작 방지·기본값 불변) |
+| T-702 | MKT-02, EXP-02 | dev-1 | core | `packages/core/` | T-701 | `sources.lock`(sha256 순수 구현·키 순서), `planGithubTree`(mode·env.local 차단), ZIP 동등 시험 |
+| T-703 | MKT-02, EXP-02 | dev-1 | core | `packages/core/` | T-702 | checks 문구 코드(위험 5종 info·IMPORT_* ), README 가져온 스킬 안내(조건부), ko·en |
+| T-711 | MKT-01 | dev-2 | server | `packages/server/` | 스키마 | 9.4 Fastify 앱·소스 등록/삭제·github(가짜 fetch)·git(file:// 로컬 저장소) 색인·검색·상세, 보안(패턴·인자 배열·시간 제한·토큰 미노출), 시험 |
+| T-712 | EXP-02 | dev-2 | exporter | `packages/exporter/` | T-702 | 9.5 `pushToGithub` create(커밋 1건·force ref)/pr(base_tree·브랜치·PR), 오류 코드 매핑·토큰 미노출, 가짜 GitHub API 시험 |
+| T-713 | MKT-01·02, EXP-02 | dev-2 | exporter | `tests/e2e/`, `tests/scripts/` | T-711, T-721, T-722 | E2E: 서버(webDist)+file:// 소스 → 검색·미리보기·위험 확인·가져오기 → ZIP 에 원문·sources.lock; 가짜 GitHub 서버로 push |
+| T-721 | MKT-01·02 | dev-3 | web | `packages/web/` | 계약 | 4단계 마켓: 서버 감지(없으면 비활성 안내), 소스 목록·등록·삭제·갱신, 검색, 미리보기(SKILL.md·파일 목록·위험), 위험 확인 없이는 가져오기 불가, 대상 선택 |
+| T-722 | EXP-02 | dev-3 | web | `packages/web/` | 계약 | 6단계 GitHub: owner·repo·공개·mode·GHES 주소·branch, 토큰(password, 저장 안 함·푸시 후 지움), 진행·결과 링크·오류 코드 문구, ZIP 과 같은 파일 |
+| T-723 | — | dev-3 | web | `packages/web/` | — | 시험 안정화: "ZIP 파일명" 시험이 부하 시 시간 초과(지연 로딩) → 대기 시간 보강 |
+
+라운드: 1) T-701 / T-711 / T-721 → 2) T-702·T-703 / T-712 / T-722·T-723 → 3) 통합 수정 / T-713 / 화면 마무리.
+G(`v0.3.0`): 기능 ID별 검증 통과, CI 3종 통과, 기본값 golden 불변, 실제 GitHub 실기 1회(사람 확인 후 임시 저장소 생성·삭제).
+
 ## 기능 ID 배정 확인 (P0 22개)
 REQ-01 T-302·T-421 / REQ-02 T-302·T-421 / RTN-01 T-303·T-421 / RTN-02 T-303·T-422 / DEV-01 T-401·T-421 / DEV-02 T-401·T-423 / DEV-03 T-404·T-412 / GEN-01 T-403 / GEN-02 T-403 / GEN-03 T-404·T-413 / DOC-01 T-304 / DOC-02 T-304 / SKL-01 T-402·T-424 / SKL-02 T-402·T-424 / PRV-01 T-305·T-425 / PRV-02 T-405 / PRV-04 T-405·T-425 / RUN-01 T-306 / RUN-02 T-306·T-308·T-414 / RUN-03 T-406·T-414 / VSC-01 T-406 / EXP-01 T-307·T-411·T-415·T-426
 
