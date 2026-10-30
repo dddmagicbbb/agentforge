@@ -1,4 +1,4 @@
-import type { Issue } from "@agentforge/core";
+import { verifyLicense } from "@agentforge/core";
 
 export type Tier = "free" | "pro" | "team";
 export type LicenseCode = "LICENSE_FORMAT" | "LICENSE_SIGNATURE" | "LICENSE_EXPIRED" | "LICENSE_UNKNOWN_KID";
@@ -26,23 +26,6 @@ export const FREE: LicenseState = { tier: "free" };
 const TIERS: readonly string[] = ["free", "pro", "team"];
 const CODES: readonly string[] = ["LICENSE_FORMAT", "LICENSE_SIGNATURE", "LICENSE_EXPIRED", "LICENSE_UNKNOWN_KID"];
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
-
-/**
- * TODO(통합): core `tierLimits(tier | null).maxDevelopers` 로 교체한다(null·free 2, pro·team 6).
- * core `checks(input, { license })` 가 LICENSE_LIMIT 을 내면 아래 licenseIssues 는 지운다(use-preview.ts 의 runChecks 한 곳).
- */
-export function maxDevelopers(tier: Tier | null): number {
-  return tier === "pro" || tier === "team" ? 6 : 2;
-}
-
-/** LICENSE_LIMIT(오류)·LICENSE_INVALID(안내) 항목. core checks 와 같은 code·path·params. */
-export function licenseIssues(developerCount: number, state: LicenseState): Issue[] {
-  const out: Issue[] = [];
-  const max = maxDevelopers(state.tier);
-  if (developerCount > max) out.push({ level: "error", code: "LICENSE_LIMIT", path: ["developerCount"], params: { tier: state.tier, max } });
-  if (state.code) out.push({ level: "info", code: "LICENSE_INVALID", path: [], params: { code: state.code } });
-  return out;
-}
 
 /**
  * LicenseState -> core `LicenseResult` 어댑터(checks 의 license 인자 형태). Free(적용 없음)는 undefined.
@@ -90,8 +73,5 @@ export function todayIso(d: Date = new Date()): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-/**
- * TODO(통합): core `verifyLicense` 로 교체한다. 지금은 core 에 함수가 없어 항상 형식 오류를 낸다.
- * 연결 방법: `import { verifyLicense } from "@agentforge/core"; export const defaultVerify: VerifyFn = (k, o) => verifyLicense(k, o);`
- */
-export const defaultVerify: VerifyFn = () => ({ ok: false, code: "LICENSE_FORMAT" });
+/** 키 검증: core verifyLicense(운영 공개 키, 오늘 날짜는 호출자가 넘김 — ADR-0008) */
+export const defaultVerify: VerifyFn = (k, o) => verifyLicense(k, o) as VerifyResult;

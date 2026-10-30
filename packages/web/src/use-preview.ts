@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { FREE, licenseIssues, type LicenseState } from "./license/license";
+import { FREE, toLicenseResult, type LicenseState } from "./license/license";
 import { AppError, canExport, checks, mergeClaudeMd, render, validate, type Issue, type ProjectInput, type RenderedFile } from "@agentforge/core";
 
 export interface Preview {
@@ -34,7 +34,7 @@ export function mergeIssues(validated: readonly Issue[], warned: readonly Issue[
  * `return checks(draft, { license: toLicenseResult(license) });` 로 바꾸고 licenseIssues 를 지운다.
  */
 function runChecks(draft: ProjectInput, license: LicenseState): Issue[] {
-  return [...checks(draft), ...licenseIssues(draft.developerCount, license)];
+  return checks(draft, { license: toLicenseResult(license) });
 }
 
 /** 입력 → 검증 → 렌더. 오류가 있으면 파일은 비운다. 라이선스가 없으면 Free 기준(LIC-01). */
