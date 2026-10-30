@@ -1,11 +1,13 @@
 import { act, fireEvent, render as mount, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { RenderedFile } from "@agentforge/core";
+import { resizeDevs, type RenderedFile } from "@agentforge/core";
 import { App } from "../src/App";
 import i18n from "../src/i18n";
 import ko from "../src/locales/ko.json";
 import en from "../src/locales/en.json";
-import type { VerifyFn } from "../src/license/license";
+import { buildPreview } from "../src/use-preview";
+import { parseLicenseResponse, toLicenseResult, type VerifyFn } from "../src/license/license";
+import { initialDraft } from "../src/App";
 
 const toZip = vi.hoisted(() => vi.fn(async (_files: readonly RenderedFile[], _name: string) => new Uint8Array([1])));
 vi.mock("@agentforge/exporter", () => ({ toZip }));
@@ -190,6 +192,101 @@ describe("LIC-01 제한 해제·재적용", () => {
     fireEvent.click(more());
     await act(async () => { await i18n.changeLanguage("en"); });
     expect(screen.getByRole("alert")).toHaveTextContent(/up to 2 developers/);
+  });
+});
+
+describe("LIC-01 리뷰 보강", () => {
+  it("parseLicenseResponse: pro+code 는 Free, 모르는 code·잘못된 expires·seats 상한 초과는 무시(null)", () => {
+    expect(parseLicenseResponse({ tier: "pro", code: "LICENSE_EXPIRED" })).toMatchObject({ tier: "free", code: "LICENSE_EXPIRED" });
+    expect(parseLicenseResponse({ tier: "pro", code: "LICENSE_WEIRD" })).toBeNull();
+    expect(parseLicenseResponse({ tier: "pro", expires: "내일" })).toBeNull();
+    expect(parseLicenseResponse({ tier: "pro", seats: 10001 })).toBeNull();
+    expect(parseLicenseResponse({ tier: "pro", seats: 10000 })).not.toBeNull();
+  });
+
+  it("서버가 pro+LICENSE_EXPIRED 를 주면 화면은 Free(상한 2)다", async () => {
+    mount(<App licenseFetch={serverOf({ tier: "pro", code: "LICENSE_EXPIRED" })} verifyLicense={verifyOk} />);
+    await waitFor(() => expect(badge()).toHaveTextContent("만료"));
+    expect(badge()).toHaveTextContent("Free");
+    fireEvent.click(more());
+    expect(screen.getByRole("alert")).toHaveTextContent("2명");
+  });
+
+  it("buildPreview(draft, license): 라이선스를 받아 LICENSE_LIMIT 을 낸다", () => {
+    const three = resizeDevs(initialDraft(), 3);
+    expect(buildPreview(three).issues.some((i) => i.code === "LICENSE_LIMIT")).toBe(true);
+    expect(buildPreview(three).exportable).toBe(false);
+    expect(buildPreview(three, { tier: "pro" }).issues.some((i) => i.code === "LICENSE_LIMIT")).toBe(false);
+    expect(buildPreview(three, { tier: "pro" }).exportable).toBe(true);
+  });
+
+  it("toLicenseResult 어댑터: Free 는 undefined, Pro 는 ok, 서버 실패 code 는 실패 결과", () => {
+    expect(toLicenseResult({ tier: "free" })).toBeUndefined();
+    expect(toLicenseResult({ tier: "pro", licensee: "A", seats: 1, expires: null })).toMatchObject({ ok: true, tier: "pro" });
+    expect(toLicenseResult({ tier: "free", code: "LICENSE_EXPIRED" })).toEqual({ ok: false, code: "LICENSE_EXPIRED" });
+  });
+
+  it("Free 에서 3명 -> 2명으로 줄이면 제한이 풀린다", () => {
+    mount(<App licenseFetch={noServer()} verifyLicense={verifyOk} />);
+    fireEvent.click(more());
+    expect(zipBtn()).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "개발자 줄이기" }));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(zipBtn()).toBeEnabled();
+  });
+
+  it("LICENSE_LIMIT 이면 GitHub 올리기 버튼이 비활성이다", async () => {
+    mount(<App licenseFetch={noServer()} verifyLicense={verifyOk} />);
+    fireEvent.click(more());
+    fireEvent.click(nav().getAllByRole("button")[5]!);
+    fireEvent.click(await screen.findByRole("button", { name: "GitHub 내보내기" }));
+    expect(await screen.findByRole("button", { name: /^GitHub 에 올리기/ })).toBeDisabled();
+  });
+
+  it("verify 가 예외를 던지면 LICENSE_FORMAT 문구로 처리한다", async () => {
+    mount(<App licenseFetch={noServer()} verifyLicense={() => { throw new Error("boom"); }} />);
+    await applyKey();
+    expect(await screen.findByRole("alert")).toHaveTextContent("형식");
+    expect(badge()).toHaveTextContent("Free");
+  });
+
+  it("적용 중에는 버튼이 재진입되지 않는다", async () => {
+    let resolve!: (r: ReturnType<VerifyFn> extends Promise<infer R> | infer R ? R : never) => void;
+    const verify = vi.fn<VerifyFn>(() => new Promise((r) => { resolve = r; }));
+    mount(<App licenseFetch={noServer()} verifyLicense={verify} />);
+    await applyKey();
+    const dlg = screen.getByRole("dialog");
+    expect(within(dlg).getByRole("button", { name: "적용" })).toBeDisabled();
+    fireEvent.click(within(dlg).getByRole("button", { name: "적용" }));
+    expect(verify).toHaveBeenCalledTimes(1);
+    await act(async () => { resolve(PRO_INFO); });
+    await waitFor(() => expect(badge()).toHaveTextContent("Pro"));
+  });
+
+  it("Esc 로 닫히고 포커스가 열기 버튼으로 돌아온다. 초기 포커스는 입력란", async () => {
+    mount(<App licenseFetch={noServer()} verifyLicense={verifyOk} />);
+    const opener = await screen.findByRole("button", { name: "라이선스 키 입력" });
+    opener.focus();
+    const dlg = await openDialog();
+    await waitFor(() => expect(within(dlg).getByLabelText("라이선스 키")).toHaveFocus());
+    fireEvent.keyDown(dlg, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "라이선스 키 입력" })).toHaveFocus();
+  });
+
+  it("서버 결과가 확정되면 열린 대화상자가 닫힌다", async () => {
+    let release!: () => void;
+    const slow = vi.fn(() => new Promise<Response>((r) => { release = () => r(json({ tier: "team", licensee: "X" })); }));
+    mount(<App licenseFetch={slow as unknown as typeof fetch} verifyLicense={verifyOk} />);
+    await openDialog();
+    await act(async () => { release(); });
+    await waitFor(() => expect(badge()).toHaveTextContent("Team"));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("배지에 접근성 이름이 있다", () => {
+    mount(<App licenseFetch={noServer()} verifyLicense={verifyOk} />);
+    expect(screen.getByRole("group", { name: "라이선스 등급" })).toBe(badge());
   });
 });
 

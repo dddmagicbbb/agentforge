@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { FREE, licenseIssues, type LicenseState } from "./license/license";
 import { AppError, canExport, checks, mergeClaudeMd, render, validate, type Issue, type ProjectInput, type RenderedFile } from "@agentforge/core";
 
 export interface Preview {
@@ -28,15 +29,23 @@ export function mergeIssues(validated: readonly Issue[], warned: readonly Issue[
   return out.some((i) => i.level === "error" || i.level === "warn") ? out.filter((i) => i.code !== "ALL_OK") : out;
 }
 
-/** 입력 → 검증 → 렌더. 오류가 있으면 파일은 비운다. */
-export function buildPreview(draft: ProjectInput): Preview {
+/**
+ * checks 호출 한 곳. TODO(통합): core 가 `checks(input, { license })` 를 지원하면 본문을
+ * `return checks(draft, { license: toLicenseResult(license) });` 로 바꾸고 licenseIssues 를 지운다.
+ */
+function runChecks(draft: ProjectInput, license: LicenseState): Issue[] {
+  return [...checks(draft), ...licenseIssues(draft.developerCount, license)];
+}
+
+/** 입력 → 검증 → 렌더. 오류가 있으면 파일은 비운다. 라이선스가 없으면 Free 기준(LIC-01). */
+export function buildPreview(draft: ProjectInput, license: LicenseState = FREE): Preview {
   const v = validate(draft);
-  const issues = mergeIssues(v.issues, checks(draft));
+  const issues = mergeIssues(v.issues, runChecks(draft, license));
   return { issues, files: v.project ? render(v.project) : [], exportable: canExport(issues) };
 }
 
-export function usePreview(draft: ProjectInput): Preview {
-  return useMemo(() => buildPreview(draft), [draft]);
+export function usePreview(draft: ProjectInput, license: LicenseState = FREE): Preview {
+  return useMemo(() => buildPreview(draft, license), [draft, license]);
 }
 
 /**

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { defaultDraft, resizeDevs, type ProjectInput } from "@agentforge/core";
 import { LangSwitch } from "./components/LangSwitch";
 import { LicenseBadge } from "./license/LicenseBadge";
-import { defaultVerify, fetchServerLicense, FREE, licenseIssues, type LicenseState, type VerifyFn } from "./license/license";
+import { defaultVerify, fetchServerLicense, FREE, type LicenseState, type VerifyFn } from "./license/license";
 import { PreviewPane } from "./components/PreviewPane";
 import { StepBar, StepButtons, STEP_KEYS, type StepIndex } from "./components/StepNav";
 import { StepConnection } from "./steps/StepConnection";
@@ -51,12 +51,11 @@ export function App({ marketFetch, push, licenseFetch, verifyLicense = defaultVe
     void fetchServerLicense(f).then((r) => { if (live && r) setLicense(r); });
     return () => { live = false; };
   }, [licenseFetch]);
-  const base = usePreview(draft);
+  const base = usePreview(draft, license);
   const merged = useMemo(() => applyExistingClaudeMd(base.files, existingMd), [base.files, existingMd]);
   const files = merged.files;
-  const licIssues = useMemo(() => licenseIssues(draft.developerCount, license), [draft.developerCount, license]);
-  const issues = useMemo(() => [...base.issues, ...merged.issues, ...licIssues], [base.issues, merged.issues, licIssues]);
-  const exportable = base.exportable && merged.issues.length === 0 && !licIssues.some((i) => i.level === "error");
+  const issues = useMemo(() => [...base.issues, ...merged.issues], [base.issues, merged.issues]);
+  const exportable = base.exportable && merged.issues.length === 0;
   // 함수형 갱신도 받는다(비동기 가져오기 결과가 서로 덮어쓰지 않도록)
   const patch = (p: Partial<ProjectInput> | ((d: ProjectInput) => Partial<ProjectInput>)) => setDraft((d) => ({ ...d, ...(typeof p === "function" ? p(d) : p) }));
 

@@ -426,6 +426,8 @@
       "LICENSE_SIGNATURE": "The signature does not match. Check the key again.",
       "LICENSE_EXPIRED": "The license has expired.",
       "LICENSE_UNKNOWN_KID": "Unknown issuing key."
-    }
+    },
+    "badge": "License tier",
+    "loadFailed": "Could not load the license dialog. Reload and try again."
   }
 }

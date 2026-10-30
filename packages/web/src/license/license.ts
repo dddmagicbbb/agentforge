@@ -29,7 +29,7 @@ const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object
 
 /**
  * TODO(통합): core `tierLimits(tier | null).maxDevelopers` 로 교체한다(null·free 2, pro·team 6).
- * core `checks(input, { license })` 가 LICENSE_LIMIT 을 내면 아래 licenseIssues 는 지운다.
+ * core `checks(input, { license })` 가 LICENSE_LIMIT 을 내면 아래 licenseIssues 는 지운다(use-preview.ts 의 runChecks 한 곳).
  */
 export function maxDevelopers(tier: Tier | null): number {
   return tier === "pro" || tier === "team" ? 6 : 2;
@@ -44,12 +44,22 @@ export function licenseIssues(developerCount: number, state: LicenseState): Issu
   return out;
 }
 
+/**
+ * LicenseState -> core `LicenseResult` 어댑터(checks 의 license 인자 형태). Free(적용 없음)는 undefined.
+ * 통합 때 core 가 같은 타입을 내보내면 이 함수만 맞춘다.
+ */
+export function toLicenseResult(s: LicenseState): VerifyResult | undefined {
+  if (s.code) return { ok: false, code: s.code };
+  if (s.tier === "free" && !s.licensee) return undefined;
+  return { ok: true, tier: s.tier, licensee: s.licensee ?? "", seats: s.seats ?? 1, expires: s.expires ?? null, id: "" };
+}
+
 /** 서버 `/api/license` 응답 검증. 형태가 틀리면 null(무시). 키 원문 필드는 읽지 않는다. */
 export function parseLicenseResponse(data: unknown): LicenseState | null {
   if (!isObj(data) || typeof data["tier"] !== "string" || !TIERS.includes(data["tier"])) return null;
   const { licensee, seats, expires, code } = data;
   if (licensee !== undefined && (typeof licensee !== "string" || licensee.length > 100)) return null;
-  if (seats !== undefined && (typeof seats !== "number" || !Number.isInteger(seats) || seats < 1)) return null;
+  if (seats !== undefined && (typeof seats !== "number" || !Number.isInteger(seats) || seats < 1 || seats > 10000)) return null;
   if (expires !== undefined && expires !== null && (typeof expires !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(expires))) return null;
   if (code !== undefined && (typeof code !== "string" || !CODES.includes(code))) return null;
   const tier = data["tier"] as Tier;
