@@ -18,7 +18,7 @@ done
 
 echo "== shellcheck (경고 이상 0건)"
 if need shellcheck; then
-  shellcheck -S warning -s bash templates/static/*.sh templates/static/agent-env.head && echo "✓ templates/static" || fail=1
+  shellcheck -S warning -s bash templates/static/*.sh templates/static/agent-env.head tests/scripts/*.sh && echo "✓ templates/static" || fail=1
 fi
 
 echo "== bats"
