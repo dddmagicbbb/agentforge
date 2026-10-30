@@ -481,3 +481,70 @@ PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙�
   - `auto_init` 직후 git data API의 409·404는 1초 간격으로 최대 3회 재시도한다.
   - Octokit 로거는 모두 noop이다.
   - exporter 루트(`.`)는 `pushToGithub`를 다시 export하지 않는다. web은 `@agentforge/exporter/github`만 지연 로딩한다(ZIP 청크와 분리).
+
+## 10. PH8 설계 — 라이선스·배포 (ADR-0008)
+원칙: 라이선스가 없으면 Free로 동작한다(개발자 2명 이하면 지금과 같다). 생성물에는 라이선스 정보가 들어가지 않는다. 서명용 비밀 키는 저장소 밖에 둔다.
+
+### 10.1 라이선스 키와 검증 (core) — LIC-01
+- 형식: `AF1.<b64url(payload)>.<b64url(sig)>`
+  - payload JSON: `{ v:1, kid, id, tier:"free"|"pro"|"team", licensee(1~100자), seats(1~10000), issued:"YYYY-MM-DD", expires:"YYYY-MM-DD"|null }`
+  - 서명은 `AF1.<b64url(payload)>`의 UTF-8 바이트에 대한 Ed25519 서명이다. `@noble/curves/ed25519`를 쓴다.
+- `verifyLicense(key: string, opts: { today: "YYYY-MM-DD"; publicKeys?: Record<string, Uint8Array|string(hex)> }): LicenseResult`
+  - 순수 함수다. 기본 `publicKeys`는 core 상수 `LICENSE_PUBLIC_KEYS`다.
+  - 키 앞뒤 공백과 줄바꿈은 무시한다. 길이가 2,000자를 넘으면 `LICENSE_FORMAT`이다.
+  - 오류 code는 다음과 같다. payload zod 검증에 실패해도 `LICENSE_FORMAT`이다.
+
+    | code | 조건 |
+    | --- | --- |
+    | `LICENSE_FORMAT` | 형식 오류 |
+    | `LICENSE_UNKNOWN_KID` | 모르는 kid |
+    | `LICENSE_SIGNATURE` | 서명 불일치 |
+    | `LICENSE_EXPIRED` | `expires < today` |
+
+- `tierLimits(tier | null)` → `{ maxDevelopers }`. null·free는 2, pro·team은 6이다.
+- `checks(input, { license? })`와 `canExport`:
+  - developerCount가 상한을 넘으면 error `LICENSE_LIMIT { tier, max }`, path `["developerCount"]`.
+  - license 결과가 실패이면 info `LICENSE_INVALID { code }`(Free로 동작함을 알림).
+  - 기존 호출(인자 없음)은 Free 기준이다. developerCount ≤ 2인 기존 시험·golden에는 영향이 없다. golden의 default 구성(개발자 3명)은 checks 결과만 달라지고 렌더 결과는 같다.
+- 비밀 키 도구(리드, `tools/`):
+  - `license-keygen.mjs`: 키 쌍을 만든다. 비밀 키는 `~/.agentforge/license-signing/<kid>.pem`(권한 600)에 저장하고, 공개 키 hex를 출력한다.
+  - `license-issue.mjs`: `--tier --licensee --seats --expires --kid`로 키 문자열을 출력한다.
+
+### 10.2 서버·설치형 (server·app) — LIC-01·DPL-01
+- server:
+  - `GET /api/license` → `{ tier, licensee?, seats?, expires?, code? }`. 키 원문은 응답하지 않는다.
+  - 출처 우선순위: env `AF_LICENSE`, 그다음 `dataDir/license.key`. 오늘 날짜는 서버 시계(UTC)로 정한다.
+  - health 응답에 `license: tier`를 추가한다.
+- app(`packages/app`, npm 이름 `agentforge`, bin `agentforge`):
+  - 인자: `--port`(기본 3456), `--host`(기본 127.0.0.1), `--data`(기본 `~/.agentforge/data`), `--license-file`
+  - 서버의 `webDist`로 번들한 web을 제공한다. 마켓 관리 API는 `--admin`일 때만 켠다.
+  - 출력은 접속 주소 한 줄이다. 종료 신호를 받으면 정리한 뒤 끝낸다.
+  - 패키지 안에 web dist·server dist·catalog가 들어간다(`files`). 실행에 외부 접속이 필요 없다.
+- Docker(루트 `Dockerfile`, `.dockerignore`):
+  - multi-stage로 빌드하고, 런타임은 `node:22-alpine`, 비루트 사용자 `af`다.
+  - `ENV AF_MARKET_DATA=/data HOST=0.0.0.0 PORT=3456`
+  - 컨테이너 안에서는 0.0.0.0에 바인드하고, 외부 노출은 `-p 127.0.0.1:3456:3456`로 사용자가 정한다.
+  - Host 허용 목록은 env `AF_MARKET_HOSTS`로 운영자가 지정한다.
+  - `HEALTHCHECK`는 `/api/market/health`다.
+- 폐쇄망 시험 `tests/scripts/airgap-check.sh`(docker 필요):
+  1. 이미지를 빌드하고 `docker network create --internal af-airgap`을 만든다.
+  2. 앱 컨테이너를 띄운다(라이선스는 시험 키, 시험 공개 키는 env `AF_LICENSE_TEST_PUBKEY`로 주입하며 시험 빌드에서만 허용).
+  3. 같은 네트워크의 `curlimages/curl` 컨테이너에서 확인한다.
+     - `/`(web), `/api/market/health`, `/api/license`
+     - `file://` 소스 등록(볼륨으로 넣은 시험 저장소, admin)·색인
+     - 앱 컨테이너에서 외부(`https://github.com`)로 나가는 연결은 실패해야 한다.
+  4. 끝나면 컨테이너·네트워크·볼륨을 삭제한다.
+  - docker가 없으면 건너뛴다. `AF_AIRGAP_REQUIRED=1`이면 실패로 처리한다.
+- 시험 공개 키 주입(`AF_LICENSE_TEST_PUBKEY`)은 `NODE_ENV=test` 또는 `AF_ALLOW_TEST_LICENSE=1`일 때만 허용한다. 운영 빌드에서는 무시하고 경고만 남긴다.
+
+### 10.3 화면 (web) — LIC-01
+- 상단에 등급 표시(Free·Pro·Team + licensee)를 둔다.
+  - 서버가 있으면 `/api/license` 결과를 쓴다.
+  - 서버가 없으면 "라이선스 키 입력" 대화상자에서 붙여 넣은 키를 core `verifyLicense`(오늘 = 브라우저 날짜)로 검증한다. 메모리에만 두고 저장하지 않는다.
+- `LICENSE_LIMIT`이 나면 1단계 개발자 수 옆에 등급 상한과 안내를 보인다. ZIP·GitHub 버튼은 막는다.
+- 오류 문구는 ko·en 둘 다 둔다(`LICENSE_*`).
+
+### 10.4 문서
+- `docs/deploy.md`: npx·Docker(폐쇄망 반입: `docker save`·`docker load`)·웹 정적 호스팅·라이선스 적용 방법
+- `docs/report-beta.md`: 베타 5명 점검표와 폐쇄망 VM 시험 절차(사람 수행)
+- **운영 공개 키(T-800 완료)**: `LICENSE_PUBLIC_KEYS = { "af-2026-1": "3dcad4039de3a1d45d72fbdf1f442008600fb3ec1bfd1e50a26ecd17d2df0bb1" }`(Ed25519 원값 hex). 비밀 키는 리드 PC `~/.agentforge/license-signing/af-2026-1.pem`에만 있다(저장소 밖, 사용자 백업).
