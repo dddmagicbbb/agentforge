@@ -39,10 +39,29 @@ const Payload = z.object({
 
 const fail = (code: LicenseErrorCode): LicenseResult => ({ ok: false, code });
 
+const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+// core 는 DOM·Node 타입이 없으므로 base64url 을 직접 푼다(패딩 없음, 잘못된 길이는 throw)
 function b64urlDecode(s: string): Uint8Array {
-  const b = s.replace(/-/g, "+").replace(/_/g, "/");
-  const bin = atob(b + "=".repeat((4 - (b.length % 4)) % 4));
-  return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  if (s.length % 4 === 1) throw new Error("base64url");
+  const out: number[] = [];
+  let acc = 0;
+  let bits = 0;
+  for (const ch of s) {
+    acc = (acc << 6) | B64.indexOf(ch);
+    bits += 6;
+    if (bits >= 8) {
+      bits -= 8;
+      out.push((acc >> bits) & 0xff);
+      acc &= (1 << bits) - 1;
+    }
+  }
+  return Uint8Array.from(out);
+}
+
+// 엄격한 UTF-8 해석(잘못된 바이트열이면 throw)
+function utf8Decode(b: Uint8Array): string {
+  return decodeURIComponent(Array.from(b, (x) => "%" + x.toString(16).padStart(2, "0")).join(""));
 }
 
 function pubBytes(v: Uint8Array | string): Uint8Array | null {
@@ -61,7 +80,7 @@ export function verifyLicense(key: string, opts: VerifyLicenseOptions): LicenseR
   let payload: z.infer<typeof Payload>;
   let sig: Uint8Array;
   try {
-    const text = new TextDecoder("utf-8", { fatal: true }).decode(b64urlDecode(parts[1]!));
+    const text = utf8Decode(b64urlDecode(parts[1]!));
     const r = Payload.safeParse(JSON.parse(text));
     if (!r.success) return fail("LICENSE_FORMAT");
     payload = r.data;
@@ -75,7 +94,7 @@ export function verifyLicense(key: string, opts: VerifyLicenseOptions): LicenseR
   const pub = pubBytes(keys[payload.kid]!);
   if (!pub) return fail("LICENSE_SIGNATURE");
   try {
-    if (!ed25519.verify(sig, new TextEncoder().encode(`AF1.${parts[1]}`), pub)) return fail("LICENSE_SIGNATURE");
+    if (!ed25519.verify(sig, Uint8Array.from(`AF1.${parts[1]}`, (c) => c.charCodeAt(0)), pub)) return fail("LICENSE_SIGNATURE");
   } catch {
     return fail("LICENSE_SIGNATURE");
   }
