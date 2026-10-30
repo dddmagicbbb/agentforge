@@ -40,8 +40,8 @@ export interface ServerOptions {
   fetchTimeoutMs?: number;
   /** 현재 시각(라이선스 만료 판정, 시험 주입용). 기본 new Date() */
   now?: () => Date;
-  /** 경고 출력(기본 console.warn). 키 값은 넘기지 않는다 */
-  logWarn?: (msg: string) => void;
+  /** 추가 라이선스 공개 키(kid → 32바이트 hex). 시험 전용 주입 — 환경 변수로는 받지 않는다 */
+  publicKeys?: Record<string, string>;
 }
 
 /** zod 검증 실패는 입력 값을 되돌려 주지 않고 필드 경로만 알린다 */
@@ -58,7 +58,7 @@ export async function createServer(opts: ServerOptions): Promise<FastifyInstance
   const store = new Store(opts.dataDir);
   await store.init(defaultSourcesFile);
 
-  const resolveLicense = createLicenseResolver({ dataDir: opts.dataDir, env, now: opts.now ?? (() => new Date()), logWarn: opts.logWarn ?? ((m) => console.warn(m)) });
+  const resolveLicense = createLicenseResolver({ dataDir: opts.dataDir, env, now: opts.now ?? (() => new Date()), publicKeys: opts.publicKeys });
 
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
 

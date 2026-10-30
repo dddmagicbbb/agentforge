@@ -2,6 +2,7 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { scanSkillRisk } from "@agentforge/core";
+import { loadTestKeys } from "./test-license.js";
 import { createServer, listenServer, type ListenAddress, type ScanFn } from "@agentforge/server";
 
 export interface RunOptions {
@@ -52,12 +53,18 @@ export async function startApp(opts: RunOptions, extras: RunExtras = {}): Promis
   }
   extras.onEnv?.(env);
 
+  // 시험 공개 키는 시험 빌드(__AF_TEST_LICENSE__ = true)에서만 받는다. 운영 빌드에서는 이 분기가 번들에서 사라진다
+  const warn = extras.onWarn ?? ((m: string) => process.stderr.write(`${m}
+`));
+  const publicKeys = __AF_TEST_LICENSE__ ? loadTestKeys(env, warn) : undefined;
+
   const app = await createServer({
     dataDir: opts.data,
     scan: extras.scan ?? scanSkillRisk,
     webDist: extras.webDist ?? fileURLToPath(new URL("web", PKG)),
     defaultSourcesFile: extras.defaultSourcesFile ?? fileURLToPath(new URL("catalog/market-sources.json", PKG)),
     env,
+    ...(publicKeys ? { publicKeys } : {}),
   });
   let address: ListenAddress;
   try {

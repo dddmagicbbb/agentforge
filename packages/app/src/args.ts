@@ -2,7 +2,7 @@
 import { parseArgs } from "node:util";
 import { join } from "node:path";
 
-export type CliErrorCode = "INVALID_ARGS" | "INVALID_PORT" | "INVALID_HOST" | "LICENSE_FILE";
+export type CliErrorCode = "INVALID_ARGS" | "INVALID_PORT" | "INVALID_HOST";
 
 export class CliError extends Error {
   constructor(

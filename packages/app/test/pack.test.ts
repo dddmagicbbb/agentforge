@@ -54,4 +54,10 @@ describe.skipIf(!built)("패키지 내용 (npm pack --dry-run)", () => {
     expect(Object.keys(pkg.dependencies).sort()).toEqual(["@fastify/static", "fastify", "zod"]);
     expect(pkg.bin["agentforge"]).toBe("./dist/cli.js");
   });
+
+  it("기본 빌드 산출물에는 시험 공개 키(AF_LICENSE_TEST_PUBKEY) 처리 경로가 없다", () => {
+    const js = readFileSync(`${pkgDir}dist/cli.js`, "utf8");
+    expect(js).not.toContain("AF_LICENSE_TEST_PUBKEY");
+    expect(js).not.toContain("AF_ALLOW_TEST_LICENSE");
+  });
 });

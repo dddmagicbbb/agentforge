@@ -12,11 +12,12 @@ function issue(over: Record<string, unknown> = {}, signer = privateKey): string 
   const head = `AF1.${Buffer.from(JSON.stringify(payload)).toString("base64url")}`;
   return `${head}.${sign(null, Buffer.from(head), signer).toString("base64url")}`;
 }
-const TEST_ENV = { NODE_ENV: "test", AF_LICENSE_TEST_PUBKEY: PUB_HEX };
+const TEST_ENV = {};
+const PUBKEYS = { test: PUB_HEX };
 const NOW = () => new Date("2026-06-01T12:00:00Z");
 
 async function get(env: Record<string, string>, extra: Record<string, unknown> = {}) {
-  const { app, dataDir } = await makeServer({ env, now: NOW, ...extra });
+  const { app, dataDir } = await makeServer({ env, now: NOW, publicKeys: PUBKEYS, ...extra });
   return { app, dataDir, res: await app.inject({ method: "GET", url: "/api/license", headers: { host: "localhost" } }) };
 }
 
@@ -37,9 +38,9 @@ describe("T-811 GET /api/license", () => {
     const dataDir = tmpDir("af-lic-");
     mkdirSync(dataDir, { recursive: true });
     writeFileSync(join(dataDir, "license.key"), issue({ tier: "team", licensee: "FILE" }) + "\n");
-    const a = await makeServer({ env: TEST_ENV, now: NOW, dataDir });
+    const a = await makeServer({ env: TEST_ENV, now: NOW, dataDir, publicKeys: PUBKEYS });
     expect((await a.app.inject({ url: "/api/license", headers: { host: "localhost" } })).json()).toMatchObject({ tier: "team", licensee: "FILE" });
-    const b = await makeServer({ env: { ...TEST_ENV, AF_LICENSE: issue({ licensee: "ENV" }) }, now: NOW, dataDir });
+    const b = await makeServer({ env: { ...TEST_ENV, AF_LICENSE: issue({ licensee: "ENV" }) }, now: NOW, dataDir, publicKeys: PUBKEYS });
     expect((await b.app.inject({ url: "/api/license", headers: { host: "localhost" } })).json()).toMatchObject({ tier: "pro", licensee: "ENV" });
   });
 
@@ -56,26 +57,23 @@ describe("T-811 GET /api/license", () => {
     expect((await get({ ...TEST_ENV, AF_LICENSE: "garbage" })).res.json()).toEqual({ tier: "free", code: "LICENSE_FORMAT" });
   });
 
-  it("시험 공개 키는 NODE_ENV=test 또는 AF_ALLOW_TEST_LICENSE=1 일 때만 허용, 아니면 무시+경고 1줄(키 값 없음)", async () => {
-    const key = issue();
-    const warn = vi.fn();
-    const off = await get({ AF_LICENSE_TEST_PUBKEY: PUB_HEX, AF_LICENSE: key }, { logWarn: warn });
-    expect(off.res.json()).toEqual({ tier: "free", code: "LICENSE_UNKNOWN_KID" });
-    expect(warn).toHaveBeenCalledTimes(1);
-    expect(String(warn.mock.calls[0]![0])).not.toContain(PUB_HEX);
-    const on = await get({ AF_LICENSE_TEST_PUBKEY: PUB_HEX, AF_LICENSE: key, AF_ALLOW_TEST_LICENSE: "1" });
-    expect(on.res.json()).toMatchObject({ tier: "pro" });
+  it("env 로는 시험 공개 키를 받지 않는다(NODE_ENV=test·AF_ALLOW_TEST_LICENSE=1 이어도 무시)", async () => {
+    const env = { NODE_ENV: "test", AF_ALLOW_TEST_LICENSE: "1", AF_LICENSE_TEST_PUBKEY: PUB_HEX, AF_LICENSE: issue() };
+    const { app } = await makeServer({ env, now: NOW });
+    const res = await app.inject({ url: "/api/license", headers: { host: "localhost" } });
+    expect(res.json()).toEqual({ tier: "free", code: "LICENSE_UNKNOWN_KID" });
   });
 
   it("로그·오류에 키 원문이 없다", async () => {
     const key = issue();
-    const warn = vi.fn();
-    await get({ AF_LICENSE: key }, { logWarn: warn });
-    expect(JSON.stringify(warn.mock.calls)).not.toContain(key);
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { res } = await get({ AF_LICENSE: key });
+    expect(JSON.stringify(spy.mock.calls) + res.body).not.toContain(key);
+    spy.mockRestore();
   });
 
   it("health.license 는 등급", async () => {
-    const { app } = await makeServer({ env: { ...TEST_ENV, AF_LICENSE: issue() }, now: NOW });
+    const { app } = await makeServer({ env: { ...TEST_ENV, AF_LICENSE: issue() }, now: NOW, publicKeys: PUBKEYS });
     expect((await app.inject({ url: "/api/market/health", headers: { host: "localhost" } })).json()).toMatchObject({ ok: true, license: "pro" });
     const f = await makeServer({ env: {}, now: NOW });
     expect((await f.app.inject({ url: "/api/market/health", headers: { host: "localhost" } })).json()).toMatchObject({ license: "free" });

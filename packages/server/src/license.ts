@@ -15,23 +15,12 @@ export interface LicenseResolverOptions {
   dataDir: string;
   env: Record<string, string | undefined>;
   now: () => Date;
-  logWarn: (msg: string) => void;
+  publicKeys?: Record<string, string> | undefined;
 }
 
-const HEX = /^[0-9a-fA-F]{64}$/;
-
-/** 시험 공개 키는 NODE_ENV=test 또는 AF_ALLOW_TEST_LICENSE=1 일 때만 추가한다(운영 키 위조 경로 차단) */
+/** 운영 공개 키에 호출자가 주입한 키(단위 시험·시험 빌드용)를 더한다. 환경 변수로는 키를 받지 않는다 */
 export function createLicenseResolver(o: LicenseResolverOptions): () => Promise<LicenseView> {
-  const publicKeys: Record<string, string> = { ...LICENSE_PUBLIC_KEYS };
-  const testKey = o.env["AF_LICENSE_TEST_PUBKEY"];
-  if (testKey) {
-    if (o.env["NODE_ENV"] === "test" || o.env["AF_ALLOW_TEST_LICENSE"] === "1") {
-      if (HEX.test(testKey)) publicKeys["test"] = testKey;
-      else o.logWarn("AF_LICENSE_TEST_PUBKEY 형식이 올바르지 않아 무시합니다.");
-    } else {
-      o.logWarn("AF_LICENSE_TEST_PUBKEY 는 시험 환경(NODE_ENV=test 또는 AF_ALLOW_TEST_LICENSE=1)이 아니므로 무시합니다.");
-    }
-  }
+  const publicKeys: Record<string, string> = { ...LICENSE_PUBLIC_KEYS, ...o.publicKeys };
 
   return async () => {
     let key = o.env["AF_LICENSE"]?.trim();

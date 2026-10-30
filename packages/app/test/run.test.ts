@@ -160,4 +160,24 @@ describe("startApp", () => {
       await app.close();
     }
   });
+
+  it("기본(운영) 빌드는 AF_LICENSE_TEST_PUBKEY·AF_ALLOW_TEST_LICENSE 를 넣어도 시험 키를 인정하지 않는다", async () => {
+    const { generateKeyPairSync, sign } = await import("node:crypto");
+    const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+    const pub = Buffer.from(publicKey.export({ format: "jwk" }).x as string, "base64url").toString("hex");
+    const payload = { v: 1, kid: "test", id: "i", tier: "pro", licensee: "X", seats: 1, issued: "2026-01-01", expires: null };
+    const head = `AF1.${Buffer.from(JSON.stringify(payload)).toString("base64url")}`;
+    const key = `${head}.${sign(null, Buffer.from(head), privateKey).toString("base64url")}`;
+    const f = fixtures();
+    const app = await startApp(
+      { port: 0, host: "127.0.0.1", data: join(f.root, "data"), admin: false },
+      { webDist: f.webDist, defaultSourcesFile: f.defaultSourcesFile, scan: scanSkillRisk, env: { NODE_ENV: "test", AF_ALLOW_TEST_LICENSE: "1", AF_LICENSE_TEST_PUBKEY: pub, AF_LICENSE: key } },
+    );
+    try {
+      const res = await fetch(`http://127.0.0.1:${app.address.port}/api/license`);
+      expect(await res.json()).toEqual({ tier: "free", code: "LICENSE_UNKNOWN_KID" });
+    } finally {
+      await app.close();
+    }
+  });
 });
