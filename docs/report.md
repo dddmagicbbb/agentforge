@@ -86,7 +86,9 @@
 - **CI 미실행**: GitHub Actions가 결제·지출 한도 문제로 job을 시작하지 않는다(PR #8 이후). develop 병합은 로컬 검증을 근거로 했다. 게이트 전에 CI 3종 통과가 필요하다.
 - 게이트 남은 조건(사람): ① Actions 결제 해결 후 CI 통과 ② 실제 GitHub 실기 1회(임시 비공개 저장소 생성 → 푸시 확인 → 삭제, 사람 승인 후).
 - 후속 후보:
-  - 마켓 인터프리터 변형 추가(`require('https').get`, `deno run https://` 등)
+  - ~~마켓 인터프리터 변형 추가(`require('https').get`, `deno run https://` 등)~~ → 2026-10-30 처리. `REMOTE_DOWNLOAD`에 다음을 추가했다(시험 28건, 오탐 방지 6건).
+    - 인터프리터: node `require('https')`·`import('https://…')`, PowerShell `DownloadString/File`·`Start-BitsTransfer`, `certutil -urlcache`·`bitsadmin`·`aria2c`, `httpx`·`axios`, Ruby `open-uri`·`URI.open`, Java `openStream`
+    - 패키지 실행기·설치기가 URL을 받는 경우(`deno/bun run`, `npx`·`pnpm dlx`·`uv/pipx run`, `pip/npm/gem install`)
   - GHES CORS 서버 중계(P2)
   - E2E 보강(query string 토큰, ZIP과 tree 동일성, git 설정 격리)
 - **실제 GitHub 실기(사람 승인 2026-10-30)**:

@@ -58,8 +58,18 @@ export function unquote(v: string): string {
 const BROAD = /(^|[\s,[\]'"-])(Bash\(\s*\*+(?::\*+)?\s*\)|Bash|\*)(?=$|[\s,\]'"])/i;
 
 const DOWNLOAD = /\b(?:curl|wget|Invoke-WebRequest|iwr|Invoke-RestMethod|irm)\b[^\n]*https?:\/\//i;
-// 인터프리터가 URL 을 직접 여는 코드
-const INTERP = /(?:urllib|urlopen|requests\.\w+|fetch\(|LWP|Net::HTTP|https?\.get)[^\n]*https?:\/\//i;
+// 인터프리터가 URL 을 직접 여는 코드(키워드 뒤 같은 줄에 URL)
+const INTERP = new RegExp(
+  String.raw`(?:urllib|urlopen|requests\.\w+|fetch\(|LWP|Net::HTTP|https?\.get|require\(\s*\\?['"]https?\\?['"]\s*\)|import\(\s*\\?['"${"`"}]|` +
+    String.raw`Download(?:String|File|Data)|Start-BitsTransfer|certutil\b[^\n]*-urlcache|bitsadmin|aria2c|httpx\.\w+|axios(?:\.\w+)?\(|URI\.open|open-uri)` +
+    String.raw`[^\n]*https?:\/\/` +
+    // Java: URL 뒤에 여는 메서드
+    String.raw`|https?:\/\/[^\n]*\.open(?:Stream|Connection)\(`,
+  "i",
+);
+// 패키지 실행기·설치기가 URL(git+https 포함)을 직접 받는 경우. 명령 구분자(| ; &)를 넘지 않는다.
+const RUNNER =
+  /\b(?:(?:deno|bun)\s+(?:run|install|x)|bunx|npx|pnpx|uvx|(?:pnpm|yarn)\s+dlx|(?:uv|pipx)\s+run|(?:pip3?|npm|pnpm|yarn|gem)\s+(?:install|i|add))\b[^\n|;&]*?\s(?:git\+)?https?:\/\//i;
 
 const SHELLS = "(?:sh|bash|zsh|dash|ksh)";
 // 접두 명령(경로 허용) + 옵션(인자 1개까지) + 환경변수 할당
@@ -90,7 +100,7 @@ export function scanSkillRisk(files: readonly SkillFileLike[]): RiskCode[] {
     if (dirs.includes("scripts") || SCRIPT_EXT.test(f.path) || stripBom(f.content).startsWith("#!")) out.add("SCRIPTS");
     if (BYPASS.test(f.content)) out.add("BYPASS_PERMISSIONS");
     const joined = joinContinuations(f.content);
-    if (DOWNLOAD.test(joined) || INTERP.test(joined) || PIPE_SHELL.test(joined)) out.add("REMOTE_DOWNLOAD");
+    if (DOWNLOAD.test(joined) || INTERP.test(joined) || RUNNER.test(joined) || PIPE_SHELL.test(joined)) out.add("REMOTE_DOWNLOAD");
     if (isSkillMd(f.path)) {
       const { fmAll, body } = parseSkillMd(f.content);
       if (BANG_INLINE.test(body) || BANG_LINE.test(body)) out.add("BANG_COMMAND");
