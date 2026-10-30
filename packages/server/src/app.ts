@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { collectGit } from "./fetch-git.js";
 import { collectGithub } from "./fetch-github.js";
+import { createLicenseResolver } from "./license.js";
 import { buildSkills } from "./indexer.js";
 import { RefreshInput, SearchQuery, SkillParams, SourceInput, SourceParams } from "./schemas.js";
 import { Store } from "./store.js";
@@ -37,6 +38,10 @@ export interface ServerOptions {
   gitTimeoutMs?: number;
   /** github REST 요청 1건당 시간 제한(기본 30초) */
   fetchTimeoutMs?: number;
+  /** 현재 시각(라이선스 만료 판정, 시험 주입용). 기본 new Date() */
+  now?: () => Date;
+  /** 경고 출력(기본 console.warn). 키 값은 넘기지 않는다 */
+  logWarn?: (msg: string) => void;
 }
 
 /** zod 검증 실패는 입력 값을 되돌려 주지 않고 필드 경로만 알린다 */
@@ -52,6 +57,8 @@ export async function createServer(opts: ServerOptions): Promise<FastifyInstance
   const defaultSourcesFile = opts.defaultSourcesFile ?? fileURLToPath(new URL("../../../catalog/market-sources.json", import.meta.url));
   const store = new Store(opts.dataDir);
   await store.init(defaultSourcesFile);
+
+  const resolveLicense = createLicenseResolver({ dataDir: opts.dataDir, env, now: opts.now ?? (() => new Date()), logWarn: opts.logWarn ?? ((m) => console.warn(m)) });
 
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
 
@@ -141,7 +148,9 @@ export async function createServer(opts: ServerOptions): Promise<FastifyInstance
   }
 
   // ---- 라우트 ----------------------------------------------------------------------
-  app.get("/api/market/health", async () => ({ ok: true, version: SERVER_VERSION, admin }));
+  app.get("/api/market/health", async () => ({ ok: true, version: SERVER_VERSION, admin, license: (await resolveLicense()).tier }));
+
+  app.get("/api/license", async () => resolveLicense());
 
   app.get("/api/market/sources", async () => ({ sources: await store.readSources() }));
 

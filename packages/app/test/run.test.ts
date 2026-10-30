@@ -113,7 +113,7 @@ describe("startApp", () => {
     }
   });
 
-  it("라이선스 파일을 읽어 AF_LICENSE 로 서버에 넘긴다 (T-811 연결 자리)", async () => {
+  it("라이선스 파일을 읽어 AF_LICENSE 로 서버에 넘긴다", async () => {
     const f = fixtures();
     const licenseFile = join(f.root, "license.key");
     writeFileSync(licenseFile, "  AF1.x.y\n");
@@ -126,10 +126,38 @@ describe("startApp", () => {
     expect(seen["AF_LICENSE"]).toBe("AF1.x.y");
   });
 
-  it("라이선스 파일이 없으면 LICENSE_FILE 오류", async () => {
+  it("라이선스 파일이 없으면 안내 후 Free 로 계속(종료 아님), AF_LICENSE 는 비움", async () => {
     const f = fixtures();
-    await expect(
-      startApp({ port: 0, host: "127.0.0.1", data: join(f.root, "data"), admin: false, licenseFile: join(f.root, "none.key") }, { webDist: f.webDist, defaultSourcesFile: f.defaultSourcesFile, scan: scanSkillRisk, env: {} }),
-    ).rejects.toMatchObject({ code: "LICENSE_FILE" });
+    const warns: string[] = [];
+    const seen: Record<string, string | undefined> = {};
+    const app = await startApp(
+      { port: 0, host: "127.0.0.1", data: join(f.root, "data"), admin: false, licenseFile: join(f.root, "none.key") },
+      { webDist: f.webDist, defaultSourcesFile: f.defaultSourcesFile, scan: scanSkillRisk, env: { AF_LICENSE: "stale" }, onEnv: (e) => Object.assign(seen, e), onWarn: (m) => warns.push(m) },
+    );
+    try {
+      const res = await fetch(`http://127.0.0.1:${app.address.port}/api/license`);
+      expect(await res.json()).toEqual({ tier: "free" });
+    } finally {
+      await app.close();
+    }
+    expect(warns).toHaveLength(1);
+    expect(warns[0]).not.toContain(f.root);
+    expect(seen["AF_LICENSE"]).toBeUndefined();
+  });
+
+  it("라이선스 파일이 형식 오류면 /api/license 는 free+code", async () => {
+    const f = fixtures();
+    const licenseFile = join(f.root, "bad.key");
+    writeFileSync(licenseFile, "AF1.x.y");
+    const app = await startApp(
+      { port: 0, host: "127.0.0.1", data: join(f.root, "data"), admin: false, licenseFile },
+      { webDist: f.webDist, defaultSourcesFile: f.defaultSourcesFile, scan: scanSkillRisk, env: {} },
+    );
+    try {
+      const res = await fetch(`http://127.0.0.1:${app.address.port}/api/license`);
+      expect(await res.json()).toEqual({ tier: "free", code: "LICENSE_FORMAT" });
+    } finally {
+      await app.close();
+    }
   });
 });

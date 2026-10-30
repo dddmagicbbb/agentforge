@@ -129,3 +129,15 @@ blob 개별 요청 제거(tree content), 2차 rate limit 분류(retry-after·메
 - Dockerfile: 매니페스트·lock 먼저 COPY 후 install(레이어 캐시), `ENV AF_MARKET_DATA=/data AF_PORT=3456`(HOST 제거). 넓은 바인드는 `ENTRYPOINT ["node","dist/cli.js","--host","0.0.0.0"]` 로 했다 — 지시는 CMD 였으나, CMD 면 `docker run IMG --admin` 이 CMD 를 대체해 `--host` 가 사라지기 때문이다. 관리 API 는 `docker run … IMAGE --admin`. `.dockerignore` 에 `license-private*` 추가.
 - 권고: node 이미지 digest 고정은 릴리스 때(Dockerfile 주석에 기록). airgap 스크립트: curl 이미지 `8.11.1` 고정, 모드 755, 외부 연결 판정 분리(차단됨=정상, 새어 나감=exit 3, 판정 불가=exit 1 — "연결 실패 시 exit 3" 지시는 "연결이 성공해 망이 새는 경우"로 해석), `--admin` 인자 사용. `tests/scripts/run.sh` shellcheck 대상에 `tests/scripts/*.sh` 포함(CI 의 airgap 잡 연결은 리드). 이 PC 는 여전히 docker 데몬이 꺼져 있어 실행 검증 못 함.
 - 시험: app 30건 통과, typecheck·eslint packages 통과, shellcheck(`tests/scripts/*.sh`) 통과.
+
+## PH8 2라운드: T-811 (LIC-01 서버 라이선스)
+
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+| --- | --- | --- | --- | --- |
+| T-811 | 완료 | `packages/server/src/{license,app}.ts`, `packages/app/src/run.ts`, `packages/app/test/{run,pack}.test.ts`, `packages/server/test/license.test.ts`, `tests/scripts/airgap-check.sh` | server 70(신규 8), app 31, lint·typecheck·build 통과, WSL shellcheck 0 | airgap(docker)은 이 PC 에서 미실행 — CI 확인 필요 |
+
+- `GET /api/license`: env `AF_LICENSE` > `dataDir/license.key`, core `verifyLicense`, 서버 UTC 날짜(`now?` 주입). 실패 `{tier:"free",code}`, 없음 `{tier:"free"}`. 키 원문 미응답·미로그. 요청마다 평가(파일 교체·날짜 경과 반영). health 에 `license: tier`.
+- 시험 공개 키 `AF_LICENSE_TEST_PUBKEY`(kid `test`)는 `NODE_ENV=test` 또는 `AF_ALLOW_TEST_LICENSE=1` 일 때만 사용, 아니면 무시하고 경고 1줄(기동 시, 키 값 없음). `NODE_ENV`·플래그는 주입된 `env` 에서 읽는다.
+- app `--license-file`: 읽어 `AF_LICENSE` 로 전달. 읽기 실패는 stderr 안내(경로 미출력) 후 Free 로 계속하며 부모의 `AF_LICENSE` 도 비운다. 이에 따라 `LICENSE_FILE` 종료 시험을 "계속 기동" 시험으로 교체(코드 `LICENSE_FILE` 은 args/cli 에 남아 있으나 미사용).
+- pack 시험: @noble 은 번들에 포함됨을 확인. 기존 bare import 검사가 번들된 라이브러리 JSDoc 주석(`import … from '@noble/hashes/…'`)을 오탐해 주석 줄을 제외하도록 보정.
+- airgap-check.sh: 임시 폴더에 `license-keygen.mjs test --dir` 로 키 쌍 생성 → `license-issue.mjs --key` 로 pro 발급 → 컨테이너에 `AF_LICENSE`·`AF_LICENSE_TEST_PUBKEY`·`AF_ALLOW_TEST_LICENSE=1` 주입 → `/api/license` pro·키 원문 부재·health `license:pro` 확인. 비밀 키 폴더는 trap 에서 삭제. 호스트에 node 필요(CI 는 보유).

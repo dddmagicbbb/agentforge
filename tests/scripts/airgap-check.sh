@@ -6,7 +6,7 @@
 #   4) 볼륨에 만든 시험 git 저장소를 file:// 소스로 등록·색인·검색
 #   5) 앱 컨테이너에서 외부(https://github.com) 연결이 실패하는지 확인
 #   6) 컨테이너·네트워크·볼륨·이미지 삭제
-# TODO(T-811 이후): /api/license 확인 단계 추가(시험 키는 AF_LICENSE, 시험 공개 키는 AF_LICENSE_TEST_PUBKEY + AF_ALLOW_TEST_LICENSE=1)
+#   (T-811) 시험 키 쌍을 임시 폴더에 만들어 pro 키를 발급·주입하고 /api/license 가 pro 이며 키 원문이 없는지 확인
 # 사용: bash tests/scripts/airgap-check.sh   (docker 필요)
 #   AF_AIRGAP_REQUIRED=1 이면 docker 가 없을 때 건너뛰는 대신 실패(exit 1)한다(CI 에서 조용히 건너뛰는 것을 막는 용도)
 set -euo pipefail
@@ -31,7 +31,9 @@ VOL="af-data-${sfx}"
 CURL_IMG="${AF_AIRGAP_CURL_IMAGE:-curlimages/curl:8.11.1}"
 PORT=3456
 
+KEYDIR=""
 cleanup() {
+  [ -z "$KEYDIR" ] || rm -rf "$KEYDIR"
   docker rm -f "$APP" >/dev/null 2>&1 || true
   docker network rm "$NET" >/dev/null 2>&1 || true
   docker volume rm "$VOL" >/dev/null 2>&1 || true
@@ -63,9 +65,20 @@ docker run --rm -v "$VOL:/data" --entrypoint sh "$IMG" -c '
   git -c user.name=t -c user.email=t@example.invalid commit -q -m init
 ' || fail "시험 저장소 생성"
 
+# 시험 라이선스 키: 임시 폴더에 키 쌍을 만들어 pro 키를 발급한다(비밀 키는 종료 시 삭제, 컨테이너에는 키와 공개 키만 준다)
+command -v node >/dev/null || fail "node 없음(시험 라이선스 발급에 필요)"
+KEYDIR="$(mktemp -d)"
+# keygen 은 stdout 으로 공개 키 hex 를 낸다(비밀 키는 KEYDIR 의 pem)
+TESTPUB="$(node "$REPO/tools/license-keygen.mjs" test --dir "$KEYDIR" 2>/dev/null)" || fail "시험 키 쌍 생성"
+TESTPEM="$KEYDIR/test.pem"
+[ -f "$TESTPEM" ] || fail "시험 비밀 키 파일 없음"
+LICKEY="$(node "$REPO/tools/license-issue.mjs" --kid test --tier pro --licensee airgap --seats 3 --key "$TESTPEM")" || fail "시험 라이선스 발급"
+[ -n "$TESTPUB" ] && [ -n "$LICKEY" ] || fail "시험 라이선스 준비"
+
 echo "== 3) 앱 컨테이너 기동"
 docker run -d --name "$APP" --network "$NET" -v "$VOL:/data" \
   -e AF_ALLOW_FILE_SOURCES=1 -e "AF_MARKET_HOSTS=$APP" \
+  -e "AF_LICENSE=$LICKEY" -e "AF_LICENSE_TEST_PUBKEY=$TESTPUB" -e AF_ALLOW_TEST_LICENSE=1 \
   "$IMG" --admin >/dev/null || fail "앱 컨테이너 기동"
 
 ok=0
@@ -78,6 +91,12 @@ done
 echo "== 4) / (web), health"
 net_curl "http://$APP:$PORT/" | grep -qi "<html" || fail "/ 가 web index.html 이 아닙니다"
 net_curl "http://$APP:$PORT/api/market/health" | grep -q '"admin":true' || fail "health 에 admin:true 가 없습니다"
+
+# 라이선스: pro 로 인식되고 응답에 키 원문이 없다
+lic="$(net_curl "http://$APP:$PORT/api/license")" || fail "/api/license 응답 없음"
+echo "$lic" | grep -q '"tier":"pro"' || fail "/api/license 가 pro 가 아닙니다"
+case "$lic" in *"${LICKEY#AF1.}"*|*"$LICKEY"*) fail "/api/license 응답에 키 원문이 있습니다" ;; esac
+net_curl "http://$APP:$PORT/api/market/health" | grep -q '"license":"pro"' || fail "health 에 license:pro 가 없습니다"
 
 # 비루트 확인
 [ "$(docker exec "$APP" id -u)" != "0" ] || fail "컨테이너가 루트로 실행 중입니다"
@@ -102,4 +121,4 @@ case "$rc" in
   *) fail "외부 연결 확인을 수행하지 못했습니다(rc=$rc)" ;;
 esac
 
-echo "통과: 폐쇄망 시험 (web, health, file:// 소스 색인, 외부 차단)"
+echo "통과: 폐쇄망 시험 (web, health, 라이선스 pro, file:// 소스 색인, 외부 차단)"
