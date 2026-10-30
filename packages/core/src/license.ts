@@ -23,6 +23,16 @@ export interface VerifyLicenseOptions {
 
 const MAX_KEY_LENGTH = 2000;
 const DATE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+// 실제 달력 날짜인지(윤년 포함)
+function isRealDate(s: string): boolean {
+  if (!DATE.test(s)) return false;
+  const y = Number(s.slice(0, 4));
+  const m = Number(s.slice(5, 7));
+  const d = Number(s.slice(8, 10));
+  const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const dim = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1]!;
+  return d <= dim;
+}
 const B64URL = /^[A-Za-z0-9_-]+$/;
 const HEX = /^[0-9a-fA-F]{64}$/;
 
@@ -33,8 +43,8 @@ const Payload = z.object({
   tier: z.enum(["free", "pro", "team"]),
   licensee: z.string().min(1).max(100),
   seats: z.number().int().min(1).max(10000),
-  issued: z.string().regex(DATE),
-  expires: z.string().regex(DATE).nullable(),
+  issued: z.string().refine(isRealDate),
+  expires: z.string().refine(isRealDate).nullable(),
 });
 
 const fail = (code: LicenseErrorCode): LicenseResult => ({ ok: false, code });
@@ -56,6 +66,8 @@ function b64urlDecode(s: string): Uint8Array {
       acc &= (1 << bits) - 1;
     }
   }
+  // 남는 꼬리 비트는 0 이어야 한다(비정규 인코딩 거부)
+  if (acc !== 0) throw new Error("base64url");
   return Uint8Array.from(out);
 }
 
@@ -71,7 +83,7 @@ function pubBytes(v: Uint8Array | string): Uint8Array | null {
 }
 
 export function verifyLicense(key: string, opts: VerifyLicenseOptions): LicenseResult {
-  if (typeof key !== "string" || typeof opts?.today !== "string" || !DATE.test(opts.today)) return fail("LICENSE_FORMAT");
+  if (typeof key !== "string" || typeof opts?.today !== "string" || !isRealDate(opts.today)) return fail("LICENSE_FORMAT");
   const k = key.replace(/\s+/g, "");
   if (k.length === 0 || k.length > MAX_KEY_LENGTH) return fail("LICENSE_FORMAT");
   const parts = k.split(".");
@@ -94,7 +106,7 @@ export function verifyLicense(key: string, opts: VerifyLicenseOptions): LicenseR
   const pub = pubBytes(keys[payload.kid]!);
   if (!pub) return fail("LICENSE_SIGNATURE");
   try {
-    if (!ed25519.verify(sig, Uint8Array.from(`AF1.${parts[1]}`, (c) => c.charCodeAt(0)), pub)) return fail("LICENSE_SIGNATURE");
+    if (!ed25519.verify(sig, Uint8Array.from(`AF1.${parts[1]}`, (c) => c.charCodeAt(0)), pub, { zip215: false })) return fail("LICENSE_SIGNATURE");
   } catch {
     return fail("LICENSE_SIGNATURE");
   }

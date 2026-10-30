@@ -110,6 +110,35 @@ describe("verifyLicense 거부", () => {
   });
 });
 
+describe("T-801 리뷰 반영", () => {
+  it("작은 차수 공개 키 + identity 서명(R=identity, S=0) 거부 (RFC 8032 엄격)", () => {
+    const ident = "01" + "00".repeat(31);
+    const head = `AF1.${b64(JSON.stringify({ ...base, kid: "t-small" }))}`;
+    const sig = Buffer.from(ident + "00".repeat(32), "hex");
+    const r = verifyLicense(`${head}.${b64(sig)}`, { today: TODAY, publicKeys: { "t-small": ident } });
+    expect(code(r)).toBe("LICENSE_SIGNATURE");
+  });
+  it("base64url 꼬리 비트가 0 이 아니면 LICENSE_FORMAT", () => {
+    const parts = make().split(".");
+    const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    const last = parts[2]!.slice(-1);
+    const flipped = parts[2]!.slice(0, -1) + A[A.indexOf(last) ^ 1];
+    expect(code(v(`${parts[0]}.${parts[1]}.${flipped}`))).toBe("LICENSE_FORMAT");
+  });
+  it.each([["hex 아님", "zz".repeat(32)], ["31바이트", "ab".repeat(31)], ["Uint8Array 31바이트", new Uint8Array(31)]])("등록된 공개 키 값 오류(%s)는 LICENSE_SIGNATURE", (_n, bad) => {
+    expect(code(verifyLicense(make(), { today: TODAY, publicKeys: { "t-1": bad } }))).toBe("LICENSE_SIGNATURE");
+  });
+  it.each(["2026-02-30", "2026-13-01", "2025-02-29", "2026-00-10", "2026-04-31"])("today 가 실제 날짜가 아님: %s", (d) => {
+    expect(code(v(make(), d))).toBe("LICENSE_FORMAT");
+  });
+  it("윤일은 유효", () => {
+    expect(code(v(make(), "2024-02-29"))).toBe("OK");
+  });
+  it("payload 날짜도 실제 날짜여야 한다", () => {
+    expect(code(v(make({ expires: "2027-02-30" })))).toBe("LICENSE_FORMAT");
+  });
+});
+
 describe("운영 공개 키", () => {
   it("af-2026-1 은 32바이트 hex", () => {
     expect(LICENSE_PUBLIC_KEYS["af-2026-1"]).toMatch(/^[0-9a-f]{64}$/);
