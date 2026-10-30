@@ -1,0 +1,23 @@
+# 빌드 컨텍스트에서 제외: 이미지에 필요 없고 크기·비밀 노출 위험만 키우는 것들
+**/node_modules
+**/dist
+**/coverage
+.git
+.github
+.claude
+.playwright-mcp
+.agentforge
+test-results
+playwright-report
+# worktree·임시 산출물
+af-wt
+**/.agentforge-market
+packages/core/src/templates.generated.ts
+# 비밀 값
+.env
+.env.*
+*.pem
+*.license-key
+docs
+tests
+license-private*

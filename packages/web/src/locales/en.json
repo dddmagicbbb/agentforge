@@ -105,7 +105,9 @@
     "GITHUB_OWNER": "Owner must be 1-39 letters, digits or hyphens.",
     "GITHUB_REPO": "Repository name must be 1-100 letters, digits, . _ or -.",
     "IMPORT_RISK": "{{id}}: risk items {{codes}}",
-    "HTTPS_URL": "The GHES address must start with https://."
+    "HTTPS_URL": "The GHES address must start with https://.",
+    "LICENSE_LIMIT": "The current tier ({{tierName}}) allows up to {{max}} developers. Apply a Pro or higher license to use more.",
+    "LICENSE_INVALID": "The license could not be applied; running as Free ({{reasonText}})."
   },
   "dev": {
     "title": "Agents per developer",
@@ -405,5 +407,27 @@
     },
     "crashed": "Could not display the GitHub section.",
     "loading": "Loading the GitHub section…"
+  },
+  "license": {
+    "tier": {
+      "free": "Free",
+      "pro": "Pro",
+      "team": "Team"
+    },
+    "enter": "Enter license key",
+    "remove": "Remove license",
+    "title": "Enter license key",
+    "lead": "The pasted key is verified in this page's memory only and is never stored. Reloading returns to Free.",
+    "keyLabel": "License key",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "error": {
+      "LICENSE_FORMAT": "The key format is invalid.",
+      "LICENSE_SIGNATURE": "The signature does not match. Check the key again.",
+      "LICENSE_EXPIRED": "The license has expired.",
+      "LICENSE_UNKNOWN_KID": "Unknown issuing key."
+    },
+    "badge": "License tier",
+    "loadFailed": "Could not load the license dialog. Reload and try again."
   }
 }

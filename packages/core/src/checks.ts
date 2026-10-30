@@ -1,4 +1,5 @@
 import type { Issue } from "./api.js";
+import { tierLimits, type LicenseResult } from "./license.js";
 import { scanSkillRisk, type SkillFileLike } from "./market/risk.js";
 import { provider } from "./providers/index.js";
 import { PROVIDER_IDS, type ProjectInput, type ProviderIdT } from "./schema/index.js";
@@ -48,7 +49,12 @@ function devOf(v: unknown): DevView {
 
 const via = (a: Agent) => (KNOWN.has(a.provider) ? provider(a.provider as ProviderIdT).via : undefined);
 
-export function checks(input: ProjectInput): Issue[] {
+export interface ChecksOptions {
+  /** 라이선스 검증 결과(LIC-01). 없으면 Free 로 본다. */
+  readonly license?: LicenseResult;
+}
+
+export function checks(input: ProjectInput, opts: ChecksOptions = {}): Issue[] {
   const out: Issue[] = [];
   const add = (level: Issue["level"], code: string, path: Path = [], params: Issue["params"] = {}) => {
     out.push({ level, code, path, params });
@@ -62,6 +68,14 @@ export function checks(input: ProjectInput): Issue[] {
 
   const reqLen = str(p["requirement"]).trim().length;
   if (reqLen < REQ_MIN) add("warn", "REQ_SHORT", ["requirement"], { length: reqLen, min: REQ_MIN });
+
+  // LIC-01 등급 상한. 실패한 라이선스는 Free 로 동작하고 사유를 info 로 알린다.
+  const lic = opts.license;
+  const tier = lic?.ok ? lic.tier : "free";
+  const max = tierLimits(tier).maxDevelopers;
+  if (lic && !lic.ok) add("info", "LICENSE_INVALID", [], { code: lic.code });
+  const count = p["developerCount"];
+  if (typeof count === "number" && count > max) add("error", "LICENSE_LIMIT", ["developerCount"], { tier, max });
 
   const devs = (Array.isArray(p["devs"]) ? p["devs"] : []).map(devOf);
   const all = devs.flatMap((d, i) => d.paths.map((path) => ({ dev: i + 1, path })));

@@ -76,3 +76,19 @@
 ### PH7 2라운드 보강
 - `@agentforge/exporter/github` 진입점, `GITHUB_PARTIAL`, `HTTPS_URL` 문구, 리뷰 권고 1~6·8 반영. 시험 163건 통과, typecheck·lint 통과.
 - **web build 는 exporter 에 `./github` export 가 생기기 전에는 실패**(리드 통합 후 확인). 통합 후 `packages/web/vitest.config.ts` 의 alias, `test/stub-exporter-github.ts`, `src/exporter-github.d.ts` 제거.
+
+## PH8
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+| --- | --- | --- | --- | --- |
+| T-821 | 등급 배지(Free·Pro·Team+licensee), 서버 `/api/license`(형태 검증) 또는 키 입력 대화상자(메모리만·지연 로딩), LICENSE_LIMIT 1단계 표시·ZIP/GitHub 차단, LICENSE_* ko·en | `src/license/*`, `App.tsx`, `IssueList.tsx`, `locales/*`, `app.css` | `round10-license.test.tsx` 17건 신규, web 전체 180건 통과, typecheck·eslint 통과 | core 연결 대기 |
+
+- 번들: 메인 index 62.03 → 66.45 kB(gzip 21.2 → 22.7), LicenseDialog 1.3 kB(지연).
+- **결정 기록**: 라이선스가 없으면 Free(2명)이므로 web 초기 draft 를 `resizeDevs(defaultDraft(), 2)`(`initialDraft`)로 했다. core `defaultDraft`(3명)는 미변경. 3명 전제였던 기존 시험 7개 파일은 `test/pro3.tsx`(`App3`: defaultDraft + Pro 주입)로 의도를 유지했다.
+- **임시 장치(통합 때 리드가 교체)**: `src/license/license.ts` 의 `defaultVerify`(항상 LICENSE_FORMAT) → core `verifyLicense`; `maxDevelopers`·`licenseIssues` → core `tierLimits`·`checks(input,{license})`(App 의 `licIssues` 병합 제거). vitest alias·d.ts 임시 장치는 새로 만들지 않았다.
+- 참고: `pnpm lint` 가 `tools/license-issue.mjs` 의 `Buffer` no-undef 2건으로 실패(리드 소유, web 아님).
+
+### PH8 T-821 반려 후속
+- **E2E 영향(범위 밖, 리드가 통합 때 조정)**: 초기 draft 가 2명이라 `tests/e2e/export.spec.ts:36·51·80`, `i18n-doc.spec.ts:51·73·107` 의 3명 전제가 깨진다(개발자 수·파일 목록·tmux 창 수 등). 시험을 2명 기준으로 바꾸거나 `+` 한 번을 추가해야 한다(3명은 Pro 필요).
+- core 교체 지점 단일화: `buildPreview(draft, license?)`/`usePreview(draft, license)`. checks 호출은 `use-preview.ts` 의 `runChecks` 한 곳이고, 통합 때 본문을 `checks(draft, { license: toLicenseResult(license) })` 로 바꾸고 `licenseIssues` 를 지운다. `LicenseState` -> core `LicenseResult` 변환은 `toLicenseResult` 하나. App 의 별도 병합은 제거했다.
+- 권고 반영: verify 예외 -> LICENSE_FORMAT, 적용 중 재진입 방지, 지연 청크 ErrorBoundary(`license.loadFailed`), 서버 확정 시 대화상자 닫기·열기 막기, Esc·초기 포커스·포커스 복귀, 배지 그룹 접근성 이름(`license.badge`), seats 상한 10000.
+- 시험 보강 11건(총 28건): pro+code, 모르는 code·잘못된 expires·seats 초과, 3명→2명 해제, GitHub 올리기 비활성 등. web 전체 191건, typecheck·eslint·build 통과. 메인 청크 67.02 kB(gzip 22.9).

@@ -1,14 +1,16 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { canExport, checks, defaultDraft, render, validate, type Issue, type ProjectInput } from "../src/index.js";
+import { canExport, checks, defaultDraft, render, validate, type Issue, type LicenseResult, type ProjectInput } from "../src/index.js";
 
 // T-405 PRV-02·PRV-04
 
+// 기본 초안(개발자 3명)이 등급 상한(LIC-01)에 걸리지 않게 이 파일의 기존 시험은 Pro 라이선스로 돌린다
+const PRO: LicenseResult = { ok: true, tier: "pro", licensee: "t", seats: 1, expires: null, id: "t" };
 const codes = (i: Issue[]) => i.map((x) => x.code);
 const run = (patch: (d: ProjectInput) => void = () => {}) => {
   const d = defaultDraft();
   patch(d);
-  return checks(d);
+  return checks(d, { license: PRO });
 };
 const claude = { provider: "claude" as const, model: "sonnet" };
 /** 경고·정보 없는 깨끗한 구성 */
