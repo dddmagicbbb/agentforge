@@ -40,3 +40,8 @@ CI의 `airgap-docker`는 Docker 내부 네트워크로 흉내 낸 것이다. 실
 ## 3. 판정
 - G5 통과 조건: 1장 5명 모두 ✓(또는 사유가 기록된 부분 통과를 사람이 승인), 2장 전 단계 ✓
 - 나온 결함은 이슈로 기록하고 PH9 전에 처리한다.
+
+## 4. 발급한 베타 라이선스 (2026-10-30)
+- Pro 5개, licensee `AgentForge Beta 1~5`, seats 1, 만료 2027-01-31, kid `af-2026-1`. 5개 모두 core `verifyLicense`로 확인했다.
+- 키 원문은 저장소에 넣지 않는다. 발급 담당자 PC의 `~/.agentforge/beta-licenses.txt`(현재 사용자만 읽기)에서 사용자에게 개별 전달한다.
+- 적용: npx는 `--license-file`, Docker는 `-e AF_LICENSE=`(docs/deploy.md 4장).
