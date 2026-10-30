@@ -256,3 +256,29 @@ T-722 6단계 GitHub 내보내기, T-723 시험 안정화, R1 위험 목록을 c
 - 토큰 `autoComplete="new-password"`, 푸시 재진입은 useRef 플래그, fallback 문구는 `github.*` 키, `aria-controls` 는 열렸을 때만.
 - GitHub 항목 오류가 있으면 영역이 접히지 않아 ZIP 차단 이유가 보인다.
 - 시험 환경: exporter `./github` 가 없는 브랜치에서는 vitest alias 로 빈 모듈 대체(`vitest.config.ts`, `src/exporter-github.d.ts` 는 통합 후 제거).
+
+## PH8 T-821 (LIC-01 화면, design 10.3)
+### 1·2. 파일
+| 경로 | 책임 |
+| --- | --- |
+| `src/license/license.ts` | 등급 상태·서버 응답 형태 검증(`parseLicenseResponse`)·`fetchServerLicense`·`licenseIssues`(LICENSE_LIMIT/INVALID)·`todayIso`·`defaultVerify`(임시) |
+| `src/license/LicenseBadge.tsx` | 상단 등급 배지(등급 + licensee), 키 입력/해제 버튼, 대화상자 지연 로딩 |
+| `src/license/LicenseDialog.tsx` | 키 입력(지역 상태만), 오늘 날짜로 검증, 실패 code 문구. 닫으면 키가 사라진다 |
+| `src/App.tsx` | 라이선스 상태(메모리), `/api/license` 조회, issues·exportable 에 반영, 기본 draft 2명(`initialDraft`) |
+| `src/components/IssueList.tsx` | LICENSE_LIMIT 의 tierName, LICENSE_INVALID 의 reasonText 보간 |
+| `src/locales/*.json` | `license.*`, `issue.LICENSE_LIMIT/INVALID` |
+
+### 3. 결정
+- 주입: `App({ licenseFetch, verifyLicense })`. 서버가 형태 맞는 응답을 주면 그 결과(키 입력 버튼 없음), 아니면 Free + 키 입력 버튼.
+- 키는 Dialog 지역 state 에서 검증 함수에만 전달하고 결과(등급 정보)만 올린다. draft·storage·URL·DOM(닫은 뒤) 금지. 새로 고침하면 Free.
+- **기본 draft**: 라이선스가 없으면 Free(2명)이므로 web 초기값을 `resizeDevs(defaultDraft(), 2)` 로 한다. core `defaultDraft` 는 그대로(3명).
+- core 에 `verifyLicense`·`tierLimits`·`checks(…,{license})` 가 들어오면 `defaultVerify`·`maxDevelopers`·`licenseIssues` 를 core 호출로 교체한다(TODO 주석).
+
+### 5. 화면 상태
+Free / Pro / Team 배지, 서버 실패 code(Free + 사유), 대화상자(빈 값=적용 비활성, 실패=role=alert), LICENSE_LIMIT(1단계 개발자 수 옆 alert, ZIP·GitHub 차단, 6단계에서 1단계로 이동).
+
+### 6. 테스트 `test/round10-license.test.tsx` (17건)
+기본 Free·2명 / 3명 시 LICENSE_LIMIT·ZIP 차단 / 서버 pro·깨진 응답 7종·실패 code / 키가 DOM·storage·URL·ZIP 에 없음 / 재마운트 시 Free / 실패 4종 문구·en / 빈 키·취소 / pro 적용 해제·재차단 / 6단계 이동 / ko·en 키.
+기존 시험 중 개발자 3명 전제는 `test/pro3.tsx`(`App3`: 기본 3명 + Pro 주입)로 의도를 유지했다.
+
+### 7. 계약 변경: 없음(core 함수 연결은 리드 통합)

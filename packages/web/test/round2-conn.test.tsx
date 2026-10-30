@@ -1,7 +1,7 @@
 import { fireEvent, render as mount, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { defaultDraft } from "@agentforge/core";
-import { App } from "../src/App";
+import { App3 as App } from "./pro3";
 import { StepConnection } from "../src/steps/StepConnection";
 
 const goto = (n: number) => fireEvent.click(within(screen.getByRole("navigation", { name: "단계" })).getAllByRole("button")[n - 1]!);

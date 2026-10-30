@@ -1,7 +1,7 @@
 import { fireEvent, render as mount, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultDraft, render, validate, type Issue } from "@agentforge/core";
-import { App } from "../src/App";
+import { App3 as App } from "./pro3";
 import { IssueList } from "../src/components/IssueList";
 import { stepOfPath } from "../src/issue-step";
 

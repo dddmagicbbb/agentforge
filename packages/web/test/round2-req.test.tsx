@@ -1,6 +1,6 @@
 import { fireEvent, render as mount, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { App } from "../src/App";
+import { App3 as App } from "./pro3";
 
 const fileCount = () => Number(/(\d+)개/.exec(screen.getByRole("heading", { level: 2, name: /생성 파일/ }).textContent ?? "")?.[1]);
 const count = () => screen.getByRole("status", { name: "개발자 수" });
