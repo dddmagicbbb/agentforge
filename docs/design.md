@@ -535,7 +535,7 @@ PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙�
      - 앱 컨테이너에서 외부(`https://github.com`)로 나가는 연결은 실패해야 한다.
   4. 끝나면 컨테이너·네트워크·볼륨을 삭제한다.
   - docker가 없으면 건너뛴다. `AF_AIRGAP_REQUIRED=1`이면 실패로 처리한다.
-- 시험 공개 키 주입(`AF_LICENSE_TEST_PUBKEY`)은 `NODE_ENV=test` 또는 `AF_ALLOW_TEST_LICENSE=1`일 때만 허용한다. 운영 빌드에서는 무시하고 경고만 남긴다.
+- (폐기 — 아래 "시험 공개 키 정정" 참고) 시험 공개 키는 실행 중 환경 변수로 받지 않는다.
 
 ### 10.3 화면 (web) — LIC-01
 - 상단에 등급 표시(Free·Pro·Team + licensee)를 둔다.
@@ -557,5 +557,5 @@ PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙�
   - npm 패키지에는 소스맵(`.map`)을 넣지 않는다.
 - **시험 공개 키 정정(리드, 보안)**: 10.2의 "`AF_LICENSE_TEST_PUBKEY`는 `NODE_ENV=test` 또는 `AF_ALLOW_TEST_LICENSE=1`일 때 허용"을 폐기한다. 실행 중 환경 변수만으로 사용자가 만든 키를 인정하면, 코드 수정 없이 등급 강제를 우회할 수 있기 때문이다.
   - 시험 공개 키 경로는 **빌드할 때만** 넣는다. app 번들 define `__AF_TEST_LICENSE__`의 기본값은 false이고, 시험 빌드에서만 true다. Docker는 `--build-arg AF_TEST_BUILD=1`일 때만 시험 빌드를 만든다.
-  - 운영 npx 번들·운영 이미지에서는 시험 키 env를 완전히 무시하고 경고만 남긴다. airgap 시험은 시험 이미지를 따로 빌드한다.
+  - 운영 npx 번들·운영 이미지에서는 시험 키 env를 완전히 무시한다(경고도 없음 — 경고를 내려면 env 이름이 번들에 들어가야 하므로). airgap 시험은 시험 이미지를 따로 빌드한다.
   - 서버 단위 시험은 `createServer({ publicKeys })` 옵션 주입으로 한다(환경 변수 경로 없음).

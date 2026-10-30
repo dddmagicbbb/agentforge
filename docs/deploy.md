@@ -83,3 +83,4 @@ node tools/license-issue.mjs --kid af-2026-1 --tier pro --licensee "회사명" -
 ```
 - 서명용 비밀 키는 발급 담당자 PC의 `~/.agentforge/license-signing/af-2026-1.pem`에만 있다. 저장소에 넣지 않으며 별도 백업 대상이다.
 - 키를 교체할 때는 `tools/license-keygen.mjs <새 kid>`로 키 쌍을 만들고, 공개 키를 core `LICENSE_PUBLIC_KEYS`에 **추가**한 버전을 배포한다. 기존 kid는 남겨 이미 발급한 키가 계속 동작하게 한다.
+- **릴리스 주의**: 운영 npx 패키지와 운영 이미지는 반드시 기본 빌드(`AF_TEST_BUILD` 미설정 또는 0)로 만든다. `AF_TEST_BUILD=1` 빌드는 시험 전용이다.
