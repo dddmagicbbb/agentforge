@@ -260,3 +260,20 @@ Issue.params 는 임의 키 허용이라 계약 변경 없음. bats 사례(제�
 - README: imported 가 비어 있지 않을 때만 안내 한 줄(ko·en) — sources.lock 위치, 실행 권한 없이 넣었으니 필요하면 직접 chmod.
 - 시험: sha256 벡터 4종(+멀티바이트), lock 내용·순서·flags 재계산, imported 없으면 lock 없음, planGithubTree 모드·순서·env.local 차단, render 결과와 mode 대응, IMPORT_RISK, README 조건부, 비정상 입력 비-throw.
 - 계약 변경: 없음.
+
+---
+
+# PH8 T-801 (LIC-01 라이선스 검증·등급 강제, core)
+
+1. 작업: T-801 (design 10.1, ADR-0008)
+2. 파일: `packages/core/src/license.ts`(verifyLicense·tierLimits·LICENSE_PUBLIC_KEYS), `checks.ts`(opts.license, LICENSE_LIMIT·LICENSE_INVALID), `index.ts`(export), `test/license.test.ts`, `package.json`(@noble/curves ^2.4.0, MIT)
+3. 함수
+   - `verifyLicense(key, { today, publicKeys? }): LicenseResult` — 순수. 키 안의 공백·줄바꿈을 중간 것까지 모두 제거 → 2,000자·조각 3개·`AF1` 접두·base64url·UTF-8 JSON·payload zod 실패는 LICENSE_FORMAT → kid 미등록 UNKNOWN_KID → ed25519.verify(RFC 8032 엄격, zip215:false) 실패(공개 키 오류·서명 길이 오류 포함) SIGNATURE → `expires < today` EXPIRED. today 형식 오류·문자열 아닌 입력은 FORMAT. throw 하지 않는다.
+   - `tierLimits(tier|null)` — null·free 2, pro·team 6.
+   - `checks(input, { license? })` — developerCount > 상한이면 error LICENSE_LIMIT {tier,max}; 실패 license 는 info LICENSE_INVALID {code} + Free 상한.
+4. 계약: design 10.1. 기존 `validate(tierLimit)` 불변.
+5. 화면: 없음.
+6. 테스트: `test/license.test.ts` (정상 3등급·null expires·만료 경계·공백·Uint8Array 키·위조·서명 비트·타 키·kid·형식 17종·today 오류·fast-check 무예외·운영 키 hex·tierLimits·LICENSE_LIMIT 2/3·6/7·LICENSE_INVALID). 기존 `checks.test.ts` 는 Pro 라이선스로 실행(기본 초안 3명 → Free 상한 회피, 의도 유지).
+7. 계약 변경: 없음.
+
+- 리뷰 반영: zip215:false(작은 차수 키 거부), base64url 꼬리 비트 ≠ 0 은 FORMAT, today·payload 날짜는 달력상 실제 날짜만(윤년 포함), 등록 공개 키 값 오류는 LICENSE_SIGNATURE 유지.
