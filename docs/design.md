@@ -549,3 +549,9 @@ PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙�
 - `docs/report-beta.md`: 베타 5명 점검표와 폐쇄망 VM 시험 절차(사람 수행)
 - **운영 공개 키(T-800 완료)**: `LICENSE_PUBLIC_KEYS = { "af-2026-1": "3dcad4039de3a1d45d72fbdf1f442008600fb3ec1bfd1e50a26ecd17d2df0bb1" }`(Ed25519 원값 hex). 비밀 키는 리드 PC `~/.agentforge/license-signing/af-2026-1.pem`에만 있다(저장소 밖, 사용자 백업).
 - **등급 강제 경로 정리(리드 확정)**: 등급별 상한은 `checks`의 `LICENSE_LIMIT` 하나로만 강제한다. `validate`의 `tierLimit` 옵션과 `DEV_COUNT_OVER_TIER`는 스키마 절대 상한(`MAX_DEVELOPERS`=6)으로만 쓰고, 등급 강제에는 쓰지 않는다(호출부는 넘기지 않는다).
+- **배포 보안 확정(review-2 권고, 리드)**:
+  - 앱 CLI의 관리 API는 `--admin` 인자로만 켠다(환경 변수 `AF_MARKET_ADMIN`은 CLI에서 무시).
+  - 바인드 주소 환경 변수는 일반 이름 `HOST` 대신 `AF_HOST`로 한다(셸이 내보내는 HOST로 의도치 않게 넓게 바인드되는 것을 방지).
+  - Docker는 `CMD ["--host","0.0.0.0"]`로 컨테이너 안에서만 넓게 바인드한다. 관리 API는 운영자가 `docker run … --admin`으로 명시할 때만 켠다.
+  - npx 번들은 `@noble/*`까지 번들에 넣고, 실행 의존성은 fastify·@fastify/static·zod 3개로 유지한다.
+  - npm 패키지에는 소스맵(`.map`)을 넣지 않는다.
