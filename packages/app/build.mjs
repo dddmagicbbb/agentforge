@@ -17,7 +17,8 @@ const viteBin = join(dirname(createRequire(import.meta.url).resolve("vite/packag
 const vite = spawnSync(process.execPath, [viteBin, "build"], { cwd: here("."), stdio: "inherit" });
 if (vite.status !== 0) process.exit(vite.status ?? 1);
 
-cpSync(webDist, here("dist/web"), { recursive: true });
+// 소스맵(.map)은 배포하지 않는다
+cpSync(webDist, here("dist/web"), { recursive: true, filter: (src) => !src.endsWith(".map") });
 mkdirSync(here("dist/catalog"), { recursive: true });
 cpSync(here("../../catalog/market-sources.json"), here("dist/catalog/market-sources.json"));
 chmodSync(here("dist/cli.js"), 0o755);

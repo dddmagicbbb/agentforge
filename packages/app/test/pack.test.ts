@@ -30,6 +30,21 @@ describe.skipIf(!built)("패키지 내용 (npm pack --dry-run)", () => {
     expect(js).not.toMatch(/from ["']@agentforge\//);
   });
 
+  it("소스맵(.map)은 들어가지 않는다", () => {
+    expect(files.filter((f) => f.endsWith(".map"))).toEqual([]);
+  });
+
+  it("dist/cli.js 의 node: 아닌 모든 bare import 는 dependencies 에 있다 (번들 누락 방지)", () => {
+    const js = readFileSync(`${pkgDir}dist/cli.js`, "utf8");
+    const pkg = JSON.parse(readFileSync(`${pkgDir}package.json`, "utf8")) as { dependencies: Record<string, string> };
+    const specs = new Set<string>();
+    for (const m of js.matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\(\s*)["']([^"']+)["']/g)) specs.add(m[1]!);
+    const bare = [...specs].filter((s) => !s.startsWith("node:") && !s.startsWith(".") && !s.startsWith("/"));
+    const names = bare.map((s) => (s.startsWith("@") ? s.split("/").slice(0, 2).join("/") : s.split("/")[0]!));
+    for (const n of names) expect(Object.keys(pkg.dependencies), `번들에 없는 외부 import: ${n}`).toContain(n);
+    expect(names.length).toBeGreaterThan(0); // 검사가 비어 있지 않음(fastify 등)
+  });
+
   it("실행 의존성은 fastify, @fastify/static, zod 뿐이다 (워크스페이스 패키지 없음)", () => {
     const pkg = JSON.parse(readFileSync(`${pkgDir}package.json`, "utf8")) as { dependencies: Record<string, string>; bin: Record<string, string> };
     expect(Object.keys(pkg.dependencies).sort()).toEqual(["@fastify/static", "fastify", "zod"]);

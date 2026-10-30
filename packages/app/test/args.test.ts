@@ -20,15 +20,15 @@ describe("parseCliArgs", () => {
     expect(parse(["--port=4000"])).toMatchObject({ port: 4000 });
   });
 
-  it("환경 변수 PORT·HOST·AF_MARKET_DATA 는 기본값을 대신하고 인자가 우선한다 (Docker)", () => {
-    const env = { PORT: "5000", HOST: "0.0.0.0", AF_MARKET_DATA: "/data" };
+  it("환경 변수 AF_PORT·AF_HOST·AF_MARKET_DATA 는 기본값을 대신하고 인자가 우선한다 (Docker)", () => {
+    const env = { AF_PORT: "5000", AF_HOST: "0.0.0.0", AF_MARKET_DATA: "/data" };
     expect(parse([], env)).toMatchObject({ port: 5000, host: "0.0.0.0", data: "/data" });
     expect(parse(["--port", "6000"], env)).toMatchObject({ port: 6000 });
   });
 
-  it("AF_MARKET_ADMIN=1 이면 --admin 없이도 관리 API 를 켠다 (Docker), 다른 값은 꺼짐", () => {
-    expect(parse([], { AF_MARKET_ADMIN: "1" })).toMatchObject({ admin: true });
-    expect(parse([], { AF_MARKET_ADMIN: "true" })).toMatchObject({ admin: false });
+  it("일반 이름 PORT·HOST 와 AF_MARKET_ADMIN 은 CLI 에서 무시한다", () => {
+    expect(parse([], { PORT: "5000", HOST: "0.0.0.0", AF_MARKET_ADMIN: "1" })).toMatchObject({ port: 3456, host: "127.0.0.1", admin: false });
+    expect(parse(["--admin"], {})).toMatchObject({ admin: true });
   });
 
   it("--help / -h", () => {
@@ -42,8 +42,8 @@ describe("parseCliArgs", () => {
     expect(() => parse([`--port=${p}`])).toThrowError(expect.objectContaining({ code: "INVALID_PORT" }));
   });
 
-  it("환경 변수 PORT 가 잘못돼도 INVALID_PORT", () => {
-    expect(() => parse([], { PORT: "x" })).toThrowError(CliError);
+  it("환경 변수 AF_PORT 가 잘못돼도 INVALID_PORT", () => {
+    expect(() => parse([], { AF_PORT: "x" })).toThrowError(CliError);
   });
 
   it("알 수 없는 옵션·값 누락·위치 인자는 INVALID_ARGS", () => {

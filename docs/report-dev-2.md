@@ -122,3 +122,10 @@ blob 개별 요청 제거(tree content), 2차 rate limit 분류(retry-after·메
 - Dockerfile 미실행: 빌드 단계의 네트워크(corepack·npm registry) 의존, alpine 에서 git 소유권 처리(시험 저장소는 af 사용자로 만들어 회피).
 - `AF_MARKET_ADMIN` 은 CLI 에서도 환경 변수로 켜진다(Docker 용). 컨테이너 포트를 외부에 노출하면 관리 API 도 열리므로 `-p 127.0.0.1:` 바인드와 Host 목록 지정이 전제(문서 T-890에 명시 필요).
 - 루트 `pnpm lint` 는 `tools/license-issue.mjs`(리드 파일)의 `Buffer` no-undef 2건으로 실패한다. 내 변경과 무관.
+
+### PH8 1라운드 반려 반영 (review-2, 리드 "배포 보안 확정")
+- 번들: `ssr.noExternal` 에 `/^@noble\//` 추가(실행 의존성 3개 유지). pack 시험에 "dist/cli.js 의 node: 아닌 bare import 가 모두 dependencies 에 있다"와 "`.map` 없음" 추가. 시험을 먼저 돌려 `.map`, AF_* 환경 변수 시험이 실패하는 것을 확인한 뒤 수정. 이 브랜치엔 noble 이 없어 bare import 시험은 현재 fastify 등만 검사하므로, ph8/dev1 병합 후 통합에서 확인 필요.
+- CLI: 관리 API 는 `--admin` 인자로만(`AF_MARKET_ADMIN` 무시). 바인드 env 는 `AF_HOST`·`AF_PORT`(일반 이름 `HOST`·`PORT` 는 읽지 않음). 웹 dist 의 `.map` 은 복사하지 않는다.
+- Dockerfile: 매니페스트·lock 먼저 COPY 후 install(레이어 캐시), `ENV AF_MARKET_DATA=/data AF_PORT=3456`(HOST 제거). 넓은 바인드는 `ENTRYPOINT ["node","dist/cli.js","--host","0.0.0.0"]` 로 했다 — 지시는 CMD 였으나, CMD 면 `docker run IMG --admin` 이 CMD 를 대체해 `--host` 가 사라지기 때문이다. 관리 API 는 `docker run … IMAGE --admin`. `.dockerignore` 에 `license-private*` 추가.
+- 권고: node 이미지 digest 고정은 릴리스 때(Dockerfile 주석에 기록). airgap 스크립트: curl 이미지 `8.11.1` 고정, 모드 755, 외부 연결 판정 분리(차단됨=정상, 새어 나감=exit 3, 판정 불가=exit 1 — "연결 실패 시 exit 3" 지시는 "연결이 성공해 망이 새는 경우"로 해석), `--admin` 인자 사용. `tests/scripts/run.sh` shellcheck 대상에 `tests/scripts/*.sh` 포함(CI 의 airgap 잡 연결은 리드). 이 PC 는 여전히 docker 데몬이 꺼져 있어 실행 검증 못 함.
+- 시험: app 30건 통과, typecheck·eslint packages 통과, shellcheck(`tests/scripts/*.sh`) 통과.

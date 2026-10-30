@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # T-813 / DPL-01 (design.md 10.2): 폐쇄망(외부 접속 불가) Docker 시험.
 #   1) 이미지 빌드 → docker network create --internal(외부 차단)
-#   2) 앱 컨테이너 기동(AF_MARKET_ADMIN=1, AF_ALLOW_FILE_SOURCES=1, AF_MARKET_HOSTS=컨테이너 이름)
+#   2) 앱 컨테이너 기동(--admin 인자, AF_ALLOW_FILE_SOURCES=1, AF_MARKET_HOSTS=컨테이너 이름)
 #   3) 같은 네트워크의 curlimages/curl 로 / 와 /api/market/health 확인
 #   4) 볼륨에 만든 시험 git 저장소를 file:// 소스로 등록·색인·검색
 #   5) 앱 컨테이너에서 외부(https://github.com) 연결이 실패하는지 확인
@@ -28,7 +28,7 @@ IMG="agentforge-airgap:${sfx}"
 NET="af-airgap-${sfx}"
 APP="af-app-${sfx}"
 VOL="af-data-${sfx}"
-CURL_IMG="${AF_AIRGAP_CURL_IMAGE:-curlimages/curl:latest}"
+CURL_IMG="${AF_AIRGAP_CURL_IMAGE:-curlimages/curl:8.11.1}"
 PORT=3456
 
 cleanup() {
@@ -65,8 +65,8 @@ docker run --rm -v "$VOL:/data" --entrypoint sh "$IMG" -c '
 
 echo "== 3) 앱 컨테이너 기동"
 docker run -d --name "$APP" --network "$NET" -v "$VOL:/data" \
-  -e AF_MARKET_ADMIN=1 -e AF_ALLOW_FILE_SOURCES=1 -e "AF_MARKET_HOSTS=$APP" \
-  "$IMG" >/dev/null || fail "앱 컨테이너 기동"
+  -e AF_ALLOW_FILE_SOURCES=1 -e "AF_MARKET_HOSTS=$APP" \
+  "$IMG" --admin >/dev/null || fail "앱 컨테이너 기동"
 
 ok=0
 for _ in $(seq 1 30); do
@@ -91,8 +91,15 @@ net_curl -X POST -H 'content-type: application/json' -d '{"id":"airgap"}' \
 net_curl "http://$APP:$PORT/api/market/search?q=hello" | grep -q '"id":"hello"' || fail "색인된 스킬이 검색되지 않습니다"
 
 echo "== 6) 외부 연결 차단 확인"
-if js "fetch('https://github.com',{signal:AbortSignal.timeout(5000)}).then(()=>process.exit(0),()=>process.exit(1))"; then
-  fail "앱 컨테이너에서 외부(https://github.com)로 나갈 수 있습니다 — 폐쇄망 시험이 성립하지 않습니다"
-fi
+# 판정을 분리한다: 연결 실패(차단됨)=7 → 정상, 연결 성공(새어 나감)=8 → exit 3, 그 밖(exec 실패 등) → exit 1
+set +e
+js "fetch('https://github.com',{signal:AbortSignal.timeout(5000)}).then(()=>process.exit(8),()=>process.exit(7))"
+rc=$?
+set -e
+case "$rc" in
+  7) ;;
+  8) echo "실패: 앱 컨테이너에서 외부(https://github.com)로 나갈 수 있습니다 — 폐쇄망 시험이 성립하지 않습니다"; exit 3 ;;
+  *) fail "외부 연결 확인을 수행하지 못했습니다(rc=$rc)" ;;
+esac
 
 echo "통과: 폐쇄망 시험 (web, health, file:// 소스 색인, 외부 차단)"

@@ -20,3 +20,4 @@ packages/core/src/templates.generated.ts
 *.license-key
 docs
 tests
+license-private*
