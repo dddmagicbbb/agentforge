@@ -1,6 +1,7 @@
 // 라이선스 키 발급(ADR-0008, T-800). 형식: AF1.<b64url(payload)>.<b64url(Ed25519 서명)>
 // 사용: node tools/license-issue.mjs --kid <kid> --tier free|pro|team --licensee <이름> [--seats N] [--expires YYYY-MM-DD] [--issued YYYY-MM-DD] [--key <비밀 키 pem>]
 //   비밀 키 기본 위치: ~/.agentforge/license-signing/<kid>.pem
+import { Buffer } from "node:buffer";
 import { createPrivateKey, randomUUID, sign } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";

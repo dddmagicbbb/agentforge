@@ -548,3 +548,4 @@ PoC에는 고정 목록(MARKET 5종)과 자리표시 SKILL.md만 있다. 원칙�
 - `docs/deploy.md`: npx·Docker(폐쇄망 반입: `docker save`·`docker load`)·웹 정적 호스팅·라이선스 적용 방법
 - `docs/report-beta.md`: 베타 5명 점검표와 폐쇄망 VM 시험 절차(사람 수행)
 - **운영 공개 키(T-800 완료)**: `LICENSE_PUBLIC_KEYS = { "af-2026-1": "3dcad4039de3a1d45d72fbdf1f442008600fb3ec1bfd1e50a26ecd17d2df0bb1" }`(Ed25519 원값 hex). 비밀 키는 리드 PC `~/.agentforge/license-signing/af-2026-1.pem`에만 있다(저장소 밖, 사용자 백업).
+- **등급 강제 경로 정리(리드 확정)**: 등급별 상한은 `checks`의 `LICENSE_LIMIT` 하나로만 강제한다. `validate`의 `tierLimit` 옵션과 `DEV_COUNT_OVER_TIER`는 스키마 절대 상한(`MAX_DEVELOPERS`=6)으로만 쓰고, 등급 강제에는 쓰지 않는다(호출부는 넘기지 않는다).
