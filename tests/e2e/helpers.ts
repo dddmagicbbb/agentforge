@@ -57,13 +57,27 @@ export function shellSkipReason(): string | null {
   return null;
 }
 
+const E2E_GITCONFIG = "[user]\n\tname = af-e2e\n\temail = af-e2e@example.com\n[init]\n\tdefaultBranch = main\n[core]\n\tautocrlf = false\n[commit]\n\tgpgsign = false\n";
+
+/**
+ * 개발자 PC 의 git 전역·시스템 설정(autocrlf, hooksPath, templateDir, 서명 등)을 읽지 않게 하는 환경 변수.
+ * home 폴더에 시험용 .gitconfig 를 만들고 HOME·USERPROFILE·GIT_CONFIG_GLOBAL 을 그곳으로 돌린다.
+ * (마켓 서버는 git 에 HOME·USERPROFILE 만 넘기므로 HOME 교체가 서버 경로의 격리 수단이다.)
+ */
+export function isolatedGitEnv(home: string): Record<string, string> {
+  fs.mkdirSync(home, { recursive: true });
+  const gitconfig = path.join(home, ".gitconfig");
+  fs.writeFileSync(gitconfig, E2E_GITCONFIG);
+  return { HOME: home, USERPROFILE: home, XDG_CONFIG_HOME: path.join(home, ".config"), GIT_CONFIG_GLOBAL: gitconfig, GIT_CONFIG_NOSYSTEM: "1" };
+}
+
 /** 가짜 claude 와 격리된 git 설정이 든 환경 변수 */
 export function isolatedEnv(root: string): NodeJS.ProcessEnv {
   const bin = path.join(root, "fakebin");
   fs.mkdirSync(bin, { recursive: true });
   fs.writeFileSync(path.join(bin, "claude"), "#!/usr/bin/env bash\nexit 0\n", { mode: 0o755 });
   const gitconfig = path.join(root, "gitconfig");
-  fs.writeFileSync(gitconfig, "[user]\n\tname = af-e2e\n\temail = af-e2e@example.com\n[init]\n\tdefaultBranch = main\n");
+  fs.writeFileSync(gitconfig, E2E_GITCONFIG);
   return { ...process.env, PATH: `${bin}${path.delimiter}${process.env["PATH"] ?? ""}`, GIT_CONFIG_GLOBAL: gitconfig, GIT_CONFIG_NOSYSTEM: "1" };
 }
 
@@ -98,11 +112,18 @@ export function makeGitRepo(dir: string, files: Record<string, string>): void {
     fs.mkdirSync(path.dirname(p), { recursive: true });
     fs.writeFileSync(p, content);
   }
+  const home = tmpDir("af-e2e-githome-");
+  const env = { ...process.env, ...isolatedGitEnv(home) };
   const git = (...a: string[]) => {
-    const r = spawnSync("git", ["-c", "user.name=af-e2e", "-c", "user.email=af-e2e@example.com", "-c", "commit.gpgsign=false", ...a], { cwd: dir, encoding: "utf8" });
+    // init.templateDir 비움: 개발자 PC 템플릿의 훅이 시험 저장소에 복사되지 않게 한다
+    const r = spawnSync("git", ["-c", "init.templateDir=", ...a], { cwd: dir, env, encoding: "utf8" });
     if (r.status !== 0) throw new Error(`git ${a.join(" ")} 실패: ${r.stderr}`);
   };
-  git("init", "-q", "-b", "main");
-  git("add", "-A");
-  git("commit", "-q", "-m", "init");
+  try {
+    git("init", "-q", "-b", "main");
+    git("add", "-A");
+    git("commit", "-q", "-m", "init");
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
 }

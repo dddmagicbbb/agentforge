@@ -90,7 +90,10 @@
     - 인터프리터: node `require('https')`·`import('https://…')`, PowerShell `DownloadString/File`·`Start-BitsTransfer`, `certutil -urlcache`·`bitsadmin`·`aria2c`, `httpx`·`axios`, Ruby `open-uri`·`URI.open`, Java `openStream`
     - 패키지 실행기·설치기가 URL을 받는 경우(`deno/bun run`, `npx`·`pnpm dlx`·`uv/pipx run`, `pip/npm/gem install`)
   - GHES CORS 서버 중계(P2)
-  - E2E 보강(query string 토큰, ZIP과 tree 동일성, git 설정 격리)
+  - ~~E2E 보강(query string 토큰, ZIP과 tree 동일성, git 설정 격리)~~ → 2026-10-30 처리(`tests/e2e/`).
+    - 토큰: 전체 URL(query string 포함)과 Authorization 외 모든 헤더에 토큰이 없는지 본다.
+    - 동일성: 푸시 성공 화면에서 받은 ZIP과 GitHub tree가 경로·내용·권한까지 같은지 비교한다(변이 시험으로 판별력 확인).
+    - 격리: `makeGitRepo`와 마켓 서버를 임시 HOME·`GIT_CONFIG_GLOBAL`·`GIT_CONFIG_NOSYSTEM`으로 띄워 개발자 PC의 git 설정(autocrlf, 템플릿 훅, 서명)을 읽지 않는다. 서버가 git에 넘기는 환경 변수 목록 때문에, 서버 경로에서 시스템 설정까지 막지는 못한다. 운영 동작(사내 프록시·CA 설정 사용)은 바꾸지 않았다.
 - **실제 GitHub 실기(사람 승인 2026-10-30)**:
   - 방법: `dddmagicbbb/af-push-test`(비공개)를 앱 코드 `pushToGithub` create 모드로 만들고 기본 구성 생성물 54개를 푸시했다.
   - GitHub API로 독립 검증한 결과:

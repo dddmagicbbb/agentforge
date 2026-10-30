@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
-import { freePort, makeGitRepo, readZip, repoRoot, tmpDir } from "./helpers.js";
+import { freePort, isolatedGitEnv, makeGitRepo, readZip, repoRoot, tmpDir } from "./helpers.js";
 
 // MKT-01·02 E2E: 마켓 서버(webDist 같이 제공, 같은 출처) + file:// 소스 → 검색·미리보기·위험 확인·가져오기 → ZIP 원문·sources.lock
 test.describe.configure({ mode: "serial" });
@@ -22,10 +22,13 @@ async function startServer(extra: Record<string, string>): Promise<Running> {
   const port = await freePort();
   const data = tmpDir("af-e2e-market-data-");
   cleanup.push(data);
+  // 서버가 띄우는 git clone 이 개발자 PC 의 ~/.gitconfig 를 읽지 않게 HOME 을 임시 폴더로 돌린다
+  const home = tmpDir("af-e2e-market-home-");
+  cleanup.push(home);
   const root = repoRoot();
   const child = spawn(process.execPath, [path.join(root, "packages/server/dist/main.js")], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), AF_MARKET_DATA: data, AF_WEB_DIST: path.join(root, "packages/web/dist"), ...extra },
+    env: { ...process.env, ...isolatedGitEnv(home), PORT: String(port), AF_MARKET_DATA: data, AF_WEB_DIST: path.join(root, "packages/web/dist"), ...extra },
     stdio: ["ignore", "pipe", "pipe"],
   });
   servers.push(child);

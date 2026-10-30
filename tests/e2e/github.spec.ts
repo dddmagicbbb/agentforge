@@ -1,4 +1,6 @@
+import fs from "node:fs";
 import { expect, test, type Page, type Route } from "@playwright/test";
+import { readZip } from "./helpers.js";
 
 // EXP-02 E2E: 6단계 GitHub 푸시. 계약상 baseUrl 은 https 전용이라 실제 서버 대신
 // 브라우저에서 https://api.github.com 요청을 가로채 가짜 응답을 준다.
@@ -6,7 +8,7 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 const TOKEN = "ghp_E2ESecretTokenValue0123456789";
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "*" };
 
-interface Seen { method: string; path: string; auth: string | undefined; body: unknown }
+interface Seen { method: string; path: string; url: string; auth: string | undefined; headers: Record<string, string>; body: unknown }
 
 /** 가짜 GitHub. fail: "METHOD /path" → 상태 코드 */
 async function fakeGithub(page: Page, fail: Record<string, number> = {}): Promise<Seen[]> {
@@ -17,7 +19,8 @@ async function fakeGithub(page: Page, fail: Record<string, number> = {}): Promis
     const method = req.method();
     if (method === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
     const raw = req.postData();
-    seen.push({ method, path: url.pathname, auth: req.headers()["authorization"], body: raw ? JSON.parse(raw) : undefined });
+    const headers = await req.allHeaders();
+    seen.push({ method, path: url.pathname, url: req.url(), auth: headers["authorization"], headers, body: raw ? JSON.parse(raw) : undefined });
     const key = `${method} ${url.pathname}`;
     const json = (status: number, data: unknown) => route.fulfill({ status, headers: { ...CORS, "content-type": "application/json" }, body: JSON.stringify(data) });
     if (fail[key]) return json(fail[key]!, { message: "fake failure" });
@@ -85,11 +88,26 @@ test("푸시 성공: 요청 순서·mode·부모 없음·force·링크·토큰 �
   expect(seen[3]!.body).toMatchObject({ tree: "tree0001", parents: [] });
   expect(seen[4]!.body).toMatchObject({ sha: "commit0001", force: true });
 
-  // 토큰은 Authorization 헤더에만 있다
+  // 토큰은 Authorization 헤더에만 있다(경로·query string·다른 헤더·본문에는 없다)
   for (const s of seen) {
     expect(s.auth, s.path).toContain(TOKEN);
-    expect(s.path).not.toContain(TOKEN);
+    expect(s.url, s.path).not.toContain(TOKEN);
+    expect(new URL(s.url).searchParams.has("access_token"), s.path).toBe(false);
+    for (const [k, v] of Object.entries(s.headers)) if (k !== "authorization") expect(v, `${s.path} ${k}`).not.toContain(TOKEN);
     expect(JSON.stringify(s.body ?? "")).not.toContain(TOKEN);
+  }
+
+  // ZIP 과 GitHub tree 는 같은 RenderedFile[] 에서 나온다: 같은 화면 상태에서 받은 ZIP 과 경로·내용·권한이 같아야 한다
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "ZIP 다운로드" }).click()]);
+  const { zip, entries } = await readZip(fs.readFileSync(await download.path()));
+  const prefix = download.suggestedFilename().replace(/-agentforge\.zip$/, "") + "/";
+  const zipFiles = entries.filter((e) => !e.dir);
+  expect(zipFiles.every((e) => e.name.startsWith(prefix))).toBe(true);
+  expect(zipFiles.map((e) => e.name.slice(prefix.length)).sort()).toEqual(trees.tree.map((it) => it.path).sort());
+  for (const it of trees.tree) {
+    const e = zipFiles.find((x) => x.name === prefix + it.path)!;
+    expect(e.mode, it.path).toBe(it.mode === "100755" ? 0o755 : 0o644);
+    expect(await zip.file(e.name)!.async("string"), it.path).toBe(it.content);
   }
   expect(await page.locator("body").innerText()).not.toContain(TOKEN);
   expect(await page.content()).not.toContain(TOKEN);
