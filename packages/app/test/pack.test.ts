@@ -35,7 +35,11 @@ describe.skipIf(!built)("패키지 내용 (npm pack --dry-run)", () => {
   });
 
   it("dist/cli.js 의 node: 아닌 모든 bare import 는 dependencies 에 있다 (번들 누락 방지)", () => {
-    const js = readFileSync(`${pkgDir}dist/cli.js`, "utf8");
+    // 번들된 라이브러리의 주석(예: JSDoc 의 import 예시)은 실제 import 가 아니므로 제외한다
+    const js = readFileSync(`${pkgDir}dist/cli.js`, "utf8")
+      .split(/\r?\n/)
+      .filter((l) => !/^\s*(\*|\/\/|\/\*)/.test(l))
+      .join("\n");
     const pkg = JSON.parse(readFileSync(`${pkgDir}package.json`, "utf8")) as { dependencies: Record<string, string> };
     const specs = new Set<string>();
     for (const m of js.matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\(\s*)["']([^"']+)["']/g)) specs.add(m[1]!);
@@ -49,5 +53,11 @@ describe.skipIf(!built)("패키지 내용 (npm pack --dry-run)", () => {
     const pkg = JSON.parse(readFileSync(`${pkgDir}package.json`, "utf8")) as { dependencies: Record<string, string>; bin: Record<string, string> };
     expect(Object.keys(pkg.dependencies).sort()).toEqual(["@fastify/static", "fastify", "zod"]);
     expect(pkg.bin["agentforge"]).toBe("./dist/cli.js");
+  });
+
+  it("기본 빌드 산출물에는 시험 공개 키(AF_LICENSE_TEST_PUBKEY) 처리 경로가 없다", () => {
+    const js = readFileSync(`${pkgDir}dist/cli.js`, "utf8");
+    expect(js).not.toContain("AF_LICENSE_TEST_PUBKEY");
+    expect(js).not.toContain("AF_ALLOW_TEST_LICENSE");
   });
 });

@@ -14,7 +14,9 @@ COPY packages/web/package.json packages/web/
 RUN pnpm install --frozen-lockfile
 COPY . .
 # 루트 package.json 도 이름이 agentforge 라서 앱 선택은 이름이 아니라 경로로 한다
-RUN pnpm build \
+# 시험 빌드(AF_TEST_BUILD=1)만 시험 라이선스 공개 키 경로가 번들에 들어간다. 운영 기본은 0(환경 변수로는 우회 불가)
+ARG AF_TEST_BUILD=0
+RUN AF_TEST_BUILD="$AF_TEST_BUILD" pnpm build \
  && pnpm --filter ./packages/app --prod deploy --legacy /out
 
 # 런타임 단계: 소스·devDependencies 없음. 번들(dist/cli.js)과 실행 의존성(fastify·zod)만 둔다.

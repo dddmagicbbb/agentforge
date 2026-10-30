@@ -2,8 +2,8 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { scanSkillRisk } from "@agentforge/core";
+import { loadTestKeys } from "./test-license.js";
 import { createServer, listenServer, type ListenAddress, type ScanFn } from "@agentforge/server";
-import { CliError } from "./args.js";
 
 export interface RunOptions {
   port: number;
@@ -22,6 +22,8 @@ export interface RunExtras {
   /** 부모 환경(기본 process.env) */
   env?: Record<string, string | undefined>;
   /** 서버에 넘기는 환경을 관찰하는 시험용 훅 */
+  /** 안내 출력(기본 stderr). 경로·키 값은 넘기지 않는다 */
+  onWarn?: (msg: string) => void;
   onEnv?: (env: Record<string, string | undefined>) => void;
 }
 
@@ -39,15 +41,22 @@ export async function startApp(opts: RunOptions, extras: RunExtras = {}): Promis
   if (opts.admin) env["AF_MARKET_ADMIN"] = "1";
   else delete env["AF_MARKET_ADMIN"];
 
-  // TODO(T-811): 서버가 AF_LICENSE·dataDir/license.key 를 읽으면 이 자리를 그대로 연결한다(파일 내용만 env 로 넘긴다).
+  // 라이선스 파일 내용을 서버에 env 로 넘긴다. 읽기 실패는 안내 후 Free 로 계속한다(부모 환경의 AF_LICENSE 도 비운다)
   if (opts.licenseFile) {
     try {
       env["AF_LICENSE"] = (await readFile(opts.licenseFile, "utf8")).trim();
     } catch {
-      throw new CliError("LICENSE_FILE");
+      delete env["AF_LICENSE"];
+      (extras.onWarn ?? ((m) => process.stderr.write(`${m}
+`)))("라이선스 파일을 읽을 수 없어 Free 로 계속합니다.");
     }
   }
   extras.onEnv?.(env);
+
+  // 시험 공개 키는 시험 빌드(__AF_TEST_LICENSE__ = true)에서만 받는다. 운영 빌드에서는 이 분기가 번들에서 사라진다
+  const warn = extras.onWarn ?? ((m: string) => process.stderr.write(`${m}
+`));
+  const publicKeys = __AF_TEST_LICENSE__ ? loadTestKeys(env, warn) : undefined;
 
   const app = await createServer({
     dataDir: opts.data,
@@ -55,6 +64,7 @@ export async function startApp(opts: RunOptions, extras: RunExtras = {}): Promis
     webDist: extras.webDist ?? fileURLToPath(new URL("web", PKG)),
     defaultSourcesFile: extras.defaultSourcesFile ?? fileURLToPath(new URL("catalog/market-sources.json", PKG)),
     env,
+    ...(publicKeys ? { publicKeys } : {}),
   });
   let address: ListenAddress;
   try {

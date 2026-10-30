@@ -8,7 +8,6 @@ const MESSAGES: Record<string, string> = {
   INVALID_ARGS: "인자가 올바르지 않습니다. agentforge --help 를 확인하세요.",
   INVALID_PORT: "포트는 0~65535 사이 숫자여야 합니다.",
   INVALID_HOST: "host 값이 올바르지 않습니다.",
-  LICENSE_FILE: "라이선스 파일을 읽을 수 없습니다.",
 };
 
 async function main(): Promise<void> {
