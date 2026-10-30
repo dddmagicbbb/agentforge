@@ -106,3 +106,19 @@ blob 개별 요청 제거(tree content), 2차 rate limit 분류(retry-after·메
 | 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
 |---|---|---|---|---|
 | PH7 실기 후속 | 완료. 1) 콘솔 출력 0: `@octokit/request` 는 `request.log \|\| console` 로 deprecation 경고를 내므로(`dist-bundle/index.js` 41·99행) `request: { log }` 에도 noop 로거 주입. 2) 모든 요청에 `X-GitHub-Api-Version: 2022-11-28`(core 는 생성자 `headers` 옵션을 읽지 않아 `hook.before("request")` 로 주입) | `packages/exporter/src/github.ts`, `test/github.test.ts` | exporter 52 통과(신규 2), typecheck·lint 통과 | `POST /user/repos` 는 공식 대체 경로 확인 못 해 변경 안 함. 버전 헤더 고정 + 2028-03-10 이전 재확인 필요 |
+
+## PH8 1라운드: T-812, T-813
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+|---|---|---|---|---|
+| T-812 | 완료. `agentforge` CLI(`--port --host --data --license-file --admin --help`), vite ssr 단일 번들(`dist/cli.js`, core·server 포함) + `dist/web`·`dist/catalog` 복사, SIGINT/SIGTERM 정리 종료 | `packages/app/**`, `pnpm-lock.yaml` | app 28건(args·run·pack) 통과, 루트 build·typecheck 통과 | 1) 라이선스 파일은 `AF_LICENSE` 로 넘기는 자리만(T-811 TODO). 2) 루트와 앱 npm 이름이 같아 `--filter agentforge` 는 둘 다 선택 → 경로 필터 사용 |
+| T-813 | 작성 완료, docker 실행 검증은 못 함 | `Dockerfile`, `.dockerignore`, `tests/scripts/airgap-check.sh` | `bash -n`·shellcheck 통과, docker 없음/데몬 꺼짐 시 건너뜀·REQUIRED=1 실패 확인. `pnpm deploy --legacy` 산출물(dist+prod node_modules)로 `node dist/cli.js` 기동 확인 | 이미지 빌드·폐쇄망 절차는 이 PC 에서 docker 데몬이 꺼져 있어 실제로 못 돌렸다 |
+
+### CI 연결 제안 (리드)
+- ubuntu 잡 1개: `AF_AIRGAP_REQUIRED=1 bash tests/scripts/airgap-check.sh` (docker·curlimages/curl 이미지 pull 가능해야 함, 약 2~4분). 실패 시 `docker logs` 는 스크립트가 출력한다.
+- 첫 CI 실행에서 확인할 것: Dockerfile 의 `pnpm install --frozen-lockfile`(corepack 이 packageManager 의 pnpm 10.34.7 을 받음), `pnpm deploy --legacy`, `HEALTHCHECK`.
+- T-811 뒤에 `airgap-check.sh` 에 `/api/license` 단계 추가(스크립트 상단 TODO).
+
+### 남은 위험
+- Dockerfile 미실행: 빌드 단계의 네트워크(corepack·npm registry) 의존, alpine 에서 git 소유권 처리(시험 저장소는 af 사용자로 만들어 회피).
+- `AF_MARKET_ADMIN` 은 CLI 에서도 환경 변수로 켜진다(Docker 용). 컨테이너 포트를 외부에 노출하면 관리 API 도 열리므로 `-p 127.0.0.1:` 바인드와 Host 목록 지정이 전제(문서 T-890에 명시 필요).
+- 루트 `pnpm lint` 는 `tools/license-issue.mjs`(리드 파일)의 `Buffer` no-undef 2건으로 실패한다. 내 변경과 무관.
