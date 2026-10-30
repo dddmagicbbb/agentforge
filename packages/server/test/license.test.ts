@@ -14,7 +14,7 @@ function issue(over: Record<string, unknown> = {}, signer = privateKey): string 
 }
 const TEST_ENV = {};
 const PUBKEYS = { test: PUB_HEX };
-const NOW = () => new Date("2026-06-01T12:00:00Z");
+const NOW = () => new Date("2026-05-31T23:30:00Z");
 
 async function get(env: Record<string, string>, extra: Record<string, unknown> = {}) {
   const { app, dataDir } = await makeServer({ env, now: NOW, publicKeys: PUBKEYS, ...extra });
@@ -45,9 +45,10 @@ describe("T-811 GET /api/license", () => {
   });
 
   it("만료는 now 기준 free+LICENSE_EXPIRED (만료일 당일은 유효)", async () => {
-    const key = issue({ expires: "2026-05-31" });
+    // NOW 는 UTC 날짜 경계 직전(로컬 시간대에 따라 6/1 이 될 수 있는 시각): 만료일 5/31 은 유효, 5/30 은 만료
+    const key = issue({ expires: "2026-05-30" });
     expect((await get({ ...TEST_ENV, AF_LICENSE: key })).res.json()).toEqual({ tier: "free", code: "LICENSE_EXPIRED" });
-    const same = issue({ expires: "2026-06-01" });
+    const same = issue({ expires: "2026-05-31" });
     expect((await get({ ...TEST_ENV, AF_LICENSE: same })).res.json()).toMatchObject({ tier: "pro" });
   });
 
