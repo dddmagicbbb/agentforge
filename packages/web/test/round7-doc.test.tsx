@@ -1,7 +1,7 @@
 import { act, fireEvent, render as mount, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultDraft, type RenderedFile } from "@agentforge/core";
-import { App } from "../src/App";
+import { App3 as App } from "./pro3";
 import i18n from "../src/i18n";
 import en from "../src/locales/en.json";
 import { applyExistingClaudeMd, buildPreview } from "../src/use-preview";

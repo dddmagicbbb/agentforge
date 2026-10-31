@@ -65,7 +65,7 @@
 - **게이트 통과(사람 승인 2026-10-29)**: develop → main 병합(PR #7, 84a5aef), 태그 `v0.2.0`. 최종 CI(580bde2)에서 Dev Container 생성물 postCreateCommand 실동작(tmux 3.5a·jq 1.7·Claude Code 2.1.312) 확인.
 - 다음: PH7(확장 2 — MKT-01·02, EXP-02) 착수는 사람 결정.
 
-## PH7 확장 2 — 마켓·GitHub — 2026-10-30 (G 판정 대기, `v0.3.0` 예정)
+## PH7 확장 2 — 마켓·GitHub — 2026-10-30 · `v0.3.0`
 - 계약 선행: design.md 9장·ADR-0007. 스키마 확장(가져온 스킬 `files`·`ref`, GitHub `mode`·`baseUrl`(https 전용)·`branch`)은 리드가 했다. 기본값 생성물은 v0.2.0과 바이트 단위로 같다(golden 유지).
 - 완료 작업(tasks.md PH7 전부):
   - dev-1: 위험 검사 `scanSkillRisk`(5종, YAML 표기 변형·줄 이어쓰기·파이프 셸·irm/iex·인터프리터 URL), 위험을 files로 재계산하는 불변식, 가져온 스킬 원문 렌더(644), `sources.lock`(순수 sha256), `planGithubTree`(mode 기준, env.local 차단), IMPORT_RISK·README 안내
@@ -86,9 +86,14 @@
 - **CI 미실행**: GitHub Actions가 결제·지출 한도 문제로 job을 시작하지 않는다(PR #8 이후). develop 병합은 로컬 검증을 근거로 했다. 게이트 전에 CI 3종 통과가 필요하다.
 - 게이트 남은 조건(사람): ① Actions 결제 해결 후 CI 통과 ② 실제 GitHub 실기 1회(임시 비공개 저장소 생성 → 푸시 확인 → 삭제, 사람 승인 후).
 - 후속 후보:
-  - 마켓 인터프리터 변형 추가(`require('https').get`, `deno run https://` 등)
+  - ~~마켓 인터프리터 변형 추가(`require('https').get`, `deno run https://` 등)~~ → 2026-10-30 처리. `REMOTE_DOWNLOAD`에 다음을 추가했다(시험 28건, 오탐 방지 6건).
+    - 인터프리터: node `require('https')`·`import('https://…')`, PowerShell `DownloadString/File`·`Start-BitsTransfer`, `certutil -urlcache`·`bitsadmin`·`aria2c`, `httpx`·`axios`, Ruby `open-uri`·`URI.open`, Java `openStream`
+    - 패키지 실행기·설치기가 URL을 받는 경우(`deno/bun run`, `npx`·`pnpm dlx`·`uv/pipx run`, `pip/npm/gem install`)
   - GHES CORS 서버 중계(P2)
-  - E2E 보강(query string 토큰, ZIP과 tree 동일성, git 설정 격리)
+  - ~~E2E 보강(query string 토큰, ZIP과 tree 동일성, git 설정 격리)~~ → 2026-10-30 처리(`tests/e2e/`).
+    - 토큰: 전체 URL(query string 포함)과 Authorization 외 모든 헤더에 토큰이 없는지 본다.
+    - 동일성: 푸시 성공 화면에서 받은 ZIP과 GitHub tree가 경로·내용·권한까지 같은지 비교한다(변이 시험으로 판별력 확인).
+    - 격리: `makeGitRepo`와 마켓 서버를 임시 HOME·`GIT_CONFIG_GLOBAL`·`GIT_CONFIG_NOSYSTEM`으로 띄워 개발자 PC의 git 설정(autocrlf, 템플릿 훅, 서명)을 읽지 않는다. 서버가 git에 넘기는 환경 변수 목록 때문에, 서버 경로에서 시스템 설정까지 막지는 못한다. 운영 동작(사내 프록시·CA 설정 사용)은 바꾸지 않았다.
 - **실제 GitHub 실기(사람 승인 2026-10-30)**:
   - 방법: `dddmagicbbb/af-push-test`(비공개)를 앱 코드 `pushToGithub` create 모드로 만들고 기본 구성 생성물 54개를 푸시했다.
   - GitHub API로 독립 검증한 결과:
@@ -101,3 +106,34 @@
 - 실기에서 발견한 것(후속):
   - Octokit 로거를 noop으로 지정했는데도 `@octokit/request`의 deprecation 경고(메서드·URL, 토큰 없음)가 console에 찍힌다. 요청 단위 `request.log`에도 noop을 넘겨야 한다.
   - GitHub가 `POST /user/repos`를 2028-03-10 제거 예정으로 표시한다. API 버전 헤더(`X-GitHub-Api-Version`) 고정과 대체 엔드포인트를 확인해야 한다.
+- **CI 복구**: 저장소를 공개로 전환해(사람 결정 2026-10-30) Actions 결제 제약을 해소했다. 전환 전에 전 브랜치 이력의 비밀 값 패턴 0건, env.local 커밋 0건, 자체 runner 미등록을 확인했다. develop 20b155c에서 CI 3종이 통과했다.
+- **게이트 통과(사람 승인 2026-10-30)**: develop → main 병합(PR #12, d4b2b29), 태그 `v0.3.0`.
+- 남은 정리(사람): 실기용 임시 저장소 `dddmagicbbb/af-push-test` 삭제(토큰에 delete_repo 권한 없음) → 2026-10-30 삭제 확인.
+- 다음: PH8(상용화·베타 — LIC-01, DPL-01, 베타 5명·폐쇄망 설치 시험) 착수는 사람 결정.
+
+## PH8 상용화·베타 — 2026-10-30 (개발 완료, G5 사람 확인 대기, `v0.9.0` 예정)
+- 계약 선행: design.md 10장·ADR-0008.
+  - 리드 작업(T-800): 라이선스 키 도구(`tools/license-keygen.mjs`·`license-issue.mjs`)를 만들고, 운영 서명 키 `af-2026-1`을 생성했다.
+  - 공개 키는 core에 넣었고, 비밀 키는 저장소 밖에 둔다(`.gitignore` `*.pem`).
+- 완료 작업:
+  - dev-1(T-801): `verifyLicense`(Ed25519 `@noble/curves`, zip215 끔, base64url 정규·달력 검증), `tierLimits`, checks `LICENSE_LIMIT`·`LICENSE_INVALID`
+  - dev-2(T-811·T-812·T-813): 서버 `/api/license`, npx 앱 `agentforge`(--admin 전용·AF_HOST/AF_PORT·noble 번들·소스맵 제외), Docker(비루트·HEALTHCHECK·ENTRYPOINT 0.0.0.0), 폐쇄망 시험
+  - dev-3(T-821): 등급 배지·키 입력(메모리만)·상한 안내·생성 차단, 화면 초기값 2명(Free)
+  - 리드(T-890): `docs/deploy.md`·`docs/report-beta.md`
+- 시험(develop 0385b31):
+  - 단위: core 540 · exporter 52 · server 70 · web 191 · app 36
+  - CI 4종(ubuntu·macOS·Dev Container·**airgap-docker**) 통과
+  - 폐쇄망 시험은 외부 차단 네트워크에서 다음을 매 커밋 확인한다: web·health, `file://` 마켓, 라이선스(시험 이미지 pro·운영 이미지 free), 외부 연결 차단.
+- 검토: 반려 4회, 모두 수정.
+  - E2E가 화면 기본 2명과 충돌했다.
+  - npx 번들에 `@noble`이 빠져 기동에 실패했다.
+  - 리드 계약 결함: 운영 빌드에서 환경 변수만으로 시험 키를 넣어 등급을 우회할 수 있었다. 빌드 시점 define으로만 허용하도록 바꿨고, 실측 7종이 모두 free였다.
+  - 배포 기본값 강화: 관리 API는 `--admin`일 때만 켜고, 일반 `HOST` 환경 변수는 쓰지 않는다.
+- 운영:
+  - 저장소 공개 전환으로 CI가 복구됐다.
+  - 권한 규칙상 서브에이전트는 브랜치를 바꿀 수 없어, 리드가 worktree를 새로 만들어 준다.
+- G5 남은 조건(사람, `docs/report-beta.md`): ① 베타 5명 실제 프로젝트 적용 ② 외부 차단 VM 설치 시험.
+- 사람 할 일:
+  - ~~서명 비밀 키(`~/.agentforge/license-signing/af-2026-1.pem`) 백업~~ → 2026-10-30 완료. 외장 저장 장치에 복사했고 SHA-256이 원본과 같음을 확인했다. 매체 암호화와 두 번째 사본은 담당자 몫이다.
+  - ~~임시 저장소 `af-push-test` 삭제~~ → 2026-10-30 사람이 삭제. 인증 조회 결과 404를 확인했다.
+  - npm 공개 배포·웹 호스팅 결정(PH9)

@@ -103,6 +103,22 @@ G(`v0.2.0`): 기능 ID별 검증 통과, CI(ubuntu·macOS·Dev Container) 통과
 라운드: 1) T-701 / T-711 / T-721 → 2) T-702·T-703 / T-712 / T-722·T-723 → 3) 통합 수정 / T-713 / 화면 마무리.
 G(`v0.3.0`): 기능 ID별 검증 통과, CI 3종 통과, 기본값 golden 불변, 실제 GitHub 실기 1회(사람 확인 후 임시 저장소 생성·삭제).
 
+## PH8 상용화·베타 (dev 3 + review 3 + 사람, 계약: design.md 10장 · ADR-0008)
+| 작업 ID | 기능 ID | 담당 | 도메인 | 담당 폴더 | 선행 | 완료 기준 |
+| --- | --- | --- | --- | --- | --- | --- |
+| T-800 | LIC-01 | lead | 공통 | `tools/`, `.gitignore` | — | `license-keygen.mjs`·`license-issue.mjs`(node:crypto Ed25519, 비밀 키 저장소 밖), 운영 공개 키 1개 생성(kid `af-2026-1`), 비밀 키 위치 안내 |
+| T-801 | LIC-01 | dev-1 | core | `packages/core/` | T-800 | 10.1 `verifyLicense`·`tierLimits`·`LICENSE_PUBLIC_KEYS`·checks `LICENSE_LIMIT`/`LICENSE_INVALID`·canExport, `@noble/curves` 추가, 시험(위조·만료·kid·형식·경계, 시험 키 주입) |
+| T-811 | LIC-01·DPL-01 | dev-2 | server | `packages/server/` | T-801 | 10.2 `/api/license`·health.license, env/파일 우선순위, 원문 미응답, 시험 공개 키 주입 조건 |
+| T-812 | DPL-01 | dev-2 | app | `packages/app/`(신규) | T-811 | npx CLI(`agentforge`), 인자·종료 처리, 패키지 내용(web·server dist·catalog), 시험 |
+| T-813 | DPL-01 | dev-2 | 배포 | `Dockerfile`, `.dockerignore`, `tests/scripts/airgap-check.sh` | T-812 | 10.2 Docker(비루트·HEALTHCHECK)·폐쇄망 시험 스크립트(CI 연결은 리드) |
+| T-821 | LIC-01 | dev-3 | web | `packages/web/` | T-801 | 10.3 등급 표시·키 입력(메모리만)·LICENSE_* 문구·제한 안내·생성 차단 |
+| T-890 | — | lead | 문서 | `docs/deploy.md`, `docs/report-beta.md` | T-813 | 설치·폐쇄망 반입·라이선스 적용 문서, 베타 5명·폐쇄망 VM 점검표 |
+| T-891 | RUN-02·RUN-03 | lead | 생성물 | `templates/`, `packages/core/src/render/`, `tests/` | T-890 | ADR-0009(사전 시험 B-5·B-6·B-9): `signal.sh`(자기 신호만, 허용 목록), `sync-dev.sh`(통과한 dev-i → develop → feature/devj), `dev-N.wait-M` 안내, dev·review·analyst 지침(ko·en), CLAUDE.md·README 문구, golden 의도 차이·bats 9건 |
+| T-892 | RUN-03 | lead | 생성물 | `templates/static/integrate.sh`, `tests/scripts/parallel-mock.bats` | T-891 | ADR-0009 보강(재실행 B-10): 병합 뒤 설치 명령을 테스트보다 먼저 실행, 실패 보고. bats 2건 |
+
+담당 폴더 메모: `packages/app/`·`Dockerfile`·`.dockerignore`는 이번 단계에서 dev-2에게 배정한다(`.claude/devs/dev-2.paths` 갱신은 리드).
+G5(`v0.9.0`): 기능 ID별 검증 통과, CI 3종 + 폐쇄망 시험(docker) 통과, **사람: 베타 5명 실제 프로젝트 적용·폐쇄망 VM 설치 시험**.
+
 ## 기능 ID 배정 확인 (P0 22개)
 REQ-01 T-302·T-421 / REQ-02 T-302·T-421 / RTN-01 T-303·T-421 / RTN-02 T-303·T-422 / DEV-01 T-401·T-421 / DEV-02 T-401·T-423 / DEV-03 T-404·T-412 / GEN-01 T-403 / GEN-02 T-403 / GEN-03 T-404·T-413 / DOC-01 T-304 / DOC-02 T-304 / SKL-01 T-402·T-424 / SKL-02 T-402·T-424 / PRV-01 T-305·T-425 / PRV-02 T-405 / PRV-04 T-405·T-425 / RUN-01 T-306 / RUN-02 T-306·T-308·T-414 / RUN-03 T-406·T-414 / VSC-01 T-406 / EXP-01 T-307·T-411·T-415·T-426
 

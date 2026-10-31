@@ -229,6 +229,44 @@ add_reviews() {
   grep -qx "AF_TEST_FROM_DEVELOP" docs/report/integration-test.log
 }
 
+# develop 의 forge.config.json commands 를 바꿔 커밋한다: set_develop_commands <jq 식>
+set_develop_commands() {
+  git worktree add -q "$BATS_TEST_TMPDIR/dv" develop
+  jq "$1" "$BATS_TEST_TMPDIR/dv/.agentforge/forge.config.json" > "$BATS_TEST_TMPDIR/fc.json"
+  mv "$BATS_TEST_TMPDIR/fc.json" "$BATS_TEST_TMPDIR/dv/.agentforge/forge.config.json"
+  git -C "$BATS_TEST_TMPDIR/dv" commit -qam "[common-dev] 명령 변경"
+  git worktree remove "$BATS_TEST_TMPDIR/dv"
+}
+
+@test "B-10: integrate.sh 는 병합 뒤 설치 명령을 테스트보다 먼저 실행한다" {
+  set_develop_commands '.commands.install = "echo AF_INSTALL_RAN" | .commands.test = "echo AF_TEST_RAN"'
+  add_reviews
+  start_agents
+  pass_all
+
+  run_integrate
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"테스트 결과: 통과"* ]]
+  log=docs/report/integration-test.log
+  grep -q "## 설치: echo AF_INSTALL_RAN" "$log"
+  grep -qx "AF_INSTALL_RAN" "$log"
+  # 설치가 테스트보다 앞선다
+  [ "$(grep -n '^## 설치:' "$log" | cut -d: -f1)" -lt "$(grep -n '^## 단위 테스트:' "$log" | cut -d: -f1)" ]
+}
+
+@test "B-10: 설치가 실패하면 테스트 결과를 실패로 보고하고 integrator 는 그대로 실행한다" {
+  set_develop_commands '.commands.install = "echo AF_INSTALL_FAIL; exit 3" | .commands.test = "echo AF_TEST_RAN"'
+  add_reviews
+  start_agents
+  pass_all
+
+  run_integrate
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"테스트 결과: 실패"* ]]
+  grep -qx "AF_INSTALL_FAIL" docs/report/integration-test.log
+  grep -q "start --agent integrator" "$LOG"
+}
+
 @test "D-E: design-1.reject 도 maxRejects(3)번 쌓이면 dev-1.blocked(설계 반려 무한 반복 방지)" {
   start_agents
   touch "$SIG/design-1.reject"; wait_gone 25 "$SIG/design-1.reject"

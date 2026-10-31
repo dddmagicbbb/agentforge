@@ -88,3 +88,12 @@ pre { white-space: pre-wrap; border: 1px solid var(--line); border-radius: 6px; 
 .market li, .mimp > li { margin-bottom: 6px; }
 .chip.warn { color: #b45309; border-color: #b45309; }
 .mpreview pre { max-height: 40vh; }
+
+/* LIC-01 등급 배지·대화상자 */
+.license { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+.license .tier { padding: 1px 8px; border: 1px solid var(--line); border-radius: 10px; font-size: 12px; font-weight: 600; }
+.license .tier-pro, .license .tier-team { border-color: var(--acc); color: var(--acc); }
+.license button { padding: 2px 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; font-size: 12px; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); display: flex; align-items: center; justify-content: center; z-index: 20; }
+.modal { background: var(--bg, #fff); color: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 16px; width: min(520px, 92vw); }
+.modal textarea { width: 100%; }

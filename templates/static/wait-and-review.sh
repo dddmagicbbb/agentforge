@@ -68,6 +68,17 @@ while :; do
         say "review-$i" "코드 검토: 테스트를 실행하고 결과를 docs/review/dev-$i.md 에 쓰고 커밋한 뒤 review-$i.pass 또는 review-$i.reject 신호를 만드세요."
       fi
     fi
+    # 개발자 간 의존(ADR-0009): dev-i 가 dev-j 결과를 기다린다. 병합은 사람이 sync-dev.sh 로 한다
+    for j in $(seq 1 "$n"); do
+      if take "dev-$i.wait-$j"; then
+        if [ -f "$sig/review-$j.passed" ]; then
+          echo "⏸ dev-$i 가 dev-$j 결과를 기다립니다. 반영: bash scripts/sync-dev.sh $j $i"
+        else
+          echo "⏸ dev-$i 가 dev-$j 결과를 기다립니다. dev-$j 통과 후 반영: bash scripts/sync-dev.sh $j $i"
+        fi
+        tmux display-message -t "$name" "dev-$i 대기: dev-$j 반영 필요(sync-dev.sh $j $i)" 2>/dev/null || true
+      fi
+    done
     if take "review-$i.reject"; then
       if [ "$(count "review-$i.reject")" -ge "$max" ]; then
         block "$i" 코드

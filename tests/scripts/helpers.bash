@@ -113,7 +113,7 @@ wait_gone() {
 # 패턴은 ASCII 로 준다(tmux 가 UTF-8 로케일이 아니면 한글이 깨질 수 있음)
 wait_pane() {
   local i; for ((i = 0; i < $1 * 2; i++)); do
-    tmux capture-pane -p -t "$3" 2>/dev/null | grep -q -- "$2" && return 0; sleep 0.5
+    tmux capture-pane -p -J -t "$3" 2>/dev/null | grep -q -- "$2" && return 0; sleep 0.5  # -J: 접힌 줄을 합쳐 본다
   done
   echo "시간 초과: pane '$3' 에 '$2' 없음"; tmux capture-pane -p -t "$3" 2>/dev/null; return 1
 }

@@ -1,0 +1,32 @@
+{
+  "name": "agentforge",
+  "version": "0.3.0",
+  "description": "AgentForge 설치형 앱: 웹 화면과 마켓 색인 서버를 한 번에 실행한다(npx agentforge).",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "agentforge": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@fastify/static": "^10.1.8",
+    "fastify": "^5.12.7",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@agentforge/core": "workspace:*",
+    "@agentforge/server": "workspace:*",
+    "@agentforge/web": "workspace:*",
+    "vite": "^8.3.5"
+  }
+}

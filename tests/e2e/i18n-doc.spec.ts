@@ -1,6 +1,9 @@
 import fs from "node:fs";
 import { expect, test, type Download, type Page } from "@playwright/test";
-import { defaultDraft, mergeClaudeMd } from "@agentforge/core";
+import { defaultDraft, resizeDevs, mergeClaudeMd } from "@agentforge/core";
+
+// PH8(LIC-01): 라이선스가 없으면 화면 초기값은 Free 상한인 개발자 2명이다(web initialDraft)
+const freeDraft = () => resizeDevs(defaultDraft(), 2);
 import { expectedFiles, readZip } from "./helpers.js";
 
 // T-615 E2E: I18N-01(화면 영어 전환·생성물 언어) · DOC-03(기존 CLAUDE.md 병합)
@@ -48,7 +51,7 @@ test("I18N-01 (a) 화면 영어 전환: 단계 이름·버튼이 영어이고 ZI
   const buf = await saveDownload(download);
 
   // 화면 언어는 생성물에 영향이 없다: 생성 파일 전체(경로·내용)가 language=ko 의 core 렌더와 같다
-  const { name, files } = expectedFiles(defaultDraft());
+  const { name, files } = expectedFiles(freeDraft());
   const { zip, entries } = await readZip(buf);
   expect(entries.filter((e) => !e.dir).map((e) => e.name).sort()).toEqual(files.map((f) => `${name}/${f.path}`).sort());
   for (const f of files) expect(await zip.file(`${name}/${f.path}`)!.async("string"), f.path).toBe(f.content);
@@ -70,7 +73,7 @@ test("I18N-01 (b) language=en: ZIP 의 README·CLAUDE.md 가 영어(한글 없�
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "ZIP 다운로드" }).click()]);
   const buf = await saveDownload(download);
 
-  const draft = { ...defaultDraft(), language: "en" as const, requirement: EN_REQUIREMENT };
+  const draft = { ...freeDraft(), language: "en" as const, requirement: EN_REQUIREMENT };
   const { name, files } = expectedFiles(draft);
   for (const p of ["README.md", "CLAUDE.md"]) {
     const text = await zipText(buf, name, p);
@@ -104,7 +107,7 @@ test("DOC-03 (c) 기존 CLAUDE.md 를 붙여넣으면 ZIP 의 CLAUDE.md 에 마�
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "ZIP 다운로드" }).click()]);
   const buf = await saveDownload(download);
 
-  const { name, files } = expectedFiles(defaultDraft());
+  const { name, files } = expectedFiles(freeDraft());
   const next = files.find((f) => f.path === "CLAUDE.md")!.content;
   const text = await zipText(buf, name, "CLAUDE.md");
   // 사용자 텍스트와 PROJECT 구간은 그대로

@@ -30,10 +30,12 @@ export function IssueList({ issues, filter, onGoto, testId, id, current }: Props
         const path = i.path.join(".");
         const reason = String(i.params["reason"] ?? "");
         const extra = i.code === "IMPORT_RISK" ? { codes: riskList(t, String(i.params["codes"] ?? "")) } : {};
+        const lic = i.code === "LICENSE_LIMIT" ? { tierName: t(`license.tier.${String(i.params["tier"])}`, { defaultValue: String(i.params["tier"]) }) }
+          : i.code === "LICENSE_INVALID" ? { reasonText: t(`license.error.${String(i.params["code"])}`, { defaultValue: String(i.params["code"]) }) } : {};
         return (
           <li key={k} className={`lv-${i.level}`}>
             {onGoto ? <span className="i" aria-hidden="true">{ICON[i.level]} </span> : null}
-            {t(`issue.${i.code}`, { context: i.params["slug"] ? "withSlug" : undefined, defaultValue: t("issue.default", { code: i.code, path }), path, ...i.params, reason, ...extra })}
+            {t(`issue.${i.code}`, { context: i.params["slug"] ? "withSlug" : undefined, defaultValue: t("issue.default", { code: i.code, path }), path, ...i.params, reason, ...extra, ...lic })}
             {onGoto && gotoStepOf(i) !== undefined && gotoStepOf(i) !== current ? (
               <button type="button" className="goto" onClick={() => onGoto(gotoStepOf(i)!)}>
                 {t("export.goto", { step: t(`steps.${STEP_KEYS[gotoStepOf(i)!]}`) })}

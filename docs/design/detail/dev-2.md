@@ -278,3 +278,24 @@ T-711: MKT-01. 계약: design.md 9.4·9.6, ADR-0007.
 - github: 실제 GitHub 대신 `page.route("https://api.github.com/**")` 가 가짜 응답(CORS 헤더 포함). baseUrl 은 https 전용이므로 화면 경로만 쓴다.
 - 시험: 마켓 전체 흐름(검색·미리보기·위험 확인 전 ZIP 차단·ZIP 원문·권한 644·sources.lock sha256·README 안내), admin 꺼짐 UI 숨김, push 성공 요청 순서·mode·토큰 지움·토큰 미노출, 401 GITHUB_AUTH, commit 500 GITHUB_PARTIAL.
 - 계약 변경 없음.
+
+## PH8 1라운드: T-812 (npx 앱), T-813 (Docker·폐쇄망 시험) — DPL-01
+1. 작업: T-812 `packages/app`, T-813 `Dockerfile`·`.dockerignore`·`tests/scripts/airgap-check.sh`. T-811(/api/license)은 core `verifyLicense` 가 필요해 다음 라운드.
+2. 파일
+   - `packages/app/package.json`(npm 이름 `agentforge`, bin, `files: ["dist"]`, 실행 의존성 fastify·@fastify/static·zod, 워크스페이스 패키지는 devDependencies), `vite.config.ts`(ssr 번들, `@agentforge/*` 포함), `build.mjs`(vite 빌드 후 web dist·catalog 를 `dist/web`, `dist/catalog` 로 복사), `src/args.ts`, `src/run.ts`, `src/cli.ts`, `test/{args,run,pack}.test.ts`
+   - `Dockerfile`, `.dockerignore`, `tests/scripts/airgap-check.sh`
+3. 함수
+   - `parseCliArgs(argv, env, home): CliCommand` — 우선순위 인자 > 환경 변수(PORT·HOST·AF_MARKET_DATA·AF_MARKET_ADMIN) > 기본값. 오류는 `CliError(code)`: `INVALID_ARGS`·`INVALID_PORT`(0~65535 정수)·`INVALID_HOST`(허용 문자 패턴)·`LICENSE_FILE`. 오류 메시지에 입력 값을 싣지 않는다.
+   - `startApp(opts, extras?): Promise<{ address, close }>` — 부모 env 를 복사해 `AF_MARKET_ADMIN` 을 `--admin` 으로만 결정(없으면 삭제). `--license-file` 은 읽어서 `AF_LICENSE` 로 전달(T-811 연결 자리, TODO). `createServer`+`listenServer` 재사용, scan=core `scanSkillRisk`. listen 실패 시 앱을 닫고 던진다. `close` 는 멱등.
+   - `cli.ts` — 시작 시 `AgentForge: http://host:port` 한 줄, SIGINT/SIGTERM 에서 `close()` 후 종료.
+4. 계약: 서버 API(design 9.4·10.2)는 변경 없이 사용. 계약 변경 없음.
+   - 참고: 루트 package.json 과 앱의 npm 이름이 모두 `agentforge` 라서 `pnpm --filter agentforge` 는 둘 다 선택한다. 앱은 `--filter ./packages/app` 으로 지정한다.
+   - Docker: `pnpm --filter ./packages/app --prod deploy --legacy /out` 으로 번들+실행 의존성만 런타임에 복사. `ENTRYPOINT node dist/cli.js`, 환경 변수로 설정. 컨테이너는 `AF_MARKET_ADMIN=1` 로 관리 API 를 켠다.
+6. 테스트
+   | 기능 | 사례 → 테스트 |
+   |---|---|
+   | DPL-01 인자 | 기본값, 전체 인자, `--port=`, env 우선순위, help, 잘못된 포트·host·알 수 없는 옵션·값 누락 → `args.test.ts` |
+   | DPL-01 기동 | `/`·health 200, `--admin` 없으면 403, 있으면 열림, 부모 env 의 admin 무시, 종료 후 포트 해제, close 멱등, 포트 충돌 거부, 라이선스 파일 env 전달·없음 오류 → `run.test.ts` |
+   | DPL-01 패키지 | `npm pack --dry-run` 에 dist/cli.js·dist/web/index.html·assets·dist/catalog 포함, src·test 제외, 번들에 워크스페이스 import 없음, 실행 의존성 3개 → `pack.test.ts`(빌드 후에만 실행) |
+   | DPL-01 Docker | `bash -n`·shellcheck, docker 없으면 건너뜀·REQUIRED 면 실패, (docker 있을 때) 폐쇄망 절차 → `airgap-check.sh` |
+7. 공통 변경 필요: 없음. `.gitignore`(루트)는 건드리지 않고 `packages/app/.gitignore` 로 `dist/` 를 제외한다.

@@ -56,3 +56,13 @@ jobs:
           AF_IN_DEVCONTAINER_IMAGE: "1"
           AF_DEVCONTAINER_REQUIRED: "1"
         run: bash tests/scripts/devcontainer-check.sh
+
+  # PH8 DPL-01(T-813): Docker 이미지 빌드 후 외부 차단 네트워크(--internal)에서 설치형 동작 확인
+  airgap-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 폐쇄망 설치 시험
+        env:
+          AF_AIRGAP_REQUIRED: "1"
+        run: bash tests/scripts/airgap-check.sh

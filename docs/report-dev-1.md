@@ -94,3 +94,16 @@
 
 - 스냅샷 2종(LiteLLM+마켓, en 동일)만 의도대로 갱신(sources.lock 추가·README 한 줄). golden·기본 구성 불변.
 - core 484 통과, web 134 통과, typecheck·lint 통과.
+
+---
+
+# PH8 T-801
+
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+| --- | --- | --- | --- | --- |
+| T-801 | 완료 | `core/src/license.ts`, `checks.ts`, `index.ts`, `core/package.json`, `pnpm-lock.yaml`, `test/license.test.ts`, `test/checks.test.ts` | core 528 통과(신규 37, 먼저 36 실패 확인) | web 영향 아래 |
+
+- 의존성: `@noble/curves` 2.4.0 (MIT). 서브패스는 v2 규칙대로 `@noble/curves/ed25519.js`.
+- golden render 불변. 기존 `checks.test.ts` 는 helper 가 Pro 라이선스를 넘기도록만 변경.
+- web 영향(리드·dev-3): `packages/web/src/use-preview.ts:34` 의 `checks(draft)` 는 라이선스 없이 호출되어 기본 draft(3명)가 LICENSE_LIMIT(error)로 ZIP·GitHub 차단된다. `checks(draft, { license })` 로 전달 필요. web 에 `LICENSE_LIMIT`·`LICENSE_INVALID`(+`LICENSE_*` 오류) ko·en 문구 필요(params: LIMIT {tier,max}, INVALID {code}).
+- 참고: web 이 `LicenseResult` 를 직접 만들 수 있도록 타입을 export 했다.

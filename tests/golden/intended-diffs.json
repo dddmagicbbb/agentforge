@@ -1,5 +1,5 @@
 {
-  "$comment": "PoC 와 제품의 의도적 차이(ADR-0003·0004·0005·0006). 추가·삭제는 리드 승인. templates: { template(templates/ 상대 경로), defect, adr, reason } — check:poc-static 제외. diffs: { config, path, defect, reason } — golden 내용 비교 제외(대신 전용 시험으로 새 동작을 검증). added: { config, path, defect, reason } — PoC 에 없는 새 생성 파일(목록 비교 제외, 존재만 확인).",
+  "$comment": "PoC 와 제품의 의도적 차이(ADR-0003·0004·0005·0006·0009). 추가·삭제는 리드 승인. templates: { template(templates/ 상대 경로), defect, adr, reason } — check:poc-static 제외. diffs: { config, path, defect, reason } — golden 내용 비교 제외(대신 전용 시험으로 새 동작을 검증). added: { config, path, defect, reason } — PoC 에 없는 새 생성 파일(목록 비교 제외, 존재만 확인).",
   "templates": [
     {
       "template": "static/setup.sh",
@@ -15,15 +15,15 @@
     },
     {
       "template": "static/integrate.sh",
-      "defect": "D-A·D-D·S-4",
-      "adr": "0004·0005·0006",
-      "reason": "병합 충돌 시 abort 후 reset --hard pre-integration 으로 앞선 병합까지 되돌림, 테스트 명령은 병합된 develop 기준으로 읽음(D-D), 병합 전 전원의 검토 파일(feature/devN:docs/review/dev-N.md) 확인(S-4)"
+      "defect": "D-A·D-D·S-4·B-10",
+      "adr": "0004·0005·0006·0009",
+      "reason": "병합 충돌 시 abort 후 reset --hard pre-integration 으로 앞선 병합까지 되돌림, 테스트 명령은 병합된 develop 기준으로 읽음(D-D), 병합 전 전원의 검토 파일(feature/devN:docs/review/dev-N.md) 확인(S-4), 병합 뒤 설치 명령을 테스트보다 먼저 실행(B-10)"
     },
     {
       "template": "static/wait-and-review.sh",
-      "defect": "D-B·D-C·D-E·S-4",
-      "adr": "0004·0005·0006",
-      "reason": "신호 이력 파일명 충돌 시 .<초>.<n> 순번으로 덮어쓰기 방지, 짝 검토자 범위(review-N.paths) 허용(D-C), 설계 반려에도 한도 적용(D-E), 코드 검토 요청에 검토 파일 커밋 지시(S-4)"
+      "defect": "D-B·D-C·D-E·S-4·B-5",
+      "adr": "0004·0005·0006·0009",
+      "reason": "신호 이력 파일명 충돌 시 .<초>.<n> 순번으로 덮어쓰기 방지, 짝 검토자 범위(review-N.paths) 허용(D-C), 설계 반려에도 한도 적용(D-E), 코드 검토 요청에 검토 파일 커밋 지시(S-4), 대기 신호 dev-N.wait-M 소비 후 sync-dev.sh 안내(ADR-0009)"
     },
     {
       "template": "static/check-forge.sh",
@@ -42,6 +42,24 @@
       "defect": "RUN-04",
       "adr": "0006",
       "reason": "tmux 배치(pair·grid·role)·세션 범위 접두키·마우스·pane 로그를 config 에서 읽음(기본값은 pair·C-b 로 동작 동일)"
+    },
+    {
+      "template": "md/dev.tpl.md",
+      "defect": "B-5·B-6·B-9",
+      "adr": "0009",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "template": "md/review.tpl.md",
+      "defect": "B-5·B-6·B-9",
+      "adr": "0009",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "template": "md/analyst.md",
+      "defect": "B-5·B-6·B-9",
+      "adr": "0009",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
     }
   ],
   "diffs": [
@@ -104,6 +122,66 @@
       "path": ".vscode/tasks.json",
       "defect": "PRV-03",
       "reason": "VS Code 7번째 작업 \"AF: 모델 점검\" (ADR-0006, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": "CLAUDE.md",
+      "defect": "B-5·B-6·B-9",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "config": "*",
+      "path": ".claude/agents/analyst.md",
+      "defect": "B-5·B-6·B-9",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "config": "*",
+      "path": ".agentforge/templates/dev.md",
+      "defect": "B-5·B-6·B-9",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "config": "*",
+      "path": ".agentforge/templates/review.md",
+      "defect": "B-5·B-6·B-9",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "config": "*",
+      "path": ".claude/agents/dev-1.md",
+      "defect": "B-5·B-6·B-9",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "config": "*",
+      "path": ".claude/agents/review-1.md",
+      "defect": "B-5·B-6·B-9",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "config": "*",
+      "path": ".claude/agents/dev-2.md",
+      "defect": "B-5·B-6·B-9",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "config": "*",
+      "path": ".claude/agents/review-2.md",
+      "defect": "B-5·B-6·B-9",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "config": "*",
+      "path": ".claude/agents/dev-3.md",
+      "defect": "B-5·B-6·B-9",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
+    },
+    {
+      "config": "*",
+      "path": ".claude/agents/review-3.md",
+      "defect": "B-5·B-6·B-9",
+      "reason": "신호 전용 스크립트·개발자 간 동기화·명령 실행 지침 (ADR-0009, B-5·B-6·B-9)"
     }
   ],
   "added": [
@@ -112,6 +190,18 @@
       "path": "scripts/check-models.sh",
       "defect": "PRV-03",
       "reason": "모델 점검 스크립트 (ADR-0006, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": "scripts/signal.sh",
+      "defect": "B-6",
+      "reason": "신호 전용 스크립트 (ADR-0009, 전 구성 공통)"
+    },
+    {
+      "config": "*",
+      "path": "scripts/sync-dev.sh",
+      "defect": "B-5",
+      "reason": "개발자 간 동기화 스크립트 (ADR-0009, 전 구성 공통)"
     }
   ]
 }

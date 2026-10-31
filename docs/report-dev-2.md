@@ -106,3 +106,38 @@ blob 개별 요청 제거(tree content), 2차 rate limit 분류(retry-after·메
 | 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
 |---|---|---|---|---|
 | PH7 실기 후속 | 완료. 1) 콘솔 출력 0: `@octokit/request` 는 `request.log \|\| console` 로 deprecation 경고를 내므로(`dist-bundle/index.js` 41·99행) `request: { log }` 에도 noop 로거 주입. 2) 모든 요청에 `X-GitHub-Api-Version: 2022-11-28`(core 는 생성자 `headers` 옵션을 읽지 않아 `hook.before("request")` 로 주입) | `packages/exporter/src/github.ts`, `test/github.test.ts` | exporter 52 통과(신규 2), typecheck·lint 통과 | `POST /user/repos` 는 공식 대체 경로 확인 못 해 변경 안 함. 버전 헤더 고정 + 2028-03-10 이전 재확인 필요 |
+
+## PH8 1라운드: T-812, T-813
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+|---|---|---|---|---|
+| T-812 | 완료. `agentforge` CLI(`--port --host --data --license-file --admin --help`), vite ssr 단일 번들(`dist/cli.js`, core·server 포함) + `dist/web`·`dist/catalog` 복사, SIGINT/SIGTERM 정리 종료 | `packages/app/**`, `pnpm-lock.yaml` | app 28건(args·run·pack) 통과, 루트 build·typecheck 통과 | 1) 라이선스 파일은 `AF_LICENSE` 로 넘기는 자리만(T-811 TODO). 2) 루트와 앱 npm 이름이 같아 `--filter agentforge` 는 둘 다 선택 → 경로 필터 사용 |
+| T-813 | 작성 완료, docker 실행 검증은 못 함 | `Dockerfile`, `.dockerignore`, `tests/scripts/airgap-check.sh` | `bash -n`·shellcheck 통과, docker 없음/데몬 꺼짐 시 건너뜀·REQUIRED=1 실패 확인. `pnpm deploy --legacy` 산출물(dist+prod node_modules)로 `node dist/cli.js` 기동 확인 | 이미지 빌드·폐쇄망 절차는 이 PC 에서 docker 데몬이 꺼져 있어 실제로 못 돌렸다 |
+
+### CI 연결 제안 (리드)
+- ubuntu 잡 1개: `AF_AIRGAP_REQUIRED=1 bash tests/scripts/airgap-check.sh` (docker·curlimages/curl 이미지 pull 가능해야 함, 약 2~4분). 실패 시 `docker logs` 는 스크립트가 출력한다.
+- 첫 CI 실행에서 확인할 것: Dockerfile 의 `pnpm install --frozen-lockfile`(corepack 이 packageManager 의 pnpm 10.34.7 을 받음), `pnpm deploy --legacy`, `HEALTHCHECK`.
+- T-811 뒤에 `airgap-check.sh` 에 `/api/license` 단계 추가(스크립트 상단 TODO).
+
+### 남은 위험
+- Dockerfile 미실행: 빌드 단계의 네트워크(corepack·npm registry) 의존, alpine 에서 git 소유권 처리(시험 저장소는 af 사용자로 만들어 회피).
+- `AF_MARKET_ADMIN` 은 CLI 에서도 환경 변수로 켜진다(Docker 용). 컨테이너 포트를 외부에 노출하면 관리 API 도 열리므로 `-p 127.0.0.1:` 바인드와 Host 목록 지정이 전제(문서 T-890에 명시 필요).
+- 루트 `pnpm lint` 는 `tools/license-issue.mjs`(리드 파일)의 `Buffer` no-undef 2건으로 실패한다. 내 변경과 무관.
+
+### PH8 1라운드 반려 반영 (review-2, 리드 "배포 보안 확정")
+- 번들: `ssr.noExternal` 에 `/^@noble\//` 추가(실행 의존성 3개 유지). pack 시험에 "dist/cli.js 의 node: 아닌 bare import 가 모두 dependencies 에 있다"와 "`.map` 없음" 추가. 시험을 먼저 돌려 `.map`, AF_* 환경 변수 시험이 실패하는 것을 확인한 뒤 수정. 이 브랜치엔 noble 이 없어 bare import 시험은 현재 fastify 등만 검사하므로, ph8/dev1 병합 후 통합에서 확인 필요.
+- CLI: 관리 API 는 `--admin` 인자로만(`AF_MARKET_ADMIN` 무시). 바인드 env 는 `AF_HOST`·`AF_PORT`(일반 이름 `HOST`·`PORT` 는 읽지 않음). 웹 dist 의 `.map` 은 복사하지 않는다.
+- Dockerfile: 매니페스트·lock 먼저 COPY 후 install(레이어 캐시), `ENV AF_MARKET_DATA=/data AF_PORT=3456`(HOST 제거). 넓은 바인드는 `ENTRYPOINT ["node","dist/cli.js","--host","0.0.0.0"]` 로 했다 — 지시는 CMD 였으나, CMD 면 `docker run IMG --admin` 이 CMD 를 대체해 `--host` 가 사라지기 때문이다. 관리 API 는 `docker run … IMAGE --admin`. `.dockerignore` 에 `license-private*` 추가.
+- 권고: node 이미지 digest 고정은 릴리스 때(Dockerfile 주석에 기록). airgap 스크립트: curl 이미지 `8.11.1` 고정, 모드 755, 외부 연결 판정 분리(차단됨=정상, 새어 나감=exit 3, 판정 불가=exit 1 — "연결 실패 시 exit 3" 지시는 "연결이 성공해 망이 새는 경우"로 해석), `--admin` 인자 사용. `tests/scripts/run.sh` shellcheck 대상에 `tests/scripts/*.sh` 포함(CI 의 airgap 잡 연결은 리드). 이 PC 는 여전히 docker 데몬이 꺼져 있어 실행 검증 못 함.
+- 시험: app 30건 통과, typecheck·eslint packages 통과, shellcheck(`tests/scripts/*.sh`) 통과.
+
+## PH8 2라운드: T-811 (LIC-01 서버 라이선스)
+
+| 작업 ID | 결과 | 변경 파일 | 테스트 | 남은 문제 |
+| --- | --- | --- | --- | --- |
+| T-811 | 완료 | `packages/server/src/{license,app}.ts`, `packages/app/src/run.ts`, `packages/app/test/{run,pack}.test.ts`, `packages/server/test/license.test.ts`, `tests/scripts/airgap-check.sh` | server 70(신규 8), app 31, lint·typecheck·build 통과, WSL shellcheck 0 | airgap(docker)은 이 PC 에서 미실행 — CI 확인 필요 |
+
+- `GET /api/license`: env `AF_LICENSE` > `dataDir/license.key`, core `verifyLicense`, 서버 UTC 날짜(`now?` 주입). 실패 `{tier:"free",code}`, 없음 `{tier:"free"}`. 키 원문 미응답·미로그. 요청마다 평가(파일 교체·날짜 경과 반영). health 에 `license: tier`.
+- 시험 공개 키(정정, 리드 "시험 공개 키 정정"): server 는 env 로 키를 받지 않고 `createServer({ publicKeys? })` 주입만 쓴다. app 은 빌드 상수 `__AF_TEST_LICENSE__`(vite define, `AF_TEST_BUILD=1` 일 때만 true, 기본 false)일 때만 `src/test-license.ts` 로 `AF_LICENSE_TEST_PUBKEY` 를 읽는다. 기본 빌드 `dist/cli.js` 에는 해당 문자열·경로가 없다(pack 시험). Dockerfile `ARG AF_TEST_BUILD=0`.
+- app `--license-file`: 읽어 `AF_LICENSE` 로 전달. 읽기 실패는 stderr 안내(경로 미출력) 후 Free 로 계속하며 부모의 `AF_LICENSE` 도 비운다. 이에 따라 `LICENSE_FILE` 종료 시험을 "계속 기동" 시험으로 교체(코드 미사용 `LICENSE_FILE` 코드는 args.ts·cli.ts 에서 제거).
+- pack 시험: @noble 은 번들에 포함됨을 확인. 기존 bare import 검사가 번들된 라이브러리 JSDoc 주석(`import … from '@noble/hashes/…'`)을 오탐해 주석 줄을 제외하도록 보정.
+- airgap-check.sh(정정): 시험 이미지(`--build-arg AF_TEST_BUILD=1`)는 pro·원문 부재·health pro, 운영 이미지는 같은 env(AF_LICENSE·TEST_PUBKEY·ALLOW·NODE_ENV=test)를 넣어도 free 인지 확인(이미지 두 개). 이하 키 발급: 임시 폴더에 `license-keygen.mjs test --dir` 로 키 쌍 생성 → `license-issue.mjs --key` 로 pro 발급 → 컨테이너에 `AF_LICENSE`·`AF_LICENSE_TEST_PUBKEY`·`AF_ALLOW_TEST_LICENSE=1` 주입 → `/api/license` pro·키 원문 부재·health `license:pro` 확인. 비밀 키 폴더는 trap 에서 삭제. 호스트에 node 필요(CI 는 보유).

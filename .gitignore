@@ -20,3 +20,8 @@ packages/core/src/templates.generated.ts
 
 # 서브에이전트 worktree
 .claude/worktrees/
+
+# 라이선스 서명용 비밀 키(ADR-0008) — 저장소에 절대 넣지 않는다
+*.pem
+license-private*
+*.license-key

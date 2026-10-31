@@ -2,7 +2,10 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type Download, type Page } from "@playwright/test";
-import { defaultDraft } from "@agentforge/core";
+import { defaultDraft, resizeDevs } from "@agentforge/core";
+
+// PH8(LIC-01): 라이선스가 없으면 화면 초기값은 Free 상한인 개발자 2명이다(web initialDraft)
+const freeDraft = () => resizeDevs(defaultDraft(), 2);
 import { expectedFiles, extractZip, isolatedEnv, readZip, scenario2Draft, shellSkipReason, tmpDir } from "./helpers.js";
 
 // EXP-01 E2E: 6단계 진행 → ZIP 다운로드 → 풀기 → setup.sh → check-forge.sh → 파일 목록·권한
@@ -33,7 +36,7 @@ test("① 기본값으로 1→6단계 진행 후 ZIP 다운로드", async ({ pag
     if (i < STEP_TITLES.length - 1) await page.getByRole("button", { name: "다음", exact: true }).click();
   }
   // 6단계 칩: 파일·실행 스크립트·AI 파일 수(core render 와 같아야 한다)
-  const { files } = expectedFiles(defaultDraft());
+  const { files } = expectedFiles(freeDraft());
   const exec = files.filter((f) => f.mode === 0o755).length;
   const ai = files.filter((f) => f.author === "ai-fill").length;
   await expect(page.getByText(`파일 ${files.length}개`, { exact: true })).toBeVisible();
@@ -48,7 +51,7 @@ test("① 기본값으로 1→6단계 진행 후 ZIP 다운로드", async ({ pag
 test("② 입력 변경: 폴더 겹침 오류가 ZIP 을 막고 3단계로 돌아가 고친 뒤 다운로드", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("프로젝트 이름(폴더·tmux 세션명)").fill("e2e-demo");
-  await page.getByRole("button", { name: "개발자 줄이기" }).click();
+  // 기본이 이미 2명(Free 상한)
   await expect(page.getByLabel("개발자 수", { exact: true })).toHaveText("2");
   await page.getByRole("checkbox", { name: "UI/UX 설계 단계 사용" }).uncheck();
 
@@ -77,7 +80,7 @@ test("② 입력 변경: 폴더 겹침 오류가 ZIP 을 막고 3단계로 돌�
 });
 
 for (const [label, key, draft] of [
-  ["기본값", "default", defaultDraft()],
+  ["기본값", "default", freeDraft()],
   ["변경 입력", "custom", scenario2Draft()],
 ] as const) {
   test(`③ ZIP 검증(${label}): 루트 폴더·파일 목록·권한이 core render 결과와 같다`, async () => {
