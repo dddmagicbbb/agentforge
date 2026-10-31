@@ -97,8 +97,8 @@ describe("입력 패턴", () => {
 });
 
 describe("PH2 골격", () => {
-  it("템플릿 43종(정적 11 + md 16 + md-en 16)이 내장된다", () => {
-    expect(Object.keys(TEMPLATES)).toHaveLength(43);
+  it("템플릿 45종(정적 13 + md 16 + md-en 16)이 내장된다", () => {
+    expect(Object.keys(TEMPLATES)).toHaveLength(45);
     expect(TEMPLATES["md/dev.tpl.md"]).toContain("{{N}}");
   });
 

@@ -13,3 +13,4 @@ Rules:
 - Split the rest by domain across dev-1..dev-N. Folders must not overlap.
 - If the workload piles up on one developer (max/min ratio above 1.5), reassign and write down the reason.
 - Every feature ID in the PRD must be assigned at least once.
+- Record dependencies between developers (tasks whose tests cannot pass without another developer's result) in the Depends on column. Where possible, move shared interfaces and stubs into common tasks to remove the dependency. Write any remaining dependency in analysis.md (during the parallel stage the lead applies it with scripts/sync-dev.sh).
