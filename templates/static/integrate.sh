@@ -29,10 +29,16 @@ for i in $(seq 1 "$n"); do
 done
 
 # 테스트 명령은 병합된 develop 기준으로 읽는다(공통 개발이 develop 에서 바꾼 명령 반영 — 메인 폴더가 main 이었을 수 있음)
+install_cmd="$(jq -r '.commands.install // empty' "$cfg")"
 test_cmd="$(jq -r '.commands.test // "npm test"' "$cfg")"
 e2e_cmd="$(jq -r '.commands.e2e // empty' "$cfg")"
 status=0
-{ echo "## 단위 테스트: $test_cmd"; bash -c "$test_cmd"; } > "$log/integration-test.log" 2>&1 || status=1
+: > "$log/integration-test.log"
+# B-10: 병합으로 바뀐 의존성(개발자가 worktree 에서 추가한 패키지 등)을 테스트 전에 설치한다
+if [ -n "$install_cmd" ]; then
+  { echo "## 설치: $install_cmd"; bash -c "$install_cmd"; } >> "$log/integration-test.log" 2>&1 || status=1
+fi
+{ echo "## 단위 테스트: $test_cmd"; bash -c "$test_cmd"; } >> "$log/integration-test.log" 2>&1 || status=1
 if [ -n "$e2e_cmd" ]; then
   { echo "## E2E: $e2e_cmd"; bash -c "$e2e_cmd"; } >> "$log/integration-test.log" 2>&1 || status=1
 fi

@@ -114,6 +114,7 @@ G(`v0.3.0`): 기능 ID별 검증 통과, CI 3종 통과, 기본값 golden 불변
 | T-821 | LIC-01 | dev-3 | web | `packages/web/` | T-801 | 10.3 등급 표시·키 입력(메모리만)·LICENSE_* 문구·제한 안내·생성 차단 |
 | T-890 | — | lead | 문서 | `docs/deploy.md`, `docs/report-beta.md` | T-813 | 설치·폐쇄망 반입·라이선스 적용 문서, 베타 5명·폐쇄망 VM 점검표 |
 | T-891 | RUN-02·RUN-03 | lead | 생성물 | `templates/`, `packages/core/src/render/`, `tests/` | T-890 | ADR-0009(사전 시험 B-5·B-6·B-9): `signal.sh`(자기 신호만, 허용 목록), `sync-dev.sh`(통과한 dev-i → develop → feature/devj), `dev-N.wait-M` 안내, dev·review·analyst 지침(ko·en), CLAUDE.md·README 문구, golden 의도 차이·bats 9건 |
+| T-892 | RUN-03 | lead | 생성물 | `templates/static/integrate.sh`, `tests/scripts/parallel-mock.bats` | T-891 | ADR-0009 보강(재실행 B-10): 병합 뒤 설치 명령을 테스트보다 먼저 실행, 실패 보고. bats 2건 |
 
 담당 폴더 메모: `packages/app/`·`Dockerfile`·`.dockerignore`는 이번 단계에서 dev-2에게 배정한다(`.claude/devs/dev-2.paths` 갱신은 리드).
 G5(`v0.9.0`): 기능 ID별 검증 통과, CI 3종 + 폐쇄망 시험(docker) 통과, **사람: 베타 5명 실제 프로젝트 적용·폐쇄망 VM 설치 시험**.

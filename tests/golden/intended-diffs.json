@@ -15,9 +15,9 @@
     },
     {
       "template": "static/integrate.sh",
-      "defect": "D-A·D-D·S-4",
-      "adr": "0004·0005·0006",
-      "reason": "병합 충돌 시 abort 후 reset --hard pre-integration 으로 앞선 병합까지 되돌림, 테스트 명령은 병합된 develop 기준으로 읽음(D-D), 병합 전 전원의 검토 파일(feature/devN:docs/review/dev-N.md) 확인(S-4)"
+      "defect": "D-A·D-D·S-4·B-10",
+      "adr": "0004·0005·0006·0009",
+      "reason": "병합 충돌 시 abort 후 reset --hard pre-integration 으로 앞선 병합까지 되돌림, 테스트 명령은 병합된 develop 기준으로 읽음(D-D), 병합 전 전원의 검토 파일(feature/devN:docs/review/dev-N.md) 확인(S-4), 병합 뒤 설치 명령을 테스트보다 먼저 실행(B-10)"
     },
     {
       "template": "static/wait-and-review.sh",

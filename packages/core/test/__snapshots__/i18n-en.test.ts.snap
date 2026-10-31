@@ -51,7 +51,7 @@ exports[`T-605 en 구성 스냅샷 > 스냅샷: en LiteLLM + 마켓 가져오기
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp dfd936531873 scripts/wait-and-review.sh
-755 tp 24467612d3bc scripts/integrate.sh
+755 tp 4b120ffb15a4 scripts/integrate.sh
 755 tp 990237734bef scripts/check-models.sh
 755 tp d93ac3ac3ea7 scripts/signal.sh
 755 tp 0a0f118c138b scripts/sync-dev.sh
@@ -112,7 +112,7 @@ exports[`T-605 en 구성 스냅샷 > 스냅샷: en UI 끔 1`] = `
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp dfd936531873 scripts/wait-and-review.sh
-755 tp 24467612d3bc scripts/integrate.sh
+755 tp 4b120ffb15a4 scripts/integrate.sh
 755 tp 990237734bef scripts/check-models.sh
 755 tp d93ac3ac3ea7 scripts/signal.sh
 755 tp 0a0f118c138b scripts/sync-dev.sh
@@ -156,7 +156,7 @@ exports[`T-605 en 구성 스냅샷 > 스냅샷: en 개발자 정보 비움 1`] =
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp dfd936531873 scripts/wait-and-review.sh
-755 tp 24467612d3bc scripts/integrate.sh
+755 tp 4b120ffb15a4 scripts/integrate.sh
 755 tp 990237734bef scripts/check-models.sh
 755 tp d93ac3ac3ea7 scripts/signal.sh
 755 tp 0a0f118c138b scripts/sync-dev.sh
@@ -216,7 +216,7 @@ exports[`T-605 en 구성 스냅샷 > 스냅샷: en 기본 1`] = `
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp dfd936531873 scripts/wait-and-review.sh
-755 tp 24467612d3bc scripts/integrate.sh
+755 tp 4b120ffb15a4 scripts/integrate.sh
 755 tp 990237734bef scripts/check-models.sh
 755 tp d93ac3ac3ea7 scripts/signal.sh
 755 tp 0a0f118c138b scripts/sync-dev.sh

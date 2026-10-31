@@ -44,6 +44,9 @@
    - 신호는 `bash scripts/signal.sh`로만 만든다.
 5. **analyst 지침**: 개발자 간 의존 작업은 tasks.md 선행 칸에 표시하고, 가능하면 공통 작업(인터페이스·스텁)으로 옮긴다.
 6. CLAUDE.md 고정 규칙의 신호 문구, README 실행 순서(동기화 안내)를 함께 바꾼다.
+7. **(보강, 재실행 B-10) `integrate.sh`는 병합한 뒤 테스트보다 먼저 `commands.install`을 실행한다.**
+   - 설치 출력도 `integration-test.log`에 남긴다.
+   - 설치가 실패하면 결과를 "실패"로 보고하고, integrator는 그대로 실행해 원인을 정리하게 한다.
 
 ## 결과
 - 신호 12건은 더 이상 승인 창을 띄우지 않는다.

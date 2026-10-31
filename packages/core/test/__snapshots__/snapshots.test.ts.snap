@@ -51,7 +51,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: LiteLLM + 마켓 가�
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp dfd936531873 scripts/wait-and-review.sh
-755 tp 24467612d3bc scripts/integrate.sh
+755 tp 4b120ffb15a4 scripts/integrate.sh
 755 tp 990237734bef scripts/check-models.sh
 755 tp d93ac3ac3ea7 scripts/signal.sh
 755 tp 0a0f118c138b scripts/sync-dev.sh
@@ -111,7 +111,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: UI 끔 1`] = `
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp dfd936531873 scripts/wait-and-review.sh
-755 tp 24467612d3bc scripts/integrate.sh
+755 tp 4b120ffb15a4 scripts/integrate.sh
 755 tp 990237734bef scripts/check-models.sh
 755 tp d93ac3ac3ea7 scripts/signal.sh
 755 tp 0a0f118c138b scripts/sync-dev.sh
@@ -160,7 +160,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 1명 1`] = 
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp dfd936531873 scripts/wait-and-review.sh
-755 tp 24467612d3bc scripts/integrate.sh
+755 tp 4b120ffb15a4 scripts/integrate.sh
 755 tp 990237734bef scripts/check-models.sh
 755 tp d93ac3ac3ea7 scripts/signal.sh
 755 tp 0a0f118c138b scripts/sync-dev.sh
@@ -235,7 +235,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 6명 1`] = 
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp dfd936531873 scripts/wait-and-review.sh
-755 tp 24467612d3bc scripts/integrate.sh
+755 tp 4b120ffb15a4 scripts/integrate.sh
 755 tp 990237734bef scripts/check-models.sh
 755 tp d93ac3ac3ea7 scripts/signal.sh
 755 tp 0a0f118c138b scripts/sync-dev.sh
@@ -280,7 +280,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 개발자 정보 비�
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp dfd936531873 scripts/wait-and-review.sh
-755 tp 24467612d3bc scripts/integrate.sh
+755 tp 4b120ffb15a4 scripts/integrate.sh
 755 tp 990237734bef scripts/check-models.sh
 755 tp d93ac3ac3ea7 scripts/signal.sh
 755 tp 0a0f118c138b scripts/sync-dev.sh
@@ -340,7 +340,7 @@ exports[`T-406 대표 구성 스냅샷 > 구성 스냅샷: 기본 1`] = `
 755 tp b0df5829b321 scripts/create-worktrees.sh
 755 tp ea54f08270cb scripts/run-agents.sh
 755 tp dfd936531873 scripts/wait-and-review.sh
-755 tp 24467612d3bc scripts/integrate.sh
+755 tp 4b120ffb15a4 scripts/integrate.sh
 755 tp 990237734bef scripts/check-models.sh
 755 tp d93ac3ac3ea7 scripts/signal.sh
 755 tp 0a0f118c138b scripts/sync-dev.sh
