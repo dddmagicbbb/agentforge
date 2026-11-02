@@ -73,7 +73,7 @@ CI의 `airgap-docker`는 Docker 내부 네트워크로 흉내 낸 것이다. 실
 ### 5.3 발견 사항
 | ID | 심각도 | 내용 | 조치 |
 | --- | --- | --- | --- |
-| B-1 | 높음 | 기본 브랜치 main은 v0.3.0이라, 안내대로 clone하면 라이선스·npx 진입점이 없다 | `deploy.md` 1장에 `-b develop` 명시(v0.9.0 병합 후 해소) |
+| B-1 | 높음 | 기본 브랜치 main은 v0.3.0이라, 안내대로 clone하면 라이선스·npx 진입점이 없다 | `deploy.md` 1장에 `-b develop` 명시 → main 병합(PR #16, `85ab5a8`)으로 해소, 안내에서 `-b develop` 제거 |
 | B-2 | 중간 | pnpm 설치 안내가 없다. `corepack pnpm`만으로는 빌드 스크립트 안의 `pnpm` 호출이 실패한다 | `deploy.md` 1장에 `corepack enable pnpm` 추가 |
 | B-6 | **높음** | 기본 권한 모드에서 신호 파일 생성 `touch "$AF_SIGNALS/…"` 12건이 **전부** 승인을 요구했다. 변수가 든 명령은 허용 목록과 무관하게 확인 창이 뜬다. 병렬 흐름의 핵심 동작마다 사람이 pane 6개를 지켜봐야 한다. 승인 35건 중 변수 18·`cd` 복합 24·heredoc 쓰기 14건(중복 포함) | **ADR-0009 처리(T-891)**: `scripts/signal.sh`(자기 번호·역할 신호만)를 허용 목록에 넣고 `touch` 허용 제거. 명령 실행 지침 추가 |
 | B-5 | 높음 | 개발자 간 코드 의존(dev-3 → dev-1)을 병렬 단계 안에서 풀 절차가 없다. dev-3는 테스트가 실패해 멈췄다. 리드가 feature/dev1을 dev3에 병합하자 범위 검사가 dev-1 파일 15개를 **범위 밖**으로 오판했다. 리드가 통과한 dev-1을 develop에 먼저 병합해 풀었다 | **ADR-0009 처리(T-891)**: `dev-N.wait-M` 신호 → 감시 창 안내 → 사람이 `scripts/sync-dev.sh M N` 실행. analyst 지침에 의존 처리 추가 |
